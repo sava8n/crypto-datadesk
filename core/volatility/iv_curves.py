@@ -15,5 +15,5 @@ CURVE_COLUMNS = ["expiry", "tte_years", "strike", "mark_iv", "option_type"]
 
 def build_curves(summaries: list[dict], spot: float) -> pd.DataFrame:
     """BTC IV smile curves: OTM quotes keyed by (strike, expiry)."""
-    logger.debug("building IV curves from %d summaries", len(summaries))
+    logger.info("building IV curves")
     return prepare_quotes(summaries, spot)[CURVE_COLUMNS]

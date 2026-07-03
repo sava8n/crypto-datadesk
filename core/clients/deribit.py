@@ -22,27 +22,53 @@ _INDEX_NAMES: dict[str, str] = {"BTC": "btc_usd"}
 _T = TypeVar("_T")
 _cache: dict[str, tuple[float, Any]] = {}
 _cache_lock = threading.Lock()
+# per-key locks serialize concurrent misses so only one caller fetches a given key;
+_fetch_locks: dict[str, threading.Lock] = {}
+_fetch_locks_guard = threading.Lock()
 
 
 class DeribitError(RuntimeError):
     """Raised when a Deribit request fails or returns an unexpected payload."""
 
 
+def _lock_for(key: str) -> threading.Lock:
+    with _fetch_locks_guard:
+        lock = _fetch_locks.get(key)
+        if lock is None:
+            lock = threading.Lock()
+            _fetch_locks[key] = lock
+        return lock
+
+
+def _read_fresh(key: str, ttl: float) -> tuple[bool, Any]:
+    with _cache_lock:
+        entry = _cache.get(key)
+        if entry is not None and time.monotonic() - entry[0] < ttl:
+            return True, entry[1]
+    return False, None
+
+
 def _cached(key: str, ttl: float, producer: Callable[[], _T]) -> _T:
-    """Return a cached value for ``key`` if fresh, otherwise (re)compute and store it."""
-    now = time.monotonic()
-    with _cache_lock:
-        hit = _cache.get(key)
-        if hit is not None and now - hit[0] < ttl:
-            logger.debug("cache hit for key=%s", key)
-            return hit[1]
-    logger.info("cache miss for key=%s, fetching from Deribit", key)
-    start = time.perf_counter()
-    value = producer()
-    logger.info("fetched by key=%s in %.0f ms", key, (time.perf_counter() - start) * 1000)
-    with _cache_lock:
-        _cache[key] = (time.monotonic(), value)
-    return value
+    """Return a cached value for ``key`` if fresh, otherwise recompute and store it."""
+    hit, value = _read_fresh(key, ttl)
+    if hit:
+        logger.debug("cache hit for key=%s", key)
+        return value
+
+    with _lock_for(key):
+        # another caller may have populated the cache while we waited for the lock.
+        hit, value = _read_fresh(key, ttl)
+        if hit:
+            logger.debug("cache hit for key=%s (filled while waiting)", key)
+            return value
+
+        logger.info("cache miss for key=%s, fetching from Deribit", key)
+        start = time.perf_counter()
+        value = producer()
+        logger.info("fetched by key=%s in %.0f ms", key, (time.perf_counter() - start) * 1000)
+        with _cache_lock:
+            _cache[key] = (time.monotonic(), value)
+        return value
 
 
 def _get(path: str, params: dict) -> Any:

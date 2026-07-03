@@ -14,5 +14,5 @@ GRID_COLUMNS = ["expiry", "tte_years", "delta", "mark_iv", "option_type"]
 
 def build_surface(summaries: list[dict], spot: float) -> pd.DataFrame:
     """BTC IV surface grid: OTM quotes keyed by (delta, expiry)."""
-    logger.info("building IV surface from %d summaries", len(summaries))
+    logger.info("building IV surface")
     return prepare_quotes(summaries, spot)[GRID_COLUMNS]
