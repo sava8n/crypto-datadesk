@@ -1,14 +1,10 @@
-"""Pydantic response models for the API."""
+"""Response models for implied-volatility routes."""
 
 from __future__ import annotations
 
 from datetime import datetime
 
 from pydantic import BaseModel
-
-
-class HealthResponse(BaseModel):
-    status: str
 
 
 class SurfacePoint(BaseModel):

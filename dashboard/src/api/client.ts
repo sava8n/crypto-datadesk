@@ -16,9 +16,9 @@ async function fetchJson<T>(url: string): Promise<T> {
 }
 
 export async function fetchIVSurface(currency = 'BTC'): Promise<IVSurfaceResponse> {
-  return fetchJson<IVSurfaceResponse>(`/api/iv-surface?currency=${encodeURIComponent(currency)}`);
+  return fetchJson<IVSurfaceResponse>(`/api/iv/surface?currency=${encodeURIComponent(currency)}`);
 }
 
 export async function fetchIVCurves(currency = 'BTC'): Promise<IVCurvesResponse> {
-  return fetchJson<IVCurvesResponse>(`/api/iv-curves?currency=${encodeURIComponent(currency)}`);
+  return fetchJson<IVCurvesResponse>(`/api/iv/curves?currency=${encodeURIComponent(currency)}`);
 }

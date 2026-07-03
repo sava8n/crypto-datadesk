@@ -7,6 +7,7 @@ services:
     environment:
       - OPTIONS_DATA_SERVICE_CORS_ORIGINS=http://localhost:8080,http://localhost:5173
       - OPTIONS_DATA_SERVICE_SUPPORTED_CURRENCIES=BTC
+      - OPTIONS_DATA_SERVICE_LOG_LEVEL=INFO
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
       interval: 15s

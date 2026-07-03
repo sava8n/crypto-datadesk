@@ -1,15 +1,15 @@
-"""API routes."""
+"""Implied-volatility routes: surface and smile curves."""
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Query
 
 from config import settings
-from schemas import (
+from schemas.volatility import (
     CurvePoint,
-    HealthResponse,
     IVCurvesResponse,
     IVSurfaceResponse,
     SurfacePoint,
@@ -18,29 +18,39 @@ from clients import deribit
 from clients.deribit import DeribitError
 from volatility import iv_curves, iv_surface
 
-router = APIRouter()
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/iv", tags=["volatility"])
 
 
-@router.get("/health", response_model=HealthResponse)
-def health() -> HealthResponse:
-    return HealthResponse(status="ok")
-
-
-@router.get("/iv-surface", response_model=IVSurfaceResponse)
-def get_iv_surface(currency: str = Query("BTC")) -> IVSurfaceResponse:
-    """BTC options implied-volatility surface: (delta, expiry) -> IV, plus axis ticks."""
+def _validate_currency(currency: str) -> str:
+    """Normalize ``currency`` to upper case, raising 422 if it is unsupported."""
     cur = currency.upper()
     if cur not in settings.supported_currency_list:
+        logger.warning("rejected due to unsupported currency=%s", cur)
         raise HTTPException(
             status_code=422,
             detail=f"Unsupported currency '{currency}'. Supported: {settings.supported_currency_list}",
         )
+    return cur
 
+
+def _load_market_data(cur: str) -> tuple[float, list[dict]]:
+    """Fetch spot + option summaries for ``cur``, raising 502 on upstream failure."""
     try:
         spot = deribit.fetch_spot(cur)
         summaries = deribit.fetch_option_summaries(cur)
     except DeribitError as exc:
+        logger.warning("cannot fetch upstream data for currency=%s, %s", cur, exc)
         raise HTTPException(status_code=502, detail=str(exc)) from exc
+    return spot, summaries
+
+
+@router.get("/surface", response_model=IVSurfaceResponse)
+def get_iv_surface(currency: str = Query("BTC")) -> IVSurfaceResponse:
+    """BTC options implied-volatility surface: (delta, expiry) -> IV, plus axis ticks."""
+    cur = _validate_currency(currency)
+    spot, summaries = _load_market_data(cur)
 
     grid = iv_surface.build_surface(summaries, spot)
 
@@ -63,21 +73,11 @@ def get_iv_surface(currency: str = Query("BTC")) -> IVSurfaceResponse:
     )
 
 
-@router.get("/iv-curves", response_model=IVCurvesResponse)
+@router.get("/curves", response_model=IVCurvesResponse)
 def get_iv_curves(currency: str = Query("BTC")) -> IVCurvesResponse:
     """BTC options implied-volatility smile curves: (strike, expiry) -> IV, one curve per expiry."""
-    cur = currency.upper()
-    if cur not in settings.supported_currency_list:
-        raise HTTPException(
-            status_code=422,
-            detail=f"Unsupported currency '{currency}'. Supported: {settings.supported_currency_list}",
-        )
-
-    try:
-        spot = deribit.fetch_spot(cur)
-        summaries = deribit.fetch_option_summaries(cur)
-    except DeribitError as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    cur = _validate_currency(currency)
+    spot, summaries = _load_market_data(cur)
 
     grid = iv_curves.build_curves(summaries, spot)
 

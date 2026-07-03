@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     # Comma-separated values keep env parsing simple and robust.
     cors_origins: str = "http://localhost:5173,http://localhost:8080"
     supported_currencies: str = "BTC"
+    log_level: str = "INFO"
 
     @property
     def cors_origin_list(self) -> list[str]:

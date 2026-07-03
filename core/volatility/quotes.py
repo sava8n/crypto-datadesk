@@ -72,7 +72,8 @@ def prepare_quotes(summaries: list[dict], spot: float) -> pd.DataFrame:
     Returns one row per surviving OTM quote with the columns in
     ``PREPARED_COLUMNS`` (both ``strike`` and ``delta`` are retained).
     """
-    logger.debug("received %d raw instruments, spot=%.2f", len(summaries), spot)
+    n_raw = len(summaries)
+    logger.info("prepareing quotes, %d raw instruments, spot=%.2f", n_raw, spot)
     if not summaries:
         logger.warning("no summaries were provided to build IVs")
         return _empty_prepared()
@@ -92,9 +93,15 @@ def prepare_quotes(summaries: list[dict], spot: float) -> pd.DataFrame:
 
     # use the per-instrument forward for moneyness, falling back to spot.
     df["forward"] = pd.to_numeric(df.get("underlying_price", np.nan), errors="coerce")
+    n_no_forward = int(df["forward"].isna().sum())
     df["forward"] = df["forward"].fillna(spot)
+    if n_no_forward:
+        logger.debug("%d/%d rows missing underlying_price, using spot as forward", n_no_forward, n_raw)
 
     df = df.dropna(subset=["mark_iv", "mark_price"])
+    logger.debug("parsed marks, kept %d/%d rows (dropped unparseable mark_iv/mark_price)", len(df), n_raw)
+
+    n_pre_quality = len(df)
     df = df[
         (df["mark_iv"] >= MIN_MARK_IV)
         & (df["mark_iv"] <= MAX_MARK_IV)
@@ -104,6 +111,16 @@ def prepare_quotes(summaries: list[dict], spot: float) -> pd.DataFrame:
         # no-bid books have unreliable mark_iv
         & (df["bid_price"] > 0)
     ].copy()
+    logger.debug(
+        "quality filters, kept %d/%d rows (mark_iv %.2f-%.2f, tte %d-%dd, mark_price>=%.4f BTC, bid>0)",
+        len(df),
+        n_pre_quality,
+        MIN_MARK_IV,
+        MAX_MARK_IV,
+        MIN_TTE_DAYS,
+        MAX_TTE_DAYS,
+        MIN_MARK_PRICE_BTC,
+    )
     if df.empty:
         logger.warning("no rows survived quote/expiry filters")
         return _empty_prepared()
@@ -115,13 +132,19 @@ def prepare_quotes(summaries: list[dict], spot: float) -> pd.DataFrame:
         df["mark_iv"].to_numpy(dtype=float),
         (df["option_type"] == "C").to_numpy(),
     )
+    n_pre_delta = len(df)
     df = df.dropna(subset=["delta"])
+    if len(df) != n_pre_delta:
+        logger.debug("dropped %d rows with undefined Black-76 delta", n_pre_delta - len(df))
+
+    n_pre_otm = len(df)
     df = df[df["delta"].abs() <= DELTA_LIMIT]
+    logger.debug("OTM filter: kept %d/%d rows (|delta|<=%.2f)", len(df), n_pre_otm, DELTA_LIMIT)
 
     prepared = df[PREPARED_COLUMNS].reset_index(drop=True)
     logger.info(
-        "%d raw -> %d OTM rows across %d expiries",
-        len(summaries),
+        "prepared %d raw instruments -> %d OTM rows across %d expiries",
+        n_raw,
         len(prepared),
         prepared["expiry"].nunique(),
     )

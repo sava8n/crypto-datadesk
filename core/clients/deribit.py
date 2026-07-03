@@ -62,7 +62,7 @@ def _cached(key: str, ttl: float, producer: Callable[[], _T]) -> _T:
             logger.debug("cache hit for key=%s (filled while waiting)", key)
             return value
 
-        logger.info("cache miss for key=%s, fetching from Deribit", key)
+        logger.debug("cache miss for key=%s, fetching from Deribit", key)
         start = time.perf_counter()
         value = producer()
         logger.info("fetched by key=%s in %.0f ms", key, (time.perf_counter() - start) * 1000)

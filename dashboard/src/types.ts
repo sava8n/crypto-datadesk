@@ -1,4 +1,4 @@
-// mirrors core/schemas.py
+// mirrors core/schemas/
 
 export interface SurfacePoint {
   expiry: string;

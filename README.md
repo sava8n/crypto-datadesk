@@ -22,8 +22,8 @@ Then open **http://localhost:8080**.
 | Method | Path                          | Description    |
 | ------ | ----------------------------- | -------------- |
 | GET    | `/api/health`                 | Liveness probe |
-| GET    | `/api/iv-surface?currency=BTC`| IV surface     |
-| GET    | `/api/iv-curves?currency=BTC` | IV curves      |
+| GET    | `/api/iv/surface?currency=BTC`| IV surface     |
+| GET    | `/api/iv/curves?currency=BTC` | IV curves      |
 
 > Note: API docs are available at http://localhost:8000/docs.
 

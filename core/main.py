@@ -7,9 +7,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
 from log_config import setup_logging
-from routes import router
+from routers.health import router as health_router
+from routers.volatility import router as volatility_router
 
-setup_logging()
+setup_logging(settings.log_level)
 
 server = FastAPI(
     title="Options Data API",
@@ -25,4 +26,5 @@ server.add_middleware(
     allow_headers=["*"],
 )
 
-server.include_router(router, prefix="/api")
+server.include_router(health_router, prefix="/api")
+server.include_router(volatility_router, prefix="/api")
