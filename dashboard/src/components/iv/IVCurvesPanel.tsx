@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 
-import type { IVCurvesResponse } from '../types';
+import type { IVCurvesResponse } from '../../types';
+import { expiryLabel, strikeFmt } from '../../utils/format';
 
 const AMBER = '#ffb000';
 const GRID = '#243133';
@@ -21,17 +22,6 @@ interface ExpiryCurve {
   label: string;
   tte: number;
   points: [number, number][]; // [strike, iv], ascending by strike
-}
-
-// Deribit expiries are at 08:00 UTC; format like "04JUL26" (day + upper month + 2-digit year).
-function expiryLabel(iso: string): string {
-  const d = new Date(iso);
-  const day = String(d.getUTCDate()).padStart(2, '0');
-  const mon = d
-    .toLocaleString('en-US', { month: 'short', timeZone: 'UTC' })
-    .toUpperCase();
-  const yr = String(d.getUTCFullYear()).slice(-2);
-  return `${day}${mon}${yr}`;
 }
 
 export default function IVCurvesPanel({ data }: { data: IVCurvesResponse }) {
@@ -65,7 +55,6 @@ export default function IVCurvesPanel({ data }: { data: IVCurvesResponse }) {
     const axisLabelStyle = { color: AMBER, fontFamily: MONO, fontSize: 11 };
     const nameStyle = { color: AMBER, fontFamily: MONO, fontSize: 13 };
 
-    const strikeFmt = (v: number) => `${(v / 1000).toLocaleString('en-US')}k`;
     const ivFmt = (v: number) => `${Math.round(v * 100)}%`;
 
     const opt = {

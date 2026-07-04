@@ -3,7 +3,7 @@ import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 import 'echarts-gl'; // registers the 3D `surface` series + grid3D/xAxis3D/... onto echarts
 
-import type { IVSurfaceResponse } from '../types';
+import type { IVSurfaceResponse } from '../../types';
 
 const BLACK = '#000000';
 const AMBER = '#ffb000';

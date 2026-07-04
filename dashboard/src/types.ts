@@ -29,3 +29,19 @@ export interface IVCurvesResponse {
   as_of: string;
   points: CurvePoint[];
 }
+
+export interface GreekPoint {
+  expiry: string;
+  tte_years: number;
+  strike: number;
+  value: number;
+  option_type: string;
+}
+
+export interface GreeksResponse {
+  currency: string;
+  spot: number;
+  greek: string;
+  as_of: string;
+  points: GreekPoint[];
+}

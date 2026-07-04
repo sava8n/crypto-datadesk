@@ -2,8 +2,9 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import type { IVCurvesResponse, IVSurfaceResponse } from '../types';
 import Header from './Header';
 import StatusBar from './StatusBar';
-import IVSurfacePanel from './IVSurfacePanel';
-import IVCurvesPanel from './IVCurvesPanel';
+import IVSurfacePanel from './iv/IVSurfacePanel';
+import IVCurvesPanel from './iv/IVCurvesPanel';
+import GreeksSection from './greeks/GreeksSection';
 
 interface Props {
   currency: string;
@@ -21,6 +22,8 @@ export default function Dashboard({ currency, IVSurfaceQuery, IVCurvesQuery }: P
   return (
     <div className="dashboard">
       <Header currency={currency} data={data} isFetching={isFetching} isError={isError} />
+
+      <GreeksSection currency={currency} />
 
       <div className="panels">
         <main className="panel">

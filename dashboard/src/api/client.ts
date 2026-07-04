@@ -1,4 +1,6 @@
-import type { IVCurvesResponse, IVSurfaceResponse } from '../types';
+import type { GreeksResponse, IVCurvesResponse, IVSurfaceResponse } from '../types';
+
+export type GreekName = 'delta' | 'gamma' | 'theta' | 'vega';
 
 async function fetchJson<T>(url: string): Promise<T> {
   const resp = await fetch(url);
@@ -21,4 +23,10 @@ export async function fetchIVSurface(currency = 'BTC'): Promise<IVSurfaceRespons
 
 export async function fetchIVCurves(currency = 'BTC'): Promise<IVCurvesResponse> {
   return fetchJson<IVCurvesResponse>(`/api/iv/curves?currency=${encodeURIComponent(currency)}`);
+}
+
+export async function fetchGreek(greek: GreekName, currency = 'BTC'): Promise<GreeksResponse> {
+  return fetchJson<GreeksResponse>(
+    `/api/greeks/${greek}?currency=${encodeURIComponent(currency)}`,
+  );
 }

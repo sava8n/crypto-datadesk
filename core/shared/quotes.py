@@ -1,57 +1,44 @@
-"""Deribit option-quote preparation for volatility analytics.
+"""Deribit option-quote preparation for options analytics.
 
-Parses raw book summaries, applies quote/expiry quality filters and
-computes Black-76 deltas, producing the filtered OTM quote table.
+Parses raw book summaries, applies quote/expiry quality filters and computes
+Black-76 deltas, producing the filtered OTM quote table shared by the
+volatility (IV surface/curves) and greeks features.
 """
 
 from __future__ import annotations
 
 import logging
-from math import erf, sqrt
 
 import numpy as np
 import pandas as pd
 
+from shared.black76 import black76_delta
+
 logger = logging.getLogger(__name__)
 
-DELTA_LIMIT = 0.5  # keep only OTM options (|delta| <= 0.5)
+DELTA_LIMIT = 0.5 # keep only OTM options (|delta| <= 0.5)
 
-MIN_TTE_DAYS = 7  # keep weeklies for short-term context; drop sub-week dailies
-MAX_TTE_DAYS = 365  # cap at ~1Y — covers all liquid Deribit expiries
+MIN_TTE_DAYS = 7 # keep weeklies for short-term context; drop sub-week dailies
+MAX_TTE_DAYS = 365 # cap at ~1Y — covers all liquid Deribit expiries
 
-MIN_MARK_PRICE_BTC = 0.0005  # price floor — near-zero marks have unreliable mark_iv
+MIN_MARK_PRICE_BTC = 0.0005 # price floor — near-zero marks have unreliable mark_iv
 
 MIN_MARK_IV = 0.05
 MAX_MARK_IV = 5.00
 
-# Parsed + filtered OTM quotes, shared by the surface (delta-keyed) and curves
-# (strike-keyed) builders. Each downstream builder projects the columns it needs.
-PREPARED_COLUMNS = ["expiry", "tte_years", "strike", "delta", "mark_iv", "option_type"]
-
-_SQRT2 = sqrt(2.0)
-_erf = np.vectorize(erf, otypes=[float])
-
-
-def norm_cdf(x: np.ndarray) -> np.ndarray:
-    return 0.5 * (1.0 + _erf(x / _SQRT2))
-
-
-def black76_delta(
-    forward: np.ndarray,
-    strike: np.ndarray,
-    tte_years: np.ndarray,
-    sigma: np.ndarray,
-    is_call: np.ndarray,
-) -> np.ndarray:
-    """Forward (Black-76) delta; NaN where inputs are invalid."""
-    valid = (forward > 0) & (strike > 0) & (tte_years > 0) & (sigma > 0)
-    with np.errstate(divide="ignore", invalid="ignore"):
-        d1 = (np.log(forward / strike) + 0.5 * sigma * sigma * tte_years) / (
-            sigma * np.sqrt(tte_years)
-        )
-    call_delta = norm_cdf(d1)
-    delta = np.where(is_call, call_delta, call_delta - 1.0)
-    return np.where(valid, delta, np.nan)
+# Parsed + filtered OTM quotes, shared by the surface (delta-keyed), curves
+# (strike-keyed) and greeks builders. `forward` is retained so the greeks
+# (gamma/theta/vega) can be computed without re-deriving it. Each downstream
+# builder projects the columns it needs.
+PREPARED_COLUMNS = [
+    "expiry",
+    "tte_years",
+    "strike",
+    "delta",
+    "forward",
+    "mark_iv",
+    "option_type",
+]
 
 
 def _empty_prepared() -> pd.DataFrame:
@@ -61,6 +48,7 @@ def _empty_prepared() -> pd.DataFrame:
             "tte_years": pd.Series([], dtype="float64"),
             "strike": pd.Series([], dtype="float64"),
             "delta": pd.Series([], dtype="float64"),
+            "forward": pd.Series([], dtype="float64"),
             "mark_iv": pd.Series([], dtype="float64"),
             "option_type": pd.Series([], dtype="object"),
         }
@@ -70,7 +58,7 @@ def _empty_prepared() -> pd.DataFrame:
 def prepare_quotes(summaries: list[dict], spot: float) -> pd.DataFrame:
     """
     Returns one row per surviving OTM quote with the columns in
-    ``PREPARED_COLUMNS`` (both ``strike`` and ``delta`` are retained).
+    ``PREPARED_COLUMNS`` (``strike``, ``delta`` and ``forward`` are all retained).
     """
     n_raw = len(summaries)
     logger.info("prepareing quotes, %d raw instruments, spot=%.2f", n_raw, spot)

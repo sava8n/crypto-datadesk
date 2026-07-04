@@ -1,11 +1,11 @@
-"""Implied-volatility smile curves (IV vs strike, per expiry) for Deribit options."""
+"""Implied-volatility smile curves (IV vs strike, per expiry)."""
 
 from __future__ import annotations
 
 import logging
 import pandas as pd
 
-from .quotes import prepare_quotes
+from shared.quotes import prepare_quotes
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 CURVE_COLUMNS = ["expiry", "tte_years", "strike", "mark_iv", "option_type"]
 
 
-def build_curves(summaries: list[dict], spot: float) -> pd.DataFrame:
+def build(summaries: list[dict], spot: float) -> pd.DataFrame:
     """BTC IV smile curves: OTM quotes keyed by (strike, expiry)."""
     logger.info("building IV curves")
     return prepare_quotes(summaries, spot)[CURVE_COLUMNS]

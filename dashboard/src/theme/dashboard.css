@@ -23,7 +23,7 @@
 html,
 body,
 #root {
-  height: 100%;
+  min-height: 100%;
   margin: 0;
 }
 
@@ -40,8 +40,8 @@ body {
 /* ---- Layout ---- */
 .dashboard {
   display: grid;
-  grid-template-rows: auto 1fr auto;
-  height: 100%;
+  grid-template-rows: auto auto auto auto;
+  min-height: 100%;
   background: var(--bg);
 }
 
@@ -132,13 +132,16 @@ body {
   }
 }
 
-/* ---- Panels row (surface | curves) ---- */
+/* ---- Panels row ---- */
 .panels {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
   margin: 10px;
-  min-height: 0;
+}
+
+.panels > .panel {
+  height: 480px;
 }
 
 /* ---- Panel ---- */
@@ -203,6 +206,81 @@ body {
 }
 .panel__msg--warn {
   color: var(--yellow);
+}
+
+/* ---- Greeks section (delta | gamma | theta | vega) ---- */
+.greeks {
+  margin: 10px 10px 0;
+  border: 1px solid var(--border-bright);
+  background: var(--bg-panel);
+}
+
+.greeks__bar {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-raised);
+}
+
+.greeks__title {
+  color: var(--amber);
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.greeks__sub {
+  color: var(--text-dim);
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.greeks__selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.greeks__selector-label {
+  color: var(--text-dim);
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+.greeks__select {
+  background: var(--bg);
+  color: var(--amber);
+  border: 1px solid var(--border-bright);
+  border-radius: 2px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+
+.greeks__select:focus {
+  outline: none;
+  border-color: var(--amber-dim);
+}
+
+.greeks__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 10px;
+}
+
+.greek-panel {
+  height: 240px;
+}
+
+@media (max-width: 900px) {
+  .greeks__grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ---- Status bar ---- */
