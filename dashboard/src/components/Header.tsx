@@ -1,11 +1,4 @@
-import type { IVSurfaceResponse } from '../types';
-
-interface Props {
-  currency: string;
-  data?: IVSurfaceResponse;
-  isFetching: boolean;
-  isError: boolean;
-}
+import { useSummary } from '../hooks/useSummary';
 
 function formatSpot(spot?: number): string {
   if (spot == null) return '—';
@@ -26,7 +19,8 @@ function Field({ k, v, amber }: { k: string; v: string; amber?: boolean }) {
   );
 }
 
-export default function Header({ currency, data, isFetching, isError }: Props) {
+export default function Header({ currency }: { currency: string }) {
+  const { data, isFetching, isError } = useSummary(currency);
   const status = isError ? 'OFFLINE' : isFetching ? 'SYNC' : 'LIVE';
   const statusClass = isError ? 'tag--err' : isFetching ? 'tag--warn' : 'tag--ok';
 

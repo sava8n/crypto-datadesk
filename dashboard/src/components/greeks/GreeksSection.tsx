@@ -28,7 +28,7 @@ export default function GreeksSection({ currency }: { currency: string }) {
     <section className="greeks">
       <div className="greeks__bar">
         <span className="greeks__title">OPTION GREEKS</span>
-        <span className="greeks__sub">BLACK-76 · PER CONTRACT × STRIKE · SOURCE DERIBIT</span>
+        <span className="greeks__sub">BLACK-76 · PER CONTRACT × STRIKE</span>
         <label className="greeks__selector">
           <span className="greeks__selector-label">EXPIRY</span>
           <select

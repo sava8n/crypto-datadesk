@@ -45,3 +45,11 @@ export interface GreeksResponse {
   as_of: string;
   points: GreekPoint[];
 }
+
+export interface SummaryResponse {
+  currency: string;
+  spot: number;
+  as_of: string;
+  instrument_count: number;
+  expiry_count: number;
+}

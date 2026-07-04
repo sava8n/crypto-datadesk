@@ -1,16 +1,10 @@
-import type { IVSurfaceResponse } from '../types';
+import { useSummary } from '../hooks/useSummary';
 
-interface Props {
-  data?: IVSurfaceResponse;
-  isFetching: boolean;
-  isError: boolean;
-  dataUpdatedAt: number;
-}
-
-export default function StatusBar({ data, isFetching, isError, dataUpdatedAt }: Props) {
+export default function StatusBar({ currency }: { currency: string }) {
+  const { data, isFetching, isError, dataUpdatedAt } = useSummary(currency);
   const updated = dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString('en-GB') : '—';
-  const points = data?.points.length ?? 0;
-  const expiries = data ? new Set(data.points.map((p) => p.expiry)).size : 0;
+  const points = data?.instrument_count ?? 0;
+  const expiries = data?.expiry_count ?? 0;
 
   const connClass = isError
     ? 'statusbar__conn--err'

@@ -23,6 +23,7 @@ Then open **http://localhost:8080**.
 | Method | Path                            | Description             |
 | ------ | ------------------------------- | ----------------------- |
 | GET    | `/api/health`                   | Liveness probe          |
+| GET    | `/api/summary?currency=BTC`     | Spot + chain size       |
 | GET    | `/api/iv/surface?currency=BTC`  | IV surface              |
 | GET    | `/api/iv/curves?currency=BTC`   | IV curves               |
 | GET    | `/api/greeks/delta?currency=BTC`| Delta over strike       |

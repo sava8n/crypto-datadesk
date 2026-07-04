@@ -1,4 +1,9 @@
-import type { GreeksResponse, IVCurvesResponse, IVSurfaceResponse } from '../types';
+import type {
+  GreeksResponse,
+  IVCurvesResponse,
+  IVSurfaceResponse,
+  SummaryResponse,
+} from '../types';
 
 export type GreekName = 'delta' | 'gamma' | 'theta' | 'vega';
 
@@ -29,4 +34,8 @@ export async function fetchGreek(greek: GreekName, currency = 'BTC'): Promise<Gr
   return fetchJson<GreeksResponse>(
     `/api/greeks/${greek}?currency=${encodeURIComponent(currency)}`,
   );
+}
+
+export async function fetchSummary(currency = 'BTC'): Promise<SummaryResponse> {
+  return fetchJson<SummaryResponse>(`/api/summary?currency=${encodeURIComponent(currency)}`);
 }
