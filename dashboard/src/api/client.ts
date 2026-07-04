@@ -3,6 +3,7 @@ import type {
   IVCurvesResponse,
   IVSurfaceResponse,
   SummaryResponse,
+  TermStructureResponse,
 } from '../types';
 
 export type GreekName = 'delta' | 'gamma' | 'theta' | 'vega';
@@ -28,6 +29,12 @@ export async function fetchIVSurface(currency = 'BTC'): Promise<IVSurfaceRespons
 
 export async function fetchIVCurves(currency = 'BTC'): Promise<IVCurvesResponse> {
   return fetchJson<IVCurvesResponse>(`/api/iv/curves?currency=${encodeURIComponent(currency)}`);
+}
+
+export async function fetchTermStructure(currency = 'BTC'): Promise<TermStructureResponse> {
+  return fetchJson<TermStructureResponse>(
+    `/api/iv/term-structure?currency=${encodeURIComponent(currency)}`,
+  );
 }
 
 export async function fetchGreek(greek: GreekName, currency = 'BTC'): Promise<GreeksResponse> {

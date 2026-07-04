@@ -12,9 +12,11 @@ from schemas.iv import (
     IVCurvesResponse,
     IVSurfaceResponse,
     SurfacePoint,
+    TermStructurePoint,
+    TermStructureResponse,
 )
 from shared.market_data import load_or_get_cached, validate_currency
-from iv import curves, surface
+from iv import curves, surface, term_structure
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +70,32 @@ def get_iv_curves(currency: str = Query("BTC")) -> IVCurvesResponse:
     ]
 
     return IVCurvesResponse(
+        currency=cur,
+        spot=spot,
+        as_of=datetime.now(timezone.utc),
+        points=points,
+    )
+
+
+@router.get("/term-structure", response_model=TermStructureResponse)
+def get_iv_term_structure(currency: str = Query("BTC")) -> TermStructureResponse:
+    """BTC options ATM implied-volatility term structure: one ATM IV per expiry."""
+    cur = validate_currency(currency)
+    spot, summaries = load_or_get_cached(cur)
+
+    grid = term_structure.build(summaries)
+
+    points = [
+        TermStructurePoint(
+            expiry=row.expiry.to_pydatetime(),
+            tte_years=float(row.tte_years),
+            atm_iv=float(row.atm_iv),
+            forward=float(row.forward),
+        )
+        for row in grid.itertuples(index=False)
+    ]
+
+    return TermStructureResponse(
         currency=cur,
         spot=spot,
         as_of=datetime.now(timezone.utc),

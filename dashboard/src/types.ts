@@ -30,6 +30,20 @@ export interface IVCurvesResponse {
   points: CurvePoint[];
 }
 
+export interface TermStructurePoint {
+  expiry: string;
+  tte_years: number;
+  atm_iv: number;
+  forward: number;
+}
+
+export interface TermStructureResponse {
+  currency: string;
+  spot: number;
+  as_of: string;
+  points: TermStructurePoint[];
+}
+
 export interface GreekPoint {
   expiry: string;
   tte_years: number;

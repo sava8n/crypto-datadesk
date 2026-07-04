@@ -35,3 +35,17 @@ class IVCurvesResponse(BaseModel):
     spot: float
     as_of: datetime
     points: list[CurvePoint]
+
+
+class TermStructurePoint(BaseModel):
+    expiry: datetime
+    tte_years: float
+    atm_iv: float
+    forward: float
+
+
+class TermStructureResponse(BaseModel):
+    currency: str
+    spot: float
+    as_of: datetime
+    points: list[TermStructurePoint]
