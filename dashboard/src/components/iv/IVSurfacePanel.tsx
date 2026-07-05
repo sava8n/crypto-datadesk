@@ -29,11 +29,8 @@ interface ExpiryRow {
   ivs: number[];
 }
 
-// Strike-monotonic delta coordinate: ATM at 0, wings at the edges.
-// Raw signed delta puts ATM at ±0.5 and both deep-OTM wings at 0, so an axis over it
-// is non-monotonic in strike and interpolation bridges the two wings across the middle.
-// Mapping puts (delta in [-0.5, 0)) to (-0.5, 0] and calls (delta in (0, 0.5]) to [0, 0.5)
-// makes x ascend with strike: put wing left, ATM centered, call wing right.
+// strike-monotonic delta coordinate: 
+// put wing at x < 0, the 50-delta point at x = 0, call wing at x > 0
 const moneynessX = (delta: number, optionType: string): number =>
   optionType === 'P' ? -(0.5 + delta) : 0.5 - delta;
 

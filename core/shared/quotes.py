@@ -11,8 +11,6 @@ from shared.black76 import black76_delta
 
 logger = logging.getLogger(__name__)
 
-DELTA_LIMIT = 0.5 # keep only OTM options (|delta| <= 0.5)
-
 MIN_TTE_DAYS = 7 # keep weeklies for short-term context; drop sub-week dailies
 MAX_TTE_DAYS = 365 # cap at ~1Y — covers all liquid Deribit expiries
 
@@ -115,6 +113,14 @@ def prepare_otm_quotes(summaries: list[dict], spot: float) -> pd.DataFrame:
         logger.warning("no rows survived quote/expiry filters")
         return _empty_otm_quotes()
 
+    n_pre_otm = len(df)
+    is_call = df["option_type"] == "C"
+    df = df[
+        (is_call & (df["strike"] >= df["forward"]))
+        | (~is_call & (df["strike"] < df["forward"]))
+    ].copy()
+    logger.debug("OTM filter: kept %d/%d rows (puts K<F, calls K>=F)", len(df), n_pre_otm)
+
     df["delta"] = black76_delta(
         df["forward"].to_numpy(dtype=float),
         df["strike"].to_numpy(dtype=float),
@@ -126,10 +132,6 @@ def prepare_otm_quotes(summaries: list[dict], spot: float) -> pd.DataFrame:
     df = df.dropna(subset=["delta"])
     if len(df) != n_pre_delta:
         logger.debug("dropped %d rows with undefined Black-76 delta", n_pre_delta - len(df))
-
-    n_pre_otm = len(df)
-    df = df[df["delta"].abs() <= DELTA_LIMIT]
-    logger.debug("OTM filter: kept %d/%d rows (|delta|<=%.2f)", len(df), n_pre_otm, DELTA_LIMIT)
 
     prepared = df[OTM_QUOTE_COLUMNS].reset_index(drop=True)
     logger.info(
