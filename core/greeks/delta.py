@@ -4,17 +4,12 @@ from __future__ import annotations
 
 import numpy as np
 
-from shared.black76 import black76_delta
+from shared.black76 import norm_cdf
 
 NAME = "delta"
 
 
-def compute(
-    forward: np.ndarray,
-    strike: np.ndarray,
-    tte_years: np.ndarray,
-    sigma: np.ndarray,
-    is_call: np.ndarray,
-) -> np.ndarray:
+def from_d1(d1: np.ndarray, is_call: np.ndarray) -> np.ndarray:
     """Forward (Black-76) delta: ``N(d1)`` for calls, ``N(d1) - 1`` for puts."""
-    return black76_delta(forward, strike, tte_years, sigma, is_call)
+    cdf = norm_cdf(d1)
+    return np.where(is_call, cdf, cdf - 1.0)

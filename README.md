@@ -23,19 +23,16 @@ Then open **http://localhost:8080**.
 
 ## API
 
-| Method | Path                                     | Description                          |
-| ------ | ---------------------------------------- | ------------------------------------ |
-| GET    | `/api/health`                            | Liveness probe                       |
-| GET    | `/api/spot?currency=BTC`                 | Spot price                           |
-| GET    | `/api/iv/surface?currency=BTC`           | IV surface                           |
-| GET    | `/api/iv/curves?currency=BTC`            | IV curves                            |
-| GET    | `/api/iv/term-structure?currency=BTC`    | ATM IV term structure                |
-| GET    | `/api/greeks/delta?currency=BTC`         | Delta over strike                    |
-| GET    | `/api/greeks/gamma?currency=BTC`         | Gamma over strike                    |
-| GET    | `/api/greeks/theta?currency=BTC`         | Theta (per day)                      |
-| GET    | `/api/greeks/vega?currency=BTC`          | Vega (per vol-point)                 |
-| GET    | `/api/oi/expiration?currency=BTC`        | Open interest by expiry              |
-| GET    | `/api/oi/strike?currency=BTC[&expiry=…]` | Open interest by strike (+ max pain) |
+| Method | Path                                        | Description                          |
+| ------ | ------------------------------------------- | ------------------------------------ |
+| GET    | `/api/health`                               | Liveness probe                       |
+| GET    | `/api/spot?currency=BTC`                    | Spot price                           |
+| GET    | `/api/iv/surface?currency=BTC`              | IV surface                           |
+| GET    | `/api/iv/curves?currency=BTC`               | IV curves                            |
+| GET    | `/api/iv/term-structure?currency=BTC`       | ATM IV term structure                |
+| GET    | `/api/greeks/chain?currency=BTC[&expiry=…]` | Delta/gamma/theta/vega per contract  |
+| GET    | `/api/oi/expiration?currency=BTC`           | Open interest by expiry              |
+| GET    | `/api/oi/strike?currency=BTC[&expiry=…]`    | Open interest by strike (+ max pain) |
 
 > Note: API docs are available at http://localhost:8000/docs.
 

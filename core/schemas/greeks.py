@@ -1,4 +1,4 @@
-"""Response models for option-greeks routes."""
+"""Response models for the option-greeks chain route."""
 
 from __future__ import annotations
 
@@ -7,17 +7,21 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class GreekPoint(BaseModel):
+class GreekChainPoint(BaseModel):
     expiry: datetime
     tte_years: float
     strike: float
-    value: float
     option_type: str
+    delta: float
+    gamma: float
+    theta: float
+    vega: float
 
 
-class GreeksResponse(BaseModel):
+class GreeksChainResponse(BaseModel):
     currency: str
     spot: float
-    greek: str  # "delta" | "gamma" | "theta" | "vega"
     as_of: datetime
-    points: list[GreekPoint]
+    expiries: list[datetime]
+    expiry: datetime | None  # selected expiry; None = full chain
+    points: list[GreekChainPoint]

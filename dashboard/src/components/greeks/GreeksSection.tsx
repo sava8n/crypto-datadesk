@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
-import { useGreek } from '../../hooks/useGreek';
+import { useGreeksChain } from '../../hooks/useGreeksChain';
 import { expiryLabel } from '../../utils/format';
 import DeltaPanel from './DeltaPanel';
 import GammaPanel from './GammaPanel';
@@ -8,17 +8,8 @@ import ThetaPanel from './ThetaPanel';
 import VegaPanel from './VegaPanel';
 
 export default function GreeksSection({ currency }: { currency: string }) {
-  // drives the expiry list, the four greek panels each run their own
-  const deltaQuery = useGreek('delta', currency);
-
-  // sorted unique expiries (near-dated first) for the selector.
-  const expiries = useMemo(() => {
-    const tteByExpiry = new Map<string, number>();
-    for (const p of deltaQuery.data?.points ?? []) {
-      if (!tteByExpiry.has(p.expiry)) tteByExpiry.set(p.expiry, p.tte_years);
-    }
-    return [...tteByExpiry.entries()].sort((a, b) => a[1] - b[1]).map(([iso]) => iso);
-  }, [deltaQuery.data]);
+  const { data } = useGreeksChain(currency);
+  const expiries = data?.expiries ?? [];
 
   const [picked, setPicked] = useState<string | null>(null);
   // fall back to the nearest expiry until the user picks one (or if the pick expired out).

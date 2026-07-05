@@ -1,5 +1,5 @@
 import type {
-  GreeksResponse,
+  GreeksChainResponse,
   IVCurvesResponse,
   IVSurfaceResponse,
   OIByExpirationResponse,
@@ -39,10 +39,13 @@ export async function fetchTermStructure(currency = 'BTC'): Promise<TermStructur
   );
 }
 
-export async function fetchGreek(greek: GreekName, currency = 'BTC'): Promise<GreeksResponse> {
-  return fetchJson<GreeksResponse>(
-    `/api/greeks/${greek}?currency=${encodeURIComponent(currency)}`,
-  );
+export async function fetchGreeksChain(
+  currency = 'BTC',
+  expiry?: string,
+): Promise<GreeksChainResponse> {
+  const params = new URLSearchParams({ currency });
+  if (expiry) params.set('expiry', expiry);
+  return fetchJson<GreeksChainResponse>(`/api/greeks/chain?${params.toString()}`);
 }
 
 export async function fetchOIByExpiration(

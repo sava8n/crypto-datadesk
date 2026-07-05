@@ -2,9 +2,8 @@ import { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 
-import { useGreek } from '../../hooks/useGreek';
+import { useGreeksChain } from '../../hooks/useGreeksChain';
 import type { GreekName } from '../../api/client';
-import type { GreekPoint } from '../../types';
 import { strikeFmt } from '../../utils/format';
 import {
   AXIS_LINE,
@@ -23,11 +22,16 @@ interface Props {
   valueFmt: (v: number) => string;
 }
 
+interface ChartPoint {
+  strike: number;
+  value: number;
+}
+
 // One greek line (value vs strike) for a single expiry. Points are sorted by
 // strike, then value, so at the ATM crossover the OTM put (negative) precedes
 // the OTM call (positive) — reproducing delta's sign flip as a clean spike.
 function buildOption(
-  points: GreekPoint[],
+  points: ChartPoint[],
   color: string,
   label: string,
   valueFmt: (v: number) => string,
@@ -99,12 +103,14 @@ export default function GreekChart({
   selectedExpiry,
   valueFmt,
 }: Props) {
-  const query = useGreek(greek, currency);
+  const query = useGreeksChain(currency);
 
-  const points = useMemo(() => {
+  const points = useMemo<ChartPoint[]>(() => {
     if (!query.data || !selectedExpiry) return [];
-    return query.data.points.filter((p) => p.expiry === selectedExpiry);
-  }, [query.data, selectedExpiry]);
+    return query.data.points
+      .filter((p) => p.expiry === selectedExpiry)
+      .map((p) => ({ strike: p.strike, value: p[greek] }));
+  }, [query.data, selectedExpiry, greek]);
 
   const option = useMemo(
     () => buildOption(points, color, label, valueFmt),

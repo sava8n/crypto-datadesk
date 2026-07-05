@@ -44,20 +44,24 @@ export interface TermStructureResponse {
   points: TermStructurePoint[];
 }
 
-export interface GreekPoint {
+export interface GreekChainPoint {
   expiry: string;
   tte_years: number;
   strike: number;
-  value: number;
   option_type: string;
+  delta: number;
+  gamma: number;
+  theta: number;
+  vega: number;
 }
 
-export interface GreeksResponse {
+export interface GreeksChainResponse {
   currency: string;
   spot: number;
-  greek: string;
   as_of: string;
-  points: GreekPoint[];
+  expiries: string[];
+  expiry: string | null; // selected expiry; null = full chain
+  points: GreekChainPoint[];
 }
 
 export interface SpotResponse {

@@ -1,65 +1,59 @@
-"""Option-greeks routes: per-contract delta, gamma, theta, vega vs strike."""
+"""Option-greeks route: per-contract delta, gamma, theta and vega across the OTM chain."""
 
 from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
 
+import pandas as pd
 from fastapi import APIRouter, Query
 
-from schemas.greeks import GreekPoint, GreeksResponse
+from schemas.greeks import GreekChainPoint, GreeksChainResponse
 from shared.market_data import load_otm_quotes, validate_currency
-from greeks.chain import build_greek
+from greeks.chain import build_chain
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/greeks", tags=["greeks"])
 
 
-def _greek_response(greek: str, currency: str) -> GreeksResponse:
+@router.get("/chain", response_model=GreeksChainResponse)
+def get_greeks_chain(
+    currency: str = Query("BTC"),
+    expiry: datetime | None = Query(None),
+) -> GreeksChainResponse:
+    """All four Black-76 greeks per OTM contract, optionally sliced to one expiry."""
     cur = validate_currency(currency)
     spot, otm_quotes = load_otm_quotes(cur)
 
-    frame = build_greek(otm_quotes, greek)
+    # full expiry list (pre-filter) so selectors always have every option.
+    expiries = [pd.Timestamp(e).to_pydatetime() for e in sorted(otm_quotes["expiry"].unique())]
+
+    quotes = otm_quotes
+    if expiry is not None:
+        quotes = otm_quotes[otm_quotes["expiry"] == pd.Timestamp(expiry)]
+
+    frame = build_chain(quotes)
+
     points = [
-        GreekPoint(
+        GreekChainPoint(
             expiry=row.expiry.to_pydatetime(),
             tte_years=float(row.tte_years),
             strike=float(row.strike),
-            value=float(row.value),
             option_type=str(row.option_type),
+            delta=float(row.delta),
+            gamma=float(row.gamma),
+            theta=float(row.theta),
+            vega=float(row.vega),
         )
         for row in frame.itertuples(index=False)
     ]
 
-    return GreeksResponse(
+    return GreeksChainResponse(
         currency=cur,
         spot=spot,
-        greek=greek,
         as_of=datetime.now(timezone.utc),
+        expiries=expiries,
+        expiry=expiry,
         points=points,
     )
-
-
-@router.get("/delta", response_model=GreeksResponse)
-def get_delta(currency: str = Query("BTC")) -> GreeksResponse:
-    """Per-contract Black-76 delta across the OTM chain, keyed by (strike, expiry)."""
-    return _greek_response("delta", currency)
-
-
-@router.get("/gamma", response_model=GreeksResponse)
-def get_gamma(currency: str = Query("BTC")) -> GreeksResponse:
-    """Per-contract Black-76 gamma (per $1) across the OTM chain, keyed by (strike, expiry)."""
-    return _greek_response("gamma", currency)
-
-
-@router.get("/theta", response_model=GreeksResponse)
-def get_theta(currency: str = Query("BTC")) -> GreeksResponse:
-    """Per-contract Black-76 theta (per day) across the OTM chain, keyed by (strike, expiry)."""
-    return _greek_response("theta", currency)
-
-
-@router.get("/vega", response_model=GreeksResponse)
-def get_vega(currency: str = Query("BTC")) -> GreeksResponse:
-    """Per-contract Black-76 vega (per vol-point) across the OTM chain, keyed by (strike, expiry)."""
-    return _greek_response("vega", currency)
