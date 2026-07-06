@@ -101,6 +101,21 @@ export interface OIByExpirationResponse {
   points: OIByExpirationPoint[];
 }
 
+export interface GEXByStrikePoint {
+  strike: number;
+  call_gex: number;
+  put_gex: number;
+  net_gex: number;
+}
+
+export interface GEXByStrikeResponse {
+  currency: string;
+  spot: number;
+  as_of: string;
+  flip: number | null; // zero-gamma level: cumulative net-GEX crossing nearest spot
+  points: GEXByStrikePoint[];
+}
+
 export interface OIByStrikePoint {
   strike: number;
   itm_calls: number;

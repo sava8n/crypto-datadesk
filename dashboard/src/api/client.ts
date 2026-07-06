@@ -1,4 +1,5 @@
 import type {
+  GEXByStrikeResponse,
   GreeksChainResponse,
   IVCurvesResponse,
   IVSurfaceResponse,
@@ -43,6 +44,12 @@ export async function fetchTermStructure(currency = 'BTC'): Promise<TermStructur
 export async function fetchGreeksChain(currency = 'BTC'): Promise<GreeksChainResponse> {
   return fetchJson<GreeksChainResponse>(
     `/api/greeks/chain?currency=${encodeURIComponent(currency)}`,
+  );
+}
+
+export async function fetchGEXByStrike(currency = 'BTC'): Promise<GEXByStrikeResponse> {
+  return fetchJson<GEXByStrikeResponse>(
+    `/api/gex/strike?currency=${encodeURIComponent(currency)}`,
   );
 }
 

@@ -10,6 +10,7 @@ import DeltaSection from './greeks/DeltaSection';
 import GammaSection from './greeks/GammaSection';
 import ThetaSection from './greeks/ThetaSection';
 import VegaSection from './greeks/VegaSection';
+import GEXByStrikeSection from './gex/GEXByStrikeSection';
 import OIByExpirationSection from './oi/OIByExpirationSection';
 import OIByStrikeSection from './oi/OIByStrikeSection';
 import SpotHistorySection from './spot/SpotHistorySection';
@@ -28,6 +29,7 @@ export default function Dashboard({ currency }: { currency: string }) {
       <main className="tab-body">
         {tab === 'positioning' && (
           <>
+            <GEXByStrikeSection currency={currency} />
             <OIByStrikeSection currency={currency} />
             <OIByExpirationSection currency={currency} />
           </>
