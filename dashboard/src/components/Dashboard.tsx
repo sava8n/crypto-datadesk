@@ -11,6 +11,7 @@ import DeltaSection from './greeks/DeltaSection';
 import GammaSection from './greeks/GammaSection';
 import ThetaSection from './greeks/ThetaSection';
 import VegaSection from './greeks/VegaSection';
+import BasisSection from './basis/BasisSection';
 import GEXByStrikeSection from './gex/GEXByStrikeSection';
 import OIByExpirationSection from './oi/OIByExpirationSection';
 import OIByStrikeSection from './oi/OIByStrikeSection';
@@ -53,6 +54,7 @@ export default function Dashboard({ currency }: { currency: string }) {
             <GammaSection currency={currency} />
             <ThetaSection currency={currency} />
             <VegaSection currency={currency} />
+            <BasisSection currency={currency} />
           </div>
         )}
       </main>

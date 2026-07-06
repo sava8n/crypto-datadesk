@@ -2,12 +2,11 @@ import { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 
-import type { SkewResponse } from '../../types';
-import { expiryLabel } from '../../utils/format';
+import type { TermStructureResponse } from '../../types';
+import { expiryLabel, usdFull } from '../../utils/format';
 import {
   AMBER,
   AXIS_LINE,
-  CALL,
   GRID,
   ZERO,
   axisLabelStyle,
@@ -15,32 +14,39 @@ import {
   tooltipStyle,
 } from '../../theme/charts';
 
-interface SkewRow {
+interface BasisRow {
   dte: number;
-  rr: number;
-  bf: number;
+  forward: number;
+  basis: number; // F/S − 1
+  basisAnn: number; // (F/S − 1) / T
   expiry: string;
 }
 
-// RR/BF live in single vol points, so one decimal: 0.042 -> "4.2%"
 const pct1 = (v: number) => `${(v * 100).toFixed(1)}%`;
 
-export default function SkewPanel({ data }: { data: SkewResponse }) {
+export default function BasisPanel({ data }: { data: TermStructureResponse }) {
   const option = useMemo<EChartsOption>(() => {
-    // one RR/BF pair per expiry, plotted time-proportionally by days-to-expiry
-    const rows: SkewRow[] = data.points
-      .map((p) => ({ dte: p.tte_years * 365.25, rr: p.rr, bf: p.bf, expiry: p.expiry }))
+    // one point per expiry: annualized basis of the per-expiry forward vs spot
+    const rows: BasisRow[] = data.points
+      .filter((p) => p.tte_years > 0 && data.spot > 0)
+      .map((p) => {
+        const basis = p.forward / data.spot - 1;
+        return {
+          dte: p.tte_years * 365.25,
+          forward: p.forward,
+          basis,
+          basisAnn: basis / p.tte_years,
+          expiry: p.expiry,
+        };
+      })
       .sort((a, b) => a.dte - b.dte);
+
+    // compact panels in the mini grid, so one point smaller than the shared styles
+    const labelStyle = { ...axisLabelStyle, fontSize: 10 };
+    const nameStyle = { ...axisNameStyle, fontSize: 12 };
 
     const opt = {
       backgroundColor: 'transparent',
-      legend: {
-        data: ['RR 25Δ', 'BF 25Δ'],
-        top: 4,
-        itemWidth: 10,
-        itemHeight: 10,
-        textStyle: axisLabelStyle,
-      },
       tooltip: {
         ...tooltipStyle,
         trigger: 'axis',
@@ -48,45 +54,42 @@ export default function SkewPanel({ data }: { data: SkewResponse }) {
           const first = Array.isArray(params) ? params[0] : params;
           const r = rows[first?.dataIndex ?? -1];
           if (!r) return '';
-          return `${expiryLabel(r.expiry)}<br/>DTE ${Math.round(r.dte)}d<br/>RR ${pct1(r.rr)} · BF ${pct1(r.bf)}`;
+          return `${expiryLabel(r.expiry)}<br/>DTE ${Math.round(r.dte)}d · FWD ${usdFull(r.forward)}<br/>BASIS ${pct1(r.basis)} · ANN ${pct1(r.basisAnn)}`;
         },
       },
-      grid: { left: 56, right: 18, top: 40, bottom: 44 },
+      grid: { left: 56, right: 16, top: 16, bottom: 40 },
       xAxis: {
         type: 'value',
         name: 'DTE',
         nameLocation: 'middle',
-        nameGap: 28,
-        nameTextStyle: axisNameStyle,
+        nameGap: 26,
+        nameTextStyle: nameStyle,
         scale: true,
         min: 0,
         axisLine: { lineStyle: { color: AXIS_LINE } },
         axisTick: { lineStyle: { color: AXIS_LINE } },
-        axisLabel: { ...axisLabelStyle, formatter: (d: number) => `${Math.round(d)}d` },
+        axisLabel: { ...labelStyle, formatter: (d: number) => `${Math.round(d)}d` },
         splitLine: { lineStyle: { color: GRID } },
       },
       yAxis: {
         type: 'value',
-        name: 'ΔIV',
-        nameGap: 12,
-        nameTextStyle: axisNameStyle,
         scale: true,
         axisLine: { lineStyle: { color: AXIS_LINE } },
         axisTick: { lineStyle: { color: AXIS_LINE } },
-        axisLabel: { ...axisLabelStyle, formatter: pct1 },
+        axisLabel: { ...labelStyle, formatter: pct1 },
         splitLine: { lineStyle: { color: GRID } },
       },
       series: [
         {
           type: 'line',
-          name: 'RR 25Δ',
-          data: rows.map((r) => [r.dte, r.rr]),
+          name: 'Annualized Basis',
+          data: rows.map((r) => [r.dte, r.basisAnn]),
           showSymbol: true,
-          symbolSize: 6,
+          symbolSize: 5,
           itemStyle: { color: AMBER },
           lineStyle: { width: 1.5, color: AMBER },
           emphasis: { focus: 'series', lineStyle: { width: 3 } },
-          // zero line: RR above = calls richer, below = puts richer
+          // zero line: above = contango (forwards over spot), below = backwardation
           markLine: {
             symbol: 'none',
             silent: true,
@@ -94,16 +97,6 @@ export default function SkewPanel({ data }: { data: SkewResponse }) {
             label: { show: false },
             data: [{ yAxis: 0 }],
           },
-        },
-        {
-          type: 'line',
-          name: 'BF 25Δ',
-          data: rows.map((r) => [r.dte, r.bf]),
-          showSymbol: true,
-          symbolSize: 6,
-          itemStyle: { color: CALL },
-          lineStyle: { width: 1.5, color: CALL },
-          emphasis: { focus: 'series', lineStyle: { width: 3 } },
         },
       ],
     };

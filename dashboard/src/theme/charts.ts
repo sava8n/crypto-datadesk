@@ -20,6 +20,9 @@ export const tooltipStyle = {
 export const CALL = '#5fded0';
 export const PUT = '#ffcf4d';
 
+// zero-reference line, brighter than the gridlines
+export const ZERO = '#6c7a7a';
+
 // OI moneyness buckets: calls = teal, puts = amber; ITM brighter, OTM deeper
 export const OI_SERIES = [
   { key: 'itm_calls', name: 'ITM Calls', color: '#5fded0', stack: 'calls' },
