@@ -30,6 +30,20 @@ export interface IVCurvesResponse {
   points: CurvePoint[];
 }
 
+export interface SkewPoint {
+  expiry: string;
+  tte_years: number;
+  rr: number;
+  bf: number;
+}
+
+export interface SkewResponse {
+  currency: string;
+  spot: number;
+  as_of: string;
+  points: SkewPoint[];
+}
+
 export interface TermStructurePoint {
   expiry: string;
   tte_years: number;

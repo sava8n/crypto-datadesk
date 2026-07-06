@@ -24,7 +24,7 @@ def _empty_term() -> pd.DataFrame:
     )
 
 
-def _atm_iv(group: pd.DataFrame, fwd: float) -> float | None:
+def atm_iv(group: pd.DataFrame, fwd: float) -> float | None:
     """Interpolate mark_iv to the forward (log-moneyness ln(K/F)=0) for one expiry.
 
     Only OTM quotes survive upstream, so the forward is bracketed by the nearest
@@ -51,14 +51,14 @@ def build(prepared_quotes: pd.DataFrame) -> pd.DataFrame:
     rows = []
     for expiry, group in prepared_quotes.groupby("expiry", sort=False):
         fwd = float(group["forward"].median())
-        atm_iv = _atm_iv(group, fwd)
-        if atm_iv is None or not np.isfinite(atm_iv):
+        atm = atm_iv(group, fwd)
+        if atm is None or not np.isfinite(atm):
             continue
         rows.append(
             {
                 "expiry": expiry,
                 "tte_years": float(group["tte_years"].iloc[0]),
-                "atm_iv": atm_iv,
+                "atm_iv": atm,
                 "forward": fwd,
             }
         )

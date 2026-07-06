@@ -11,12 +11,14 @@ from schemas.iv import (
     CurvePoint,
     IVCurvesResponse,
     IVSurfaceResponse,
+    SkewPoint,
+    SkewResponse,
     SurfacePoint,
     TermStructurePoint,
     TermStructureResponse,
 )
 from shared.market_data import load_otm_quotes, validate_currency
-from iv import curves, surface, term_structure
+from iv import curves, skew, surface, term_structure
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +72,32 @@ def get_iv_curves(currency: str = Query("BTC")) -> IVCurvesResponse:
     ]
 
     return IVCurvesResponse(
+        currency=cur,
+        spot=spot,
+        as_of=datetime.now(timezone.utc),
+        points=points,
+    )
+
+
+@router.get("/skew", response_model=SkewResponse)
+def get_iv_skew(currency: str = Query("BTC")) -> SkewResponse:
+    """BTC options 25Δ skew term structure: risk reversal and butterfly per expiry."""
+    cur = validate_currency(currency)
+    spot, otm_quotes = load_otm_quotes(cur)
+
+    grid = skew.build(otm_quotes)
+
+    points = [
+        SkewPoint(
+            expiry=row.expiry.to_pydatetime(),
+            tte_years=float(row.tte_years),
+            rr=float(row.rr),
+            bf=float(row.bf),
+        )
+        for row in grid.itertuples(index=False)
+    ]
+
+    return SkewResponse(
         currency=cur,
         spot=spot,
         as_of=datetime.now(timezone.utc),

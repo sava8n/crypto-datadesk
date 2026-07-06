@@ -37,6 +37,20 @@ class IVCurvesResponse(BaseModel):
     points: list[CurvePoint]
 
 
+class SkewPoint(BaseModel):
+    expiry: datetime
+    tte_years: float
+    rr: float
+    bf: float
+
+
+class SkewResponse(BaseModel):
+    currency: str
+    spot: float
+    as_of: datetime
+    points: list[SkewPoint]
+
+
 class TermStructurePoint(BaseModel):
     expiry: datetime
     tte_years: float

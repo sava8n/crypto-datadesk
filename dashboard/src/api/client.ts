@@ -5,6 +5,7 @@ import type {
   IVSurfaceResponse,
   OIByExpirationResponse,
   OIByStrikeResponse,
+  SkewResponse,
   SpotHistoryResponse,
   SpotResponse,
   TermStructureResponse,
@@ -40,6 +41,10 @@ export async function fetchTermStructure(currency = 'BTC'): Promise<TermStructur
   return fetchJson<TermStructureResponse>(
     `/api/iv/term-structure?currency=${encodeURIComponent(currency)}`,
   );
+}
+
+export async function fetchSkew(currency = 'BTC'): Promise<SkewResponse> {
+  return fetchJson<SkewResponse>(`/api/iv/skew?currency=${encodeURIComponent(currency)}`);
 }
 
 export async function fetchGreeksChain(currency = 'BTC'): Promise<GreeksChainResponse> {

@@ -6,6 +6,7 @@ import Tabs, { type TabId } from './Tabs';
 import IVSurfaceSection from './iv/IVSurfaceSection';
 import IVCurvesSection from './iv/IVCurvesSection';
 import TermStructureSection from './iv/TermStructureSection';
+import SkewSection from './iv/SkewSection';
 import DeltaSection from './greeks/DeltaSection';
 import GammaSection from './greeks/GammaSection';
 import ThetaSection from './greeks/ThetaSection';
@@ -40,6 +41,7 @@ export default function Dashboard({ currency }: { currency: string }) {
         {tab === 'volatility' && (
           <div className="panels">
             <TermStructureSection currency={currency} />
+            <SkewSection currency={currency} />
             <IVCurvesSection currency={currency} />
             <IVSurfaceSection currency={currency} />
           </div>
