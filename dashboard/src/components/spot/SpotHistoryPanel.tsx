@@ -2,22 +2,31 @@ import { useEffect, useMemo, useRef } from 'react';
 import {
   CandlestickSeries,
   ColorType,
+  LineStyle,
   createChart,
   type IChartApi,
+  type IPriceLine,
   type ISeriesApi,
 } from 'lightweight-charts';
 
 import type { SpotCandle } from '../../types';
+import type { PriceLevel } from './levels';
 import { AMBER, AXIS_LINE, GRID, MONO } from '../../theme/charts';
 
 const UP = '#33ff66';
 const DOWN = '#ff3b30';
 const DEFAULT_WINDOW_DAYS = 180;
 
-export default function SpotHistoryPanel({ candles }: { candles: SpotCandle[] }) {
+interface Props {
+  candles: SpotCandle[];
+  levels: PriceLevel[];
+}
+
+export default function SpotHistoryPanel({ candles, levels }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
+  const priceLinesRef = useRef<IPriceLine[]>([]);
   const windowedRef = useRef(false);
 
   const rows = useMemo(
@@ -76,6 +85,7 @@ export default function SpotHistoryPanel({ candles }: { candles: SpotCandle[] })
       chart.remove();
       chartRef.current = null;
       seriesRef.current = null;
+      priceLinesRef.current = [];
       windowedRef.current = false;
     };
   }, []);
@@ -94,6 +104,23 @@ export default function SpotHistoryPanel({ candles }: { candles: SpotCandle[] })
       windowedRef.current = true;
     }
   }, [rows]);
+
+  // options-derived levels as horizontal price lines, resynced on each refetch
+  useEffect(() => {
+    const series = seriesRef.current;
+    if (!series) return;
+    priceLinesRef.current.forEach((line) => series.removePriceLine(line));
+    priceLinesRef.current = levels.map((lvl) =>
+      series.createPriceLine({
+        price: lvl.price,
+        color: lvl.color,
+        lineWidth: 1,
+        lineStyle: LineStyle.Dashed,
+        axisLabelVisible: true,
+        title: lvl.title,
+      }),
+    );
+  }, [levels]);
 
   return <div ref={containerRef} />;
 }
