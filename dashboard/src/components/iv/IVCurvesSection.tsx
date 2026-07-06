@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { MAX_DTE, MIN_DTE } from '../../config';
 import { useIVCurves } from '../../hooks/useIVCurves';
 import { filterByDTE } from '../../utils/dte';
-import DTEControl from '../DTEControl';
+import DTEControl from '../shared/DTEControl';
 import IVCurvesPanel from './IVCurvesPanel';
 
 export default function IVCurvesSection({ currency }: { currency: string }) {

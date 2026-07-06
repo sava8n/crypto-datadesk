@@ -3,7 +3,10 @@ import StatusBar from './StatusBar';
 import IVSurfaceSection from './iv/IVSurfaceSection';
 import IVCurvesSection from './iv/IVCurvesSection';
 import TermStructureSection from './iv/TermStructureSection';
-import GreeksSection from './greeks/GreeksSection';
+import DeltaPanel from './greeks/DeltaPanel';
+import GammaPanel from './greeks/GammaPanel';
+import ThetaPanel from './greeks/ThetaPanel';
+import VegaPanel from './greeks/VegaPanel';
 import OIByExpirationSection from './oi/OIByExpirationSection';
 import OIByStrikeSection from './oi/OIByStrikeSection';
 
@@ -12,7 +15,12 @@ export default function Dashboard({ currency }: { currency: string }) {
     <div className="dashboard">
       <Header currency={currency} />
 
-      <GreeksSection currency={currency} />
+      <div className="panels panels--mini">
+        <DeltaPanel currency={currency} />
+        <GammaPanel currency={currency} />
+        <ThetaPanel currency={currency} />
+        <VegaPanel currency={currency} />
+      </div>
 
       <OIByStrikeSection currency={currency} />
 

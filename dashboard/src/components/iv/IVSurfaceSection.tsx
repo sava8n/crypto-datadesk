@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { MAX_DTE, MIN_DTE } from '../../config';
 import { useIVSurface } from '../../hooks/useIVSurface';
 import { filterByDTE } from '../../utils/dte';
-import DTEControl from '../DTEControl';
+import DTEControl from '../shared/DTEControl';
 import IVSurfacePanel from './IVSurfacePanel';
 
 export default function IVSurfaceSection({ currency }: { currency: string }) {

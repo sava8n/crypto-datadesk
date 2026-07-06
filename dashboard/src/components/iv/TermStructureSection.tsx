@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { MAX_DTE, MIN_DTE } from '../../config';
 import { useTermStructure } from '../../hooks/useTermStructure';
 import { filterByDTE } from '../../utils/dte';
-import DTEControl from '../DTEControl';
+import DTEControl from '../shared/DTEControl';
 import TermStructurePanel from './TermStructurePanel';
 
 export default function TermStructureSection({ currency }: { currency: string }) {

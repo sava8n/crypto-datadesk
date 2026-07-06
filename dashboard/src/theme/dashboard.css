@@ -149,6 +149,10 @@ body {
   height: var(--panel-h);
 }
 
+.panels--mini > .panel {
+  height: var(--panel-h-mini);
+}
+
 /* ---- Panel ---- */
 .panel {
   display: flex;
@@ -192,7 +196,7 @@ body {
   letter-spacing: 1px;
 }
 
-/* ---- DTE window control (multi-expiry IV charts) ---- */
+/* ---- DTE window control ---- */
 .dte {
   display: flex;
   align-items: center;
@@ -262,48 +266,21 @@ body {
   color: var(--yellow);
 }
 
-/* ---- Greeks section (delta | gamma | theta | vega) ---- */
-.greeks {
-  margin: var(--gap) var(--gap) 0;
-  border: 1px solid var(--border-bright);
-  background: var(--bg-panel);
-}
-
-.greeks__bar {
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  padding: 7px 12px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-raised);
-}
-
-.greeks__title {
-  color: var(--amber);
-  font-weight: 700;
-  letter-spacing: 1.5px;
-}
-
-.greeks__sub {
-  color: var(--text-dim);
-  font-size: 10px;
-  letter-spacing: 1px;
-}
-
-.greeks__selector {
+/* ---- Expiry selector ---- */
+.expiry {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-left: auto;
 }
 
-.greeks__selector-label {
+.expiry__label {
   color: var(--text-dim);
   font-size: 10px;
   letter-spacing: 1px;
 }
 
-.greeks__select {
+.expiry__select {
   background: var(--bg);
   color: var(--amber);
   border: 1px solid var(--border-bright);
@@ -315,26 +292,9 @@ body {
   cursor: pointer;
 }
 
-.greeks__select:focus {
+.expiry__select:focus {
   outline: none;
   border-color: var(--amber-dim);
-}
-
-.greeks__grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--gap);
-  padding: var(--gap);
-}
-
-.greek-panel {
-  height: var(--panel-h-mini);
-}
-
-@media (max-width: 900px) {
-  .greeks__grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* ---- Open interest by strike ---- */

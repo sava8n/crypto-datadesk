@@ -1,10 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 
 import { useGreeksChain } from '../../hooks/useGreeksChain';
 import type { GreekName } from '../../api/client';
-import { strikeFmt } from '../../utils/format';
+import { expiryLabel, strikeFmt } from '../../utils/format';
 import {
   AXIS_LINE,
   GRID,
@@ -18,7 +18,6 @@ interface Props {
   label: string;
   color: string;
   currency: string;
-  selectedExpiry: string | null;
   valueFmt: (v: number) => string;
 }
 
@@ -95,15 +94,13 @@ function buildOption(
   return opt as unknown as EChartsOption;
 }
 
-export default function GreekChart({
-  greek,
-  label,
-  color,
-  currency,
-  selectedExpiry,
-  valueFmt,
-}: Props) {
+export default function GreekChart({ greek, label, color, currency, valueFmt }: Props) {
   const query = useGreeksChain(currency);
+  const expiries = query.data?.expiries ?? [];
+
+  const [picked, setPicked] = useState<string | null>(null);
+  // fall back to the nearest expiry until the user picks one (or if the pick expired out).
+  const selectedExpiry = picked && expiries.includes(picked) ? picked : expiries[0] ?? null;
 
   const points = useMemo<ChartPoint[]>(() => {
     if (!query.data || !selectedExpiry) return [];
@@ -118,10 +115,26 @@ export default function GreekChart({
   );
 
   return (
-    <section className="panel greek-panel">
+    <section className="panel">
       <div className="panel__title">
         <span className="panel__title-main">{label}</span>
-        <span className="panel__title-sub">{greek.toUpperCase()} × STRIKE</span>
+        <span className="panel__title-sub">BLACK-76 × STRIKE</span>
+        <label className="expiry">
+          <span className="expiry__label">EXPIRY</span>
+          <select
+            className="expiry__select"
+            value={selectedExpiry ?? ''}
+            onChange={(e) => setPicked(e.target.value)}
+            disabled={expiries.length === 0}
+          >
+            {expiries.length === 0 && <option value="">—</option>}
+            {expiries.map((iso) => (
+              <option key={iso} value={iso}>
+                {expiryLabel(iso)}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
       <div className="panel__body">
         {query.isLoading && <div className="panel__msg">LOADING {label}…</div>}
