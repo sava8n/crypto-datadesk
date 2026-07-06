@@ -1,4 +1,4 @@
-"""Spot price routes: current value and daily candle history."""
+"""Spot price-history route: daily candles of the ``<currency>_USDC`` pair."""
 
 from __future__ import annotations
 
@@ -6,21 +6,10 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Query
 
-from schemas.spot import SpotCandle, SpotHistoryResponse, SpotResponse
-from shared.market_data import load_spot, load_spot_candles, validate_currency
+from schemas.spot import SpotCandle, SpotHistoryResponse
+from shared.market_data import load_spot_candles, validate_currency
 
 router = APIRouter(prefix="/spot", tags=["spot"])
-
-
-@router.get("", response_model=SpotResponse)
-def get_spot(currency: str = Query("BTC")) -> SpotResponse:
-    """Current spot index price."""
-    cur = validate_currency(currency)
-    return SpotResponse(
-        currency=cur,
-        spot=load_spot(cur),
-        as_of=datetime.now(timezone.utc),
-    )
 
 
 @router.get("/history", response_model=SpotHistoryResponse)

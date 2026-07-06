@@ -1,16 +1,10 @@
-"""Response models for the spot price routes."""
+"""Response models for the spot price-history route."""
 
 from __future__ import annotations
 
 from datetime import datetime
 
 from pydantic import BaseModel
-
-
-class SpotResponse(BaseModel):
-    currency: str
-    spot: float
-    as_of: datetime
 
 
 class SpotCandle(BaseModel):

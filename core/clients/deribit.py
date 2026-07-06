@@ -51,6 +51,21 @@ def fetch_option_summaries(currency: str = "BTC") -> list[dict]:
     )
 
 
+def fetch_dvol_history(currency: str = "BTC", days: int = 365) -> list[list[float]]:
+    """Daily DVOL candles ``[[ts_ms, open, high, low, close], …]`` for the past ``days``."""
+    end_ms = int(time.time() * 1000)
+    result = _get(
+        "/public/get_volatility_index_data",
+        {
+            "currency": currency.upper(),
+            "start_timestamp": end_ms - days * 86_400_000,
+            "end_timestamp": end_ms,
+            "resolution": "86400",
+        },
+    )
+    return result["data"]
+
+
 def fetch_spot_candles(currency: str = "BTC", days: int = 365) -> dict:
     """Daily OHLCV candles of the ``<currency>_USDC`` spot pair for the past ``days``.
 

@@ -59,10 +59,6 @@ def _load_snapshot(cur: str) -> MarketSnapshot:
     return _market_cache.get_or_compute(f"market:{cur}", producer)
 
 
-def load_spot(cur: str) -> float:
-    return _load_snapshot(cur).spot
-
-
 def load_otm_quotes(cur: str) -> tuple[float, pd.DataFrame]:
     snapshot = _load_snapshot(cur)
     return snapshot.spot, snapshot.otm_quotes
@@ -82,3 +78,14 @@ def load_spot_candles(cur: str) -> dict:
             raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     return _history_cache.get_or_compute(f"spot_candles:{cur}", producer)
+
+
+def load_dvol_history(cur: str) -> list[list[float]]:
+    def producer() -> list[list[float]]:
+        try:
+            return deribit.fetch_dvol_history(cur)
+        except DeribitError as exc:
+            logger.warning("cannot fetch DVOL history for currency=%s, %s", cur, exc)
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    return _history_cache.get_or_compute(f"dvol:{cur}", producer)

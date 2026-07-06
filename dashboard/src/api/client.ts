@@ -7,7 +7,7 @@ import type {
   OIByStrikeResponse,
   SkewResponse,
   SpotHistoryResponse,
-  SpotResponse,
+  StatsResponse,
   TermStructureResponse,
   VolumeByStrikeResponse,
 } from '../types';
@@ -82,8 +82,8 @@ export async function fetchVolumeByStrike(currency = 'BTC'): Promise<VolumeByStr
   );
 }
 
-export async function fetchSpot(currency = 'BTC'): Promise<SpotResponse> {
-  return fetchJson<SpotResponse>(`/api/spot?currency=${encodeURIComponent(currency)}`);
+export async function fetchStats(currency = 'BTC'): Promise<StatsResponse> {
+  return fetchJson<StatsResponse>(`/api/stats?currency=${encodeURIComponent(currency)}`);
 }
 
 export async function fetchSpotHistory(currency = 'BTC'): Promise<SpotHistoryResponse> {

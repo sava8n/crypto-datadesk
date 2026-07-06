@@ -1,8 +1,8 @@
-import { useSpot } from '../hooks/useSpot';
+import { useStats } from '../hooks/useStats';
 import { REFRESH_LABEL } from '../config';
 
 export default function StatusBar({ currency }: { currency: string }) {
-  const { isFetching, isError, dataUpdatedAt } = useSpot(currency);
+  const { isFetching, isError, dataUpdatedAt } = useStats(currency);
   const updated = dataUpdatedAt ? new Date(dataUpdatedAt).toLocaleTimeString('en-GB') : '—';
 
   const connClass = isError

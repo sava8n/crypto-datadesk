@@ -31,7 +31,7 @@ Then open **http://localhost:8080**.
 | Method | Path                                            | Description                          |
 | ------ | ----------------------------------------------- | ------------------------------------ |
 | GET    | `/api/health`                                   | Liveness probe                       |
-| GET    | `/api/spot?currency={currency}`                 | Spot price                           |
+| GET    | `/api/stats?currency={currency}`                | Spot, DVOL + IV rank, IV30/RV30      |
 | GET    | `/api/spot/history?currency={currency}`         | Daily spot OHLCV (trailing year)     |
 | GET    | `/api/iv/surface?currency={currency}`           | IV surface                           |
 | GET    | `/api/iv/curves?currency={currency}`            | IV curves                            |

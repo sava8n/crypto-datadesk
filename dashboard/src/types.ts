@@ -77,10 +77,14 @@ export interface GreeksChainResponse {
   points: GreekChainPoint[];
 }
 
-export interface SpotResponse {
+export interface StatsResponse {
   currency: string;
   spot: number;
   as_of: string;
+  dvol: number | null; // 30d DVOL index as a decimal (0.38 = index 38)
+  dvol_rank: number | null; // last close's position in the trailing-year range, [0, 1]
+  iv30: number | null; // 30d constant-maturity ATM IV
+  rv30: number | null; // 30d close-to-close realized vol, annualized
 }
 
 export interface SpotCandle {
