@@ -60,7 +60,6 @@ export interface GreeksChainResponse {
   spot: number;
   as_of: string;
   expiries: string[];
-  expiry: string | null; // selected expiry; null = full chain
   points: GreekChainPoint[];
 }
 

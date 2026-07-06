@@ -39,13 +39,10 @@ export async function fetchTermStructure(currency = 'BTC'): Promise<TermStructur
   );
 }
 
-export async function fetchGreeksChain(
-  currency = 'BTC',
-  expiry?: string,
-): Promise<GreeksChainResponse> {
-  const params = new URLSearchParams({ currency });
-  if (expiry) params.set('expiry', expiry);
-  return fetchJson<GreeksChainResponse>(`/api/greeks/chain?${params.toString()}`);
+export async function fetchGreeksChain(currency = 'BTC'): Promise<GreeksChainResponse> {
+  return fetchJson<GreeksChainResponse>(
+    `/api/greeks/chain?currency=${encodeURIComponent(currency)}`,
+  );
 }
 
 export async function fetchOIByExpiration(

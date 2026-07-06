@@ -30,7 +30,7 @@ Then open **http://localhost:8080**.
 | GET    | `/api/iv/surface?currency=BTC`              | IV surface                           |
 | GET    | `/api/iv/curves?currency=BTC`               | IV curves                            |
 | GET    | `/api/iv/term-structure?currency=BTC`       | ATM IV term structure                |
-| GET    | `/api/greeks/chain?currency=BTC[&expiry=…]` | Delta/gamma/theta/vega per contract  |
+| GET    | `/api/greeks/chain?currency=BTC`            | Delta/gamma/theta/vega per contract  |
 | GET    | `/api/oi/expiration?currency=BTC`           | Open interest by expiry              |
 | GET    | `/api/oi/strike?currency=BTC[&expiry=…]`    | Open interest by strike (+ max pain) |
 

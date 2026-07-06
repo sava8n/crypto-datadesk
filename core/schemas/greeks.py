@@ -23,5 +23,4 @@ class GreeksChainResponse(BaseModel):
     spot: float
     as_of: datetime
     expiries: list[datetime]
-    expiry: datetime | None  # selected expiry; None = full chain
     points: list[GreekChainPoint]

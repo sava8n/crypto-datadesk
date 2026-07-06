@@ -18,22 +18,15 @@ router = APIRouter(prefix="/greeks", tags=["greeks"])
 
 
 @router.get("/chain", response_model=GreeksChainResponse)
-def get_greeks_chain(
-    currency: str = Query("BTC"),
-    expiry: datetime | None = Query(None),
-) -> GreeksChainResponse:
-    """All four Black-76 greeks per OTM contract, optionally sliced to one expiry."""
+def get_greeks_chain(currency: str = Query("BTC")) -> GreeksChainResponse:
+    """All four Black-76 greeks per OTM contract across the chain."""
     cur = validate_currency(currency)
     spot, otm_quotes = load_otm_quotes(cur)
 
-    # full expiry list (pre-filter) so selectors always have every option.
+    # unique expiries (near-dated first) for selectors
     expiries = [pd.Timestamp(e).to_pydatetime() for e in sorted(otm_quotes["expiry"].unique())]
 
-    quotes = otm_quotes
-    if expiry is not None:
-        quotes = otm_quotes[otm_quotes["expiry"] == pd.Timestamp(expiry)]
-
-    frame = build_chain(quotes)
+    frame = build_chain(otm_quotes)
 
     points = [
         GreekChainPoint(
@@ -54,6 +47,5 @@ def get_greeks_chain(
         spot=spot,
         as_of=datetime.now(timezone.utc),
         expiries=expiries,
-        expiry=expiry,
         points=points,
     )
