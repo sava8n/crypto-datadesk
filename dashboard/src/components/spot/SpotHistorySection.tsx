@@ -4,7 +4,7 @@ import { useGEXByStrike } from '../../hooks/useGEXByStrike';
 import { useOIByStrike } from '../../hooks/useOIByStrike';
 import { useSpotHistory } from '../../hooks/useSpotHistory';
 import SpotHistoryPanel from './SpotHistoryPanel';
-import { buildLevels } from './levels';
+import { buildLevels, frontMonthlyExpiry } from './levels';
 
 export default function SpotHistorySection({ currency }: { currency: string }) {
   const { data, isLoading, isError, error } = useSpotHistory(currency);
@@ -13,7 +13,7 @@ export default function SpotHistorySection({ currency }: { currency: string }) {
   // options-derived levels
   const gex = useGEXByStrike(currency);
   const oiAll = useOIByStrike(currency);
-  const frontExpiry = oiAll.data?.expiries[0];
+  const frontExpiry = oiAll.data ? frontMonthlyExpiry(oiAll.data.expiries) : undefined;
   const oiFront = useOIByStrike(currency, frontExpiry);
   const levels = useMemo(
     () => buildLevels(gex.data, oiAll.data, oiFront.data),

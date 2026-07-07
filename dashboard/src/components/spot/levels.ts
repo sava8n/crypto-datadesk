@@ -14,9 +14,20 @@ const WALL = '#a97400';
 const WALL_COUNT = 3;
 const RANGE = 0.3; // levels beyond ±30% of spot are off-chart noise
 
-// options-derived levels for the market strip: 
+// Deribit monthlies settle on the last Friday of a month
+function isMonthly(iso: string): boolean {
+  const d = new Date(iso);
+  if (d.getUTCDay() !== 5) return false;
+  return new Date(d.getTime() + 7 * 86_400_000).getUTCMonth() !== d.getUTCMonth();
+}
+
+export function frontMonthlyExpiry(expiries: string[]): string | undefined {
+  return expiries.find(isMonthly) ?? expiries[0];
+}
+
+// options-derived levels for the market strip:
 // - GEX flip
-// - nearest-expiry max pain
+// - front-month max pain
 // - the biggest all-expiration OI strikes (walls)
 export function buildLevels(
   gex: GEXByStrikeResponse | undefined,
