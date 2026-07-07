@@ -6,7 +6,7 @@ export default function GEXByStrikeSection({ currency }: { currency: string }) {
   const points = data?.points.length ?? 0;
 
   return (
-    <section className="panel panel--full">
+    <section className="panel">
       <div className="panel__title">
         <span className="panel__title-main">GAMMA EXPOSURE BY STRIKE</span>
         <span className="panel__title-sub">USD / 1% MOVE · CALLS + / PUTS − × STRIKE</span>

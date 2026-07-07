@@ -14,14 +14,14 @@ export default function OIByStrikeSection({ currency }: { currency: string }) {
   const expiries = data?.expiries ?? [];
 
   return (
-    <section className="oi-strike">
-      <div className="oi-strike__bar">
-        <span className="oi-strike__title">OPEN INTEREST BY STRIKE</span>
-        <span className="oi-strike__sub">CONTRACTS · ITM/OTM × STRIKE</span>
-        <label className="oi-strike__selector">
-          <span className="oi-strike__selector-label">EXPIRY</span>
+    <section className="panel">
+      <div className="panel__title">
+        <span className="panel__title-main">OPEN INTEREST BY STRIKE</span>
+        <span className="panel__title-sub">CONTRACTS · ITM/OTM × STRIKE</span>
+        <label className="expiry">
+          <span className="expiry__label">EXPIRY</span>
           <select
-            className="oi-strike__select"
+            className="expiry__select"
             value={picked}
             onChange={(e) => setPicked(e.target.value)}
           >
@@ -35,7 +35,7 @@ export default function OIByStrikeSection({ currency }: { currency: string }) {
         </label>
       </div>
 
-      <div className="oi-strike__chart">
+      <div className="panel__body">
         {isLoading && <div className="panel__msg">LOADING OPEN INTEREST…</div>}
         {isError && (
           <div className="panel__msg panel__msg--err">

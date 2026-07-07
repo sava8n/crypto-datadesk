@@ -31,12 +31,12 @@ export default function Dashboard({ currency }: { currency: string }) {
 
       <main className="tab-body">
         {tab === 'positioning' && (
-          <>
+          <div className="panels">
             <GEXByStrikeSection currency={currency} />
             <OIByStrikeSection currency={currency} />
-            <VolumeByStrikeSection currency={currency} />
             <OIByExpirationSection currency={currency} />
-          </>
+            <VolumeByStrikeSection currency={currency} />
+          </div>
         )}
 
         {tab === 'volatility' && (
