@@ -191,6 +191,7 @@ export interface CotReportResponse {
   is_new: boolean;
   is_stale: boolean;
   window: number;
+  method: string;
   oi_btc: number;
   delta_oi_btc: number | null;
   btc_price: number | null;
@@ -234,5 +235,6 @@ export interface CotIndexPoint {
 export interface CotIndexResponse {
   as_of: string;
   window: number;
+  method: string;
   points: CotIndexPoint[];
 }

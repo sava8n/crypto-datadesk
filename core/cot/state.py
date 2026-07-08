@@ -19,19 +19,20 @@ from cot.fields import MICRO_BITCOIN_CODE
 class CotState:
     def __init__(self, tidy: pd.DataFrame, price_candles: dict | None) -> None:
         self.tidy = tidy  # shared across requests; treat as read-only
-        self.price_candles = price_candles  # TradingView arrays since 2017, or None
-        self._index_by_window: dict[int, pd.DataFrame] = {}
+        self.price_candles = price_candles  # TradingView arrays since 2017 or None
+        self._index_cache: dict[tuple[int, str], pd.DataFrame] = {}
 
     @cached_property
     def history(self) -> pd.DataFrame:
         """BTC-equivalent aggregate with nets and deltas, indexed by report_date."""
         return deltas.build(aggregate.build(self.tidy))
 
-    def index(self, window: int) -> pd.DataFrame:
-        frame = self._index_by_window.get(window)
+    def index(self, window: int, method: str) -> pd.DataFrame:
+        key = (window, method)
+        frame = self._index_cache.get(key)
         if frame is None:
-            frame = index_mod.build(self.history, window)
-            self._index_by_window[window] = frame
+            frame = index_mod.build(self.history, window, method)
+            self._index_cache[key] = frame
         return frame
 
     @cached_property

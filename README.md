@@ -17,7 +17,7 @@ Options analytics for the BTC market based on real-time and historical data feed
 - `spot-history` - plots the **`BTC_USDC` spot pair** as a daily candlestick chart (trailing year, ~180-day default window) - the market-context strip above the tabs - with **options-derived levels** drawn as dashed price lines: the **GEX flip**, the front-month **max pain** and the top-3 all-expiration **OI walls** (levels beyond ±30% of spot are omitted).
 - `volume-by-strike` - plots **24h traded volume by strike** as grouped call/put bars (contracts, same full chain as the OI views) - the flow companion to open interest's stock: OI shows where positioning *sits*, volume shows where today's activity *is*.
 - `oi-by-strike` - plots **open interest by strike** as grouped **ITM/OTM call/put** bars (same full chain and moneyness rule as `oi-by-expiration`), with an **All Expirations** filter. A summary row reports **call/put/total OI**, the **put/call ratio**, and **notional value** (`total OI × spot`). When a single **expiry** is selected it also overlays each strike's **total intrinsic value** (`Σ callOI·max(K−Kᵢ,0) + Σ putOI·max(Kᵢ−K,0)`, in USD) and marks the **max-pain price** - the strike that minimises it.
-- `cot-report` - analyzes the weekly **CFTC Commitments of Traders** report (TFF futures-only) for **CME Bitcoin + Micro Bitcoin** futures aggregated into BTC-equivalent units. The report table shows each participant category's (dealer, asset manager, leveraged funds, other reportables, non-reportable) long/short/net positioning with its **week-over-week change**; companion panels plot WoW **net-flow** bars, a causal rolling **min-max COT index** (0-100, 15/85 extreme zones, selectable window) and the full **net-positioning history** over a linked BTC price strip.
+- `cot-report` - analyzes the weekly **CFTC Commitments of Traders** report (TFF futures-only) for **CME Bitcoin + Micro Bitcoin** futures aggregated into BTC-equivalent units. The report table shows each participant category's (dealer, asset manager, leveraged funds, other reportables, non-reportable) long/short/net positioning with its **week-over-week change**; companion panels plot WoW **net-flow** bars, a causal rolling **COT index** (min-max or rank percentile, 0-100, 15/85 extreme zones, selectable window) and the full **net-positioning history** over a linked BTC price strip.
 
 ## Quick start (Docker)
 
@@ -45,7 +45,7 @@ Then open **http://localhost:8080**.
 | GET    | `/api/volume/strike?currency={currency}`        | 24h traded volume by strike          |
 | GET    | `/api/cot/report?window={weeks}`                | Latest COT report vs previous (TFF)  |
 | GET    | `/api/cot/history`                              | Weekly net positioning history       |
-| GET    | `/api/cot/index?window={weeks}`                 | Rolling min-max COT index            |
+| GET    | `/api/cot/index?window={weeks}&method={m}`      | Rolling COT index (min-max / rank)   |
 
 > Note: API docs are available at http://localhost:8000/docs.
 

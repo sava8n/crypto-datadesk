@@ -1,4 +1,4 @@
-"""COT routes: latest-report summary, positioning history, and min-max index."""
+"""COT routes: latest-report summary, positioning history and the COT index."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from fastapi import APIRouter, HTTPException, Query
 
 from cot import report as report_mod
 from cot.fields import CATEGORIES
-from cot.index import WINDOWS
+from cot.index import METHODS, WINDOWS
 from cot.loader import load_cot_state
 from cot.values import opt_float
 from schemas.cot import (
@@ -36,20 +36,34 @@ def _validate_window(window: int) -> int:
     return window
 
 
+def _validate_method(method: str) -> str:
+    if method not in METHODS:
+        logger.warning("rejected due to unsupported method=%s", method)
+        raise HTTPException(
+            status_code=422,
+            detail=f"Unsupported method '{method}'. Supported: {list(METHODS)}",
+        )
+    return method
+
+
 @router.get("/report", response_model=CotReportResponse)
-def get_cot_report(window: int = Query(156)) -> CotReportResponse:
+def get_cot_report(
+    window: int = Query(52), method: str = Query("rank")
+) -> CotReportResponse:
     """Latest TFF report vs the previous one, per participant category (BTC-equivalent)."""
     win = _validate_window(window)
+    mtd = _validate_method(method)
     state = load_cot_state()
     payload = report_mod.build(
         state.history,
-        state.index(win),
+        state.index(win, mtd),
         state.weekly_prices,
         now=pd.Timestamp.now(tz="UTC").tz_localize(None),
     )
     return CotReportResponse(
         as_of=datetime.now(timezone.utc),
         window=win,
+        method=mtd,
         micro_included_from=state.micro_included_from,
         **payload,
     )
@@ -82,9 +96,12 @@ def get_cot_history() -> CotHistoryResponse:
 
 
 @router.get("/index", response_model=CotIndexResponse)
-def get_cot_index(window: int = Query(156)) -> CotIndexResponse:
-    """Rolling min-max COT index (0-100) per participant category."""
+def get_cot_index(
+    window: int = Query(52), method: str = Query("rank")
+) -> CotIndexResponse:
+    """Rolling COT index (0-100, min-max or rank) per participant category."""
     win = _validate_window(window)
+    mtd = _validate_method(method)
     state = load_cot_state()
 
     points = [
@@ -92,7 +109,9 @@ def get_cot_index(window: int = Query(156)) -> CotIndexResponse:
             report_date=date,
             **{cat: opt_float(row[cat]) for cat in CATEGORIES},
         )
-        for date, row in state.index(win).iterrows()
+        for date, row in state.index(win, mtd).iterrows()
     ]
 
-    return CotIndexResponse(as_of=datetime.now(timezone.utc), window=win, points=points)
+    return CotIndexResponse(
+        as_of=datetime.now(timezone.utc), window=win, method=mtd, points=points
+    )

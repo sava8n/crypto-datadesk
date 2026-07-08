@@ -1,10 +1,17 @@
-import type { CotWindow } from '../../api/client';
+import type { CotMethod, CotWindow } from '../../api/client';
 import { useCotIndex } from '../../hooks/useCotIndex';
 import CotIndexPanel from './CotIndexPanel';
+import { methodLabel } from './methods';
 import { windowLabel } from './windows';
 
-export default function CotIndexSection({ window }: { window: CotWindow }) {
-  const { data, isLoading, isError, error } = useCotIndex(window);
+export default function CotIndexSection({
+  window,
+  method,
+}: {
+  window: CotWindow;
+  method: CotMethod;
+}) {
+  const { data, isLoading, isError, error } = useCotIndex(window, method);
   const points = data?.points.length ?? 0;
 
   return (
@@ -12,7 +19,7 @@ export default function CotIndexSection({ window }: { window: CotWindow }) {
       <div className="panel__title">
         <span className="panel__title-main">COT INDEX</span>
         <span className="panel__title-sub">
-          MIN-MAX {windowLabel(window)} · 0–100 · 15/85 ZONES
+          {methodLabel(method)} {windowLabel(window)} · 0–100 · 15/85 ZONES
         </span>
       </div>
 

@@ -1,10 +1,16 @@
-import type { CotWindow } from '../../api/client';
+import type { CotMethod, CotWindow } from '../../api/client';
 import { useCotReport } from '../../hooks/useCotReport';
 import CotChangesTable from './CotChangesTable';
 import CotStatTiles from './CotStatTiles';
 
-export default function CotReportSection({ window }: { window: CotWindow }) {
-  const { data, isLoading, isError, error } = useCotReport(window);
+export default function CotReportSection({
+  window,
+  method,
+}: {
+  window: CotWindow;
+  method: CotMethod;
+}) {
+  const { data, isLoading, isError, error } = useCotReport(window, method);
 
   return (
     <section className="panel panel--auto">

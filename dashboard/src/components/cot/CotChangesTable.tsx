@@ -1,6 +1,7 @@
 import { COT_CATEGORIES } from '../../theme/charts';
 import type { CotReportResponse } from '../../types';
 import { btcEquivSigned, btcFull, expiryLabel, signedPct } from '../../utils/format';
+import { methodLabel } from './methods';
 import { biggestMover } from './mover';
 import { windowLabel } from './windows';
 
@@ -84,7 +85,8 @@ export default function CotChangesTable({ data }: { data: CotReportResponse }) {
         {data.micro_included_from
           ? `MICRO INCL. FROM ${expiryLabel(data.micro_included_from)} · `
           : ''}
-        Δ VS PRIOR REPORT · NET EXCL. SPREAD · INDEX {windowLabel(data.window)} MIN-MAX
+        Δ VS PRIOR REPORT · NET EXCL. SPREAD · INDEX {windowLabel(data.window)}{' '}
+        {methodLabel(data.method)}
       </div>
     </>
   );

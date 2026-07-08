@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import type { CotWindow } from '../../api/client';
+import type { CotMethod, CotWindow } from '../../api/client';
 import CotControls from './CotControls';
 import CotFlowSection from './CotFlowSection';
 import CotIndexSection from './CotIndexSection';
@@ -8,21 +8,24 @@ import CotNetHistorySection from './CotNetHistorySection';
 import CotReportSection from './CotReportSection';
 
 export default function CotTab() {
-  const [window, setWindow] = useState<CotWindow>(156);
-  const [flowWeeks, setFlowWeeks] = useState(26);
+  const [window, setWindow] = useState<CotWindow>(52);
+  const [method, setMethod] = useState<CotMethod>('rank');
+  const [flowWeeks, setFlowWeeks] = useState(12);
 
   return (
     <>
       <CotControls
         window={window}
+        method={method}
         flowWeeks={flowWeeks}
         onWindow={setWindow}
+        onMethod={setMethod}
         onFlowWeeks={setFlowWeeks}
       />
-      <CotReportSection window={window} />
+      <CotReportSection window={window} method={method} />
       <div className="panels">
         <CotFlowSection weeks={flowWeeks} />
-        <CotIndexSection window={window} />
+        <CotIndexSection window={window} method={method} />
       </div>
       <CotNetHistorySection />
     </>

@@ -18,6 +18,8 @@ export default function CotNetHistoryPanel({ data }: { data: CotHistoryResponse 
     const points = data.points;
     const labels = points.map((p) => expiryLabel(p.report_date));
     const hasPrice = points.some((p) => p.price != null);
+    // open zoomed to the trailing six months
+    const zoomStart = Math.max(0, points.length - 26);
 
     const categoryAxis = {
       type: 'category',
@@ -148,10 +150,14 @@ export default function CotNetHistoryPanel({ data }: { data: CotHistoryResponse 
         {
           type: 'inside',
           xAxisIndex: hasPrice ? [0, 1] : [0],
+          startValue: zoomStart,
+          endValue: points.length - 1,
         },
         {
           type: 'slider',
           xAxisIndex: hasPrice ? [0, 1] : [0],
+          startValue: zoomStart,
+          endValue: points.length - 1,
           bottom: 6,
           height: 16,
           borderColor: AXIS_LINE,

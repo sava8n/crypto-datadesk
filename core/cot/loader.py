@@ -16,6 +16,7 @@ from clients import cftc, deribit
 from clients.cftc import CftcError
 from clients.deribit import DeribitError
 from config import settings
+from cot import prices
 from cot.fields import CONTRACT_WEIGHTS
 from cot.normalize import build as normalize
 from cot.state import CotState
@@ -33,16 +34,14 @@ _CHUNK_MS = 1000 * 86_400_000  # stay under any per-request bar cap
 def _fetch_price_candles(prev: dict | None) -> dict | None:
     try:
         end_ms = int(time.time() * 1000)
-        merged: dict = {"status": "ok", "ticks": [], "close": []}
-        start = PRICE_START_MS
+        prev_ticks = (prev or {}).get("ticks") or []
+        start = int(prev_ticks[-1]) if prev_ticks else PRICE_START_MS
+        chunks = []
         while start < end_ms:
             stop = min(start + _CHUNK_MS, end_ms)
-            chunk = deribit.fetch_instrument_history(PRICE_INSTRUMENT, start, stop)
-            if chunk.get("status") == "ok":
-                merged["ticks"].extend(chunk.get("ticks", []))
-                merged["close"].extend(chunk.get("close", []))
+            chunks.append(deribit.fetch_instrument_history(PRICE_INSTRUMENT, start, stop))
             start = stop
-        return merged if merged["ticks"] else prev
+        return prices.splice(prev, chunks)
     except DeribitError as exc:
         logger.warning("keeping stale COT price candles, %s", exc)
         return prev

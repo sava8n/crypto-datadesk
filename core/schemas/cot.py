@@ -34,6 +34,7 @@ class CotReportResponse(BaseModel):
     is_new: bool
     is_stale: bool
     window: int
+    method: str
     oi_btc: float
     delta_oi_btc: float | None
     btc_price: float | None
@@ -77,4 +78,5 @@ class CotIndexPoint(BaseModel):
 class CotIndexResponse(BaseModel):
     as_of: datetime
     window: int
+    method: str
     points: list[CotIndexPoint]

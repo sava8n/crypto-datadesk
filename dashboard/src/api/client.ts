@@ -97,15 +97,22 @@ export async function fetchSpotHistory(currency = 'BTC'): Promise<SpotHistoryRes
 
 // COT index window in weeks; 0 = full history
 export type CotWindow = 0 | 52 | 156 | 260;
+export type CotMethod = 'minmax' | 'rank';
 
-export async function fetchCotReport(window: CotWindow = 156): Promise<CotReportResponse> {
-  return fetchJson<CotReportResponse>(`/api/cot/report?window=${window}`);
+export async function fetchCotReport(
+  window: CotWindow = 52,
+  method: CotMethod = 'rank',
+): Promise<CotReportResponse> {
+  return fetchJson<CotReportResponse>(`/api/cot/report?window=${window}&method=${method}`);
 }
 
 export async function fetchCotHistory(): Promise<CotHistoryResponse> {
   return fetchJson<CotHistoryResponse>('/api/cot/history');
 }
 
-export async function fetchCotIndex(window: CotWindow = 156): Promise<CotIndexResponse> {
-  return fetchJson<CotIndexResponse>(`/api/cot/index?window=${window}`);
+export async function fetchCotIndex(
+  window: CotWindow = 52,
+  method: CotMethod = 'rank',
+): Promise<CotIndexResponse> {
+  return fetchJson<CotIndexResponse>(`/api/cot/index?window=${window}&method=${method}`);
 }

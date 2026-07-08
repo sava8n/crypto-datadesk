@@ -1,9 +1,24 @@
-"""Align daily close candles to COT report dates (last close on or before each report Tuesday)."""
+"""Daily close candles: incremental merging and alignment to COT report dates."""
 
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+
+
+def splice(prev: dict | None, chunks: list[dict]) -> dict | None:
+    """Merge fresh candle chunks over the previous candles; per tick the freshest close wins
+    (the re-fetched seam candle replaces a previously partial day)."""
+    merged: dict[int, float] = {}
+    for source in ([prev] if prev else []) + chunks:
+        if not source or source.get("status") != "ok":
+            continue
+        for tick, close in zip(source.get("ticks", []), source.get("close", [])):
+            merged[int(tick)] = float(close)
+    if not merged:
+        return prev
+    ticks = sorted(merged)
+    return {"status": "ok", "ticks": ticks, "close": [merged[t] for t in ticks]}
 
 
 def align(candles: dict | None, report_dates: pd.Index) -> pd.Series:
