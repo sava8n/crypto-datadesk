@@ -23,7 +23,7 @@ export default function Header({ currency }: { currency: string }) {
 
   return (
     <header className="header">
-      <div className="header__brand">◆ OPTIONS&nbsp;DASHBOARD</div>
+      <div className="header__brand">◆ DATADESK</div>
       <div className="header__fields">
         <Field k="SYM" v={`${currency}-USD`} />
         <Field k="SPOT" v={`$${formatSpot(data?.spot)}`} amber />

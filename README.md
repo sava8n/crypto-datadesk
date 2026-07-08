@@ -1,6 +1,6 @@
-# Options Data
+# Crypto Datadesk
 
-Options analytics for the BTC market based on real-time and historical data feeds.
+Options and COT reports analytics for the BTC market based on real-time and historical data feeds.
 
 ![Dashboard](docs/dashboard.png)
 

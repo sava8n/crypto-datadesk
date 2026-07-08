@@ -1,4 +1,4 @@
-"""Runtime settings, overridable via ``OPTIONS_DATA_SERVICE_*`` environment variables."""
+"""Runtime settings, overridable via ``DATADESK_SERVICE_*`` environment variables."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="OPTIONS_DATA_SERVICE_", extra="ignore")
+    model_config = SettingsConfigDict(env_prefix="DATADESK_SERVICE_", extra="ignore")
 
     # comma-separated values keep env parsing simple
     cors_origins: str = "http://localhost:5173,http://localhost:8080"
