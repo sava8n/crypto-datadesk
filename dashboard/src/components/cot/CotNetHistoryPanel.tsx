@@ -112,8 +112,10 @@ export default function CotNetHistoryPanel({ data }: { data: CotHistoryResponse 
       axisPointer: { link: [{ xAxisIndex: 'all' }] },
       grid: hasPrice
         ? [
-            { left: 64, right: 92, top: 32, height: '50%' },
-            { left: 64, right: 92, top: '70%', height: '15%' },
+            // the band between the grids must clear the net grid's lowest tick
+            // label and the strip's instrument axis name below it (roughly 40px)
+            { left: 64, right: 92, top: 32, bottom: '51%' },
+            { left: 64, right: 92, top: '57%', bottom: 76 },
           ]
         : [{ left: 64, right: 92, top: 32, bottom: 76 }],
       xAxis: hasPrice
@@ -134,7 +136,6 @@ export default function CotNetHistoryPanel({ data }: { data: CotHistoryResponse 
               ...valueAxis,
               gridIndex: 1,
               name: 'BTC USD',
-              splitNumber: 3, // the strip is short; default ticks overlap
               axisLabel: { ...axisLabelStyle, formatter: usdShort },
             },
           ]
