@@ -7,12 +7,12 @@ import logging
 from fastapi import APIRouter, Query
 
 from schemas.iv import (
-    CurvePoint,
+    IVCurvePoint,
     IVCurvesResponse,
     IVSurfaceResponse,
     SkewPoint,
     SkewResponse,
-    SurfacePoint,
+    IVSurfacePoint,
     TermStructurePoint,
     TermStructureResponse,
 )
@@ -31,7 +31,7 @@ def get_iv_surface(currency: str = Query("BTC")) -> IVSurfaceResponse:
     state = load_market_state(cur)
 
     points = [
-        SurfacePoint(
+        IVSurfacePoint(
             expiry=row.expiry.to_pydatetime(),
             tte_years=float(row.tte_years),
             delta=float(row.delta),
@@ -56,7 +56,7 @@ def get_iv_curves(currency: str = Query("BTC")) -> IVCurvesResponse:
     state = load_market_state(cur)
 
     points = [
-        CurvePoint(
+        IVCurvePoint(
             expiry=row.expiry.to_pydatetime(),
             tte_years=float(row.tte_years),
             strike=float(row.strike),

@@ -1,6 +1,6 @@
 // mirrors core/schemas/
 
-export interface SurfacePoint {
+export interface IVSurfacePoint {
   expiry: string;
   tte_years: number;
   delta: number;
@@ -12,10 +12,10 @@ export interface IVSurfaceResponse {
   currency: string;
   spot: number;
   as_of: string;
-  points: SurfacePoint[];
+  points: IVSurfacePoint[];
 }
 
-export interface CurvePoint {
+export interface IVCurvePoint {
   expiry: string;
   tte_years: number;
   strike: number;
@@ -27,7 +27,7 @@ export interface IVCurvesResponse {
   currency: string;
   spot: number;
   as_of: string;
-  points: CurvePoint[];
+  points: IVCurvePoint[];
 }
 
 export interface ProbCurvePoint {

@@ -1,1 +1,1 @@
-"""Option implied-volatility."""
+"""Option-implied volatility."""

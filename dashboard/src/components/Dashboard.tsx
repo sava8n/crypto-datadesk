@@ -14,6 +14,7 @@ import VegaSection from './greeks/VegaSection';
 import BasisSection from './basis/BasisSection';
 import CotTab from './cot/CotTab';
 import ProbCurvesSection from './prob/ProbCurvesSection';
+import ProbDistributionSection from './prob/ProbDistributionSection';
 import GEXByStrikeSection from './gex/GEXByStrikeSection';
 import OIByExpirationSection from './oi/OIByExpirationSection';
 import OIByStrikeSection from './oi/OIByStrikeSection';
@@ -53,6 +54,7 @@ export default function Dashboard({ currency }: { currency: string }) {
         {tab === 'probabilities' && (
           <div className="panels">
             <ProbCurvesSection currency={currency} />
+            <ProbDistributionSection currency={currency} />
           </div>
         )}
 

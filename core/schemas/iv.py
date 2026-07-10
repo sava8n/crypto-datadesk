@@ -7,7 +7,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class SurfacePoint(BaseModel):
+class IVSurfacePoint(BaseModel):
     expiry: datetime
     tte_years: float
     delta: float
@@ -19,10 +19,10 @@ class IVSurfaceResponse(BaseModel):
     currency: str
     spot: float
     as_of: datetime
-    points: list[SurfacePoint]
+    points: list[IVSurfacePoint]
 
 
-class CurvePoint(BaseModel):
+class IVCurvePoint(BaseModel):
     expiry: datetime
     tte_years: float
     strike: float
@@ -34,7 +34,7 @@ class IVCurvesResponse(BaseModel):
     currency: str
     spot: float
     as_of: datetime
-    points: list[CurvePoint]
+    points: list[IVCurvePoint]
 
 
 class SkewPoint(BaseModel):

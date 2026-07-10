@@ -1,1 +1,1 @@
-"""Option implied-probabilities."""
+"""Option-implied probabilities."""
