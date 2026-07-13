@@ -1,14 +1,10 @@
 import { useMemo, useState } from 'react';
 
+import { MAX_DTE, MIN_DTE } from '../../config';
 import { useProbCurves } from '../../hooks/useProbCurves';
 import { filterByDTE } from '../../utils/dte';
 import DTEControl from '../shared/DTEControl';
 import ProbCurvesPanel from './ProbCurvesPanel';
-
-// default DTE window:
-// near-dated expiries out to the front month
-const MIN_DTE = 0;
-const MAX_DTE = 30;
 
 export default function ProbCurvesSection({ currency }: { currency: string }) {
   const { data, isLoading, isError, error } = useProbCurves(currency);
