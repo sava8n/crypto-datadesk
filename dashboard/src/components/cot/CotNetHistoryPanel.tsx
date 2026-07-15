@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 
-import { AMBER, AXIS_LINE, COT_CATEGORIES, GRID, MONO, ZERO, axisLabelStyle, axisNameStyle, tooltipStyle } from '../../theme/charts';
+import { useSettings } from '../../settings/store';
+import { AMBER, AXIS_LINE, GRID, MONO, ZERO, axisLabelStyle, axisNameStyle, tooltipStyle, visibleCotCategories } from '../../theme/charts';
 import type { CotHistoryResponse } from '../../types';
 import { coinEquiv, coinFull, expiryLabel, usdShort } from '../../utils/format';
 import { zoomStartIndex, type CotZoom } from './zoom';
@@ -21,12 +22,14 @@ export default function CotNetHistoryPanel({
   data: CotHistoryResponse;
   zoom: CotZoom;
 }) {
+  const { participants } = useSettings().cot;
   const option = useMemo<EChartsOption>(() => {
     const { currency } = data;
     const points = data.points;
     const labels = points.map((p) => expiryLabel(p.report_date));
     const hasPrice = points.some((p) => p.price != null);
     const zoomStart = zoomStartIndex(points.map((p) => p.report_date), zoom);
+    const categories = visibleCotCategories(participants);
 
     const categoryAxis = {
       type: 'category',
@@ -45,7 +48,7 @@ export default function CotNetHistoryPanel({
       splitLine: { lineStyle: { color: GRID } },
     };
 
-    const netSeries = COT_CATEGORIES.map((cat, i) => ({
+    const netSeries = categories.map((cat, i) => ({
       type: 'line',
       name: cat.name,
       xAxisIndex: 0,
@@ -99,7 +102,7 @@ export default function CotNetHistoryPanel({
         itemWidth: 10,
         itemHeight: 10,
         textStyle: axisLabelStyle,
-        data: COT_CATEGORIES.map((c) => c.name),
+        data: categories.map((c) => c.name),
       },
       tooltip: {
         ...tooltipStyle,
@@ -184,7 +187,7 @@ export default function CotNetHistoryPanel({
     };
 
     return opt as unknown as EChartsOption;
-  }, [data, zoom]);
+  }, [data, zoom, participants]);
 
   return (
     <ReactECharts

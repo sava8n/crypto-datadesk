@@ -1,3 +1,6 @@
+import type { CotMethod, CotWindow } from './api/client';
+import type { CotCategoryKey } from './theme/charts';
+import type { CotZoom } from './components/cot/zoom';
 import type { FrontExpiry } from './utils/expiry';
 
 export const CURRENCIES = ['BTC'];
@@ -26,6 +29,15 @@ export interface Settings {
     gexClusterMinWeight: number; // a neighbor counts as stacked at >= this fraction of the max weight
     gexClusterMaxGap: number; // max stacked-neighbor gap, in units of the median grid step
   };
+
+  // COT reports
+  cot: {
+    window: CotWindow; // index rolling window, weeks
+    method: CotMethod; // index computation: min-max range vs percentile rank
+    flowWeeks: number; // WoW net-flow lookback, last N reports
+    netZoom: CotZoom; // net-positioning history initial visible span
+    participants: CotCategoryKey[]; // categories shown on the COT charts
+  };
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -39,5 +51,12 @@ export const DEFAULT_SETTINGS: Settings = {
     tolerance: 100,
     gexClusterMinWeight: 0.5,
     gexClusterMaxGap: 1.5,
+  },
+  cot: {
+    window: 52,
+    method: 'rank',
+    flowWeeks: 12,
+    netZoom: '6M',
+    participants: ['asset_mgr', 'lev_money'],
   },
 };

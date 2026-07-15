@@ -52,3 +52,7 @@ export const COT_CATEGORIES = [
 ] as const;
 
 export type CotCategoryKey = (typeof COT_CATEGORIES)[number]['key'];
+
+// categories to draw, in the fixed COT_CATEGORIES order (colors/hues never re-assigned)
+export const visibleCotCategories = (keys: readonly CotCategoryKey[]) =>
+  COT_CATEGORIES.filter((c) => keys.includes(c.key));

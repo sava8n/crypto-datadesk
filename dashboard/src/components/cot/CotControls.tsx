@@ -1,8 +1,7 @@
 import type { CotMethod, CotWindow } from '../../api/client';
+import { FLOW_WEEKS } from './flow';
 import { COT_METHODS } from './methods';
 import { COT_WINDOWS } from './windows';
-
-const FLOW_WEEKS = [12, 26, 52];
 
 interface Props {
   window: CotWindow;

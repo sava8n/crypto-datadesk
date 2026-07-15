@@ -1,16 +1,12 @@
-import { useState } from 'react';
-
-import type { CotMethod, CotWindow } from '../../api/client';
 import CotControls from './CotControls';
 import CotFlowSection from './CotFlowSection';
 import CotIndexSection from './CotIndexSection';
 import CotNetHistorySection from './CotNetHistorySection';
 import CotReportSection from './CotReportSection';
+import { useCotControls } from './useCotControls';
 
 export default function CotTab({ currency }: { currency: string }) {
-  const [window, setWindow] = useState<CotWindow>(52);
-  const [method, setMethod] = useState<CotMethod>('rank');
-  const [flowWeeks, setFlowWeeks] = useState(12);
+  const [{ window, method, flowWeeks }, setControls] = useCotControls();
 
   return (
     <>
@@ -18,9 +14,9 @@ export default function CotTab({ currency }: { currency: string }) {
         window={window}
         method={method}
         flowWeeks={flowWeeks}
-        onWindow={setWindow}
-        onMethod={setMethod}
-        onFlowWeeks={setFlowWeeks}
+        onWindow={(window) => setControls((s) => ({ ...s, window }))}
+        onMethod={(method) => setControls((s) => ({ ...s, method }))}
+        onFlowWeeks={(flowWeeks) => setControls((s) => ({ ...s, flowWeeks }))}
       />
       <CotReportSection currency={currency} window={window} method={method} />
       <div className="panels">

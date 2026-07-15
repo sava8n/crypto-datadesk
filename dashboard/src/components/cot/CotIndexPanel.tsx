@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 
-import { AXIS_LINE, COT_CATEGORIES, GRID, ZERO, axisLabelStyle, axisNameStyle, tooltipStyle } from '../../theme/charts';
+import { useSettings } from '../../settings/store';
+import { AXIS_LINE, GRID, ZERO, axisLabelStyle, axisNameStyle, tooltipStyle, visibleCotCategories } from '../../theme/charts';
 import type { CotIndexResponse } from '../../types';
 import { expiryLabel } from '../../utils/format';
 
@@ -14,10 +15,12 @@ interface TooltipItem {
 }
 
 export default function CotIndexPanel({ data }: { data: CotIndexResponse }) {
+  const { participants } = useSettings().cot;
   const option = useMemo<EChartsOption>(() => {
+    const categories = visibleCotCategories(participants);
     // drop the leading all-null region where the rolling window is still unfilled,
     // then show only the selected window's span (0 = full history)
-    const first = data.points.findIndex((p) => COT_CATEGORIES.some((c) => p[c.key] != null));
+    const first = data.points.findIndex((p) => categories.some((c) => p[c.key] != null));
     const trimmed = first > 0 ? data.points.slice(first) : data.points;
     const points = data.window > 0 ? trimmed.slice(-data.window) : trimmed;
 
@@ -60,7 +63,7 @@ export default function CotIndexPanel({ data }: { data: CotIndexResponse }) {
         axisLabel: axisLabelStyle,
         splitLine: { lineStyle: { color: GRID } },
       },
-      series: COT_CATEGORIES.map((cat, i) => ({
+      series: categories.map((cat, i) => ({
         type: 'line',
         name: cat.name,
         data: points.map((p) => p[cat.key]),
@@ -93,7 +96,7 @@ export default function CotIndexPanel({ data }: { data: CotIndexResponse }) {
     };
 
     return opt as unknown as EChartsOption;
-  }, [data]);
+  }, [data, participants]);
 
   return (
     <ReactECharts

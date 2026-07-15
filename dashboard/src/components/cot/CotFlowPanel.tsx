@@ -2,7 +2,8 @@ import { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 
-import { AXIS_LINE, COT_CATEGORIES, GRID, ZERO, axisLabelStyle, axisNameStyle, tooltipStyle } from '../../theme/charts';
+import { useSettings } from '../../settings/store';
+import { AXIS_LINE, GRID, ZERO, axisLabelStyle, axisNameStyle, tooltipStyle, visibleCotCategories } from '../../theme/charts';
 import type { CotHistoryResponse } from '../../types';
 import { coinEquiv, coinEquivSigned, expiryLabel } from '../../utils/format';
 
@@ -20,8 +21,10 @@ export default function CotFlowPanel({
   data: CotHistoryResponse;
   weeks: number;
 }) {
+  const { participants } = useSettings().cot;
   const option = useMemo<EChartsOption>(() => {
     const points = data.points.slice(-weeks);
+    const categories = visibleCotCategories(participants);
 
     const opt = {
       backgroundColor: 'transparent',
@@ -61,7 +64,7 @@ export default function CotFlowPanel({
         axisLabel: { ...axisLabelStyle, formatter: coinEquiv },
         splitLine: { lineStyle: { color: GRID } },
       },
-      series: COT_CATEGORIES.map((cat, i) => ({
+      series: categories.map((cat, i) => ({
         type: 'bar',
         name: cat.name,
         stack: 'flow',
@@ -84,7 +87,7 @@ export default function CotFlowPanel({
     };
 
     return opt as unknown as EChartsOption;
-  }, [data, weeks]);
+  }, [data, weeks, participants]);
 
   return (
     <ReactECharts
