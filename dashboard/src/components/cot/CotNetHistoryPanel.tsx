@@ -5,6 +5,7 @@ import type { EChartsOption } from 'echarts';
 import { AMBER, AXIS_LINE, COT_CATEGORIES, GRID, MONO, ZERO, axisLabelStyle, axisNameStyle, tooltipStyle } from '../../theme/charts';
 import type { CotHistoryResponse } from '../../types';
 import { coinEquiv, coinFull, expiryLabel, usdShort } from '../../utils/format';
+import { zoomStartIndex, type CotZoom } from './zoom';
 
 interface TooltipItem {
   marker?: string;
@@ -13,14 +14,19 @@ interface TooltipItem {
   value?: number | null;
 }
 
-export default function CotNetHistoryPanel({ data }: { data: CotHistoryResponse }) {
+export default function CotNetHistoryPanel({
+  data,
+  zoom,
+}: {
+  data: CotHistoryResponse;
+  zoom: CotZoom;
+}) {
   const option = useMemo<EChartsOption>(() => {
     const { currency } = data;
     const points = data.points;
     const labels = points.map((p) => expiryLabel(p.report_date));
     const hasPrice = points.some((p) => p.price != null);
-    // open zoomed to the trailing six months
-    const zoomStart = Math.max(0, points.length - 26);
+    const zoomStart = zoomStartIndex(points.map((p) => p.report_date), zoom);
 
     const categoryAxis = {
       type: 'category',
@@ -178,7 +184,7 @@ export default function CotNetHistoryPanel({ data }: { data: CotHistoryResponse 
     };
 
     return opt as unknown as EChartsOption;
-  }, [data]);
+  }, [data, zoom]);
 
   return (
     <ReactECharts

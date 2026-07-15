@@ -1,10 +1,14 @@
+import { useState } from 'react';
+
 import { useCotHistory } from '../../hooks/useCotHistory';
 import { expiryLabel } from '../../utils/format';
 import CotNetHistoryPanel from './CotNetHistoryPanel';
+import { COT_ZOOMS, type CotZoom } from './zoom';
 
 export default function CotNetHistorySection({ currency }: { currency: string }) {
   const { data, isLoading, isError, error } = useCotHistory(currency);
   const points = data?.points.length ?? 0;
+  const [zoom, setZoom] = useState<CotZoom>('6M');
 
   return (
     <section className="panel panel--full">
@@ -16,6 +20,20 @@ export default function CotNetHistorySection({ currency }: { currency: string })
             ? ` · MICRO FROM ${expiryLabel(data.micro_included_from)}`
             : ''}
         </span>
+        <label className="expiry">
+          <span className="expiry__label">ZOOM</span>
+          <select
+            className="expiry__select"
+            value={zoom}
+            onChange={(e) => setZoom(e.target.value as CotZoom)}
+          >
+            {COT_ZOOMS.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
       <div className="panel__body">
@@ -29,7 +47,7 @@ export default function CotNetHistorySection({ currency }: { currency: string })
           <div className="panel__msg panel__msg--warn">INSUFFICIENT DATA · {points} PTS</div>
         )}
         {!isLoading && !isError && data && points >= 2 && (
-          <CotNetHistoryPanel data={data} />
+          <CotNetHistoryPanel data={data} zoom={zoom} />
         )}
       </div>
     </section>
