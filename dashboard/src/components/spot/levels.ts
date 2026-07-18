@@ -5,7 +5,7 @@ import type {
   ProbCurvesResponse,
 } from '../../types';
 import type { Settings } from '../../config';
-import { CALL, PUT } from '../../theme/charts';
+import { CALL, PUT, FLIP, MAX_PAIN } from '../../theme/charts';
 import { expiryLabel, oiFmt, usdShort } from '../../utils/format';
 
 export type LevelConfig = Settings['levels'];
@@ -21,9 +21,6 @@ export interface QuantileBand {
   p50: number | null;
   p84: number | null;
 }
-
-const FLIP = '#ff3b30';
-const MAX_PAIN = '#b06cf0';
 
 // largest strike of one option side; undefined when the side has no OI
 function wall(

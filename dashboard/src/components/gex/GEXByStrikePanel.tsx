@@ -4,9 +4,11 @@ import type { EChartsOption } from 'echarts';
 
 import type { GEXByStrikeResponse } from '../../types';
 import { strikeFmt, usdFull, usdShort } from '../../utils/format';
+import { nearestIdx } from './nearest';
 import {
   AXIS_LINE,
   CALL,
+  FLIP,
   GRID,
   PUT,
   axisLabelStyle,
@@ -15,21 +17,6 @@ import {
 } from '../../theme/charts';
 
 const NET = '#b06cf0';
-const FLIP = '#ff3b30';
-
-// nearest strike category for a price level that falls between strikes.
-function nearestIdx(strikes: number[], level: number): number {
-  let best = -1;
-  let bestDist = Infinity;
-  strikes.forEach((k, i) => {
-    const d = Math.abs(k - level);
-    if (d < bestDist) {
-      bestDist = d;
-      best = i;
-    }
-  });
-  return best;
-}
 
 export default function GEXByStrikePanel({ data }: { data: GEXByStrikeResponse }) {
   const option = useMemo<EChartsOption>(() => {

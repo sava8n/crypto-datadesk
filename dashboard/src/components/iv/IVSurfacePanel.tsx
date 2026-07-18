@@ -5,6 +5,7 @@ import 'echarts-gl'; // registers the 3D `surface` series + grid3D/xAxis3D/... o
 
 import type { IVSurfaceResponse } from '../../types';
 import { ivFmt } from '../../utils/format';
+import { buildSurfaceData } from './surface';
 import {
   AMBER,
   AXIS_LINE,
@@ -16,7 +17,8 @@ import {
 
 const BLACK = '#000000';
 
-const DELTA_GRID_POINTS = 31; // shared moneyness-axis samples each smile is resampled onto
+// shared moneyness-axis samples each smile is resampled onto
+const DELTA_GRID_POINTS = 31;
 
 // clip the moneyness axis at 5-delta (|x| = 0.45): beyond it only sparse, noisy
 // deep-wing quotes remain, and flat extrapolation would stretch them into a fake skirt
@@ -28,83 +30,15 @@ const VIRIDIS = [
   '#1f9e89', '#35b779', '#6ece58', '#b5de2b', '#fde725',
 ];
 
-interface ExpiryRow {
-  tte: number;
-  xs: number[]; // moneyness coordinate
-  ivs: number[];
-}
-
-// strike-monotonic delta coordinate: 
-// put wing at x < 0, the 50-delta point at x = 0, call wing at x > 0
-const moneynessX = (delta: number, optionType: string): number =>
-  optionType === 'P' ? -(0.5 + delta) : 0.5 - delta;
-
-// linear interpolation with flat extrapolation past the ends (xs must be ascending)
-function lerp(x: number, xs: number[], ys: number[]): number {
-  const n = xs.length;
-  if (n === 0) return NaN;
-  if (x <= xs[0]) return ys[0];
-  if (x >= xs[n - 1]) return ys[n - 1];
-  let i = 1;
-  while (i < n && xs[i] < x) i += 1;
-  const t = (x - xs[i - 1]) / (xs[i] - xs[i - 1]);
-  return ys[i - 1] + t * (ys[i] - ys[i - 1]);
-}
-
 export default function IVSurfacePanel({ data }: { data: IVSurfaceResponse }) {
   const option = useMemo<EChartsOption>(() => {
-    // group quotes by expiry, then resample each expiry's smile onto a shared
-    // moneyness grid so the surface is a smooth regular mesh instead of scattered points
-    const byExpiry = new Map<string, ExpiryRow>();
-    for (const p of data.points) {
-      let row = byExpiry.get(p.expiry);
-      if (!row) {
-        row = { tte: p.tte_years, xs: [], ivs: [] };
-        byExpiry.set(p.expiry, row);
-      }
-      row.xs.push(moneynessX(p.delta, p.option_type));
-      row.ivs.push(p.mark_iv);
-    }
-    const expiries = [...byExpiry.values()].sort((a, b) => a.tte - b.tte);
-
-    // data extent of the expiry axis, so the front wall is the first expiry (not tte=0)
-    const tteMin = expiries.length ? expiries[0].tte : undefined;
-    const tteMax = expiries.length ? expiries[expiries.length - 1].tte : undefined;
-
-    const xSamples = Array.from(
-      { length: DELTA_GRID_POINTS },
-      (_, i) => -X_LIMIT + (2 * X_LIMIT * i) / (DELTA_GRID_POINTS - 1),
+    // resample each expiry's smile onto a shared moneyness grid so the surface is a
+    // smooth regular mesh instead of scattered points
+    const { surfaceData, zMin, zMax, tteMin, tteMax } = buildSurfaceData(
+      data.points,
+      DELTA_GRID_POINTS,
+      X_LIMIT,
     );
-
-    // echarts-gl surface data is a flat list of [x, y, z] over a full rectangular grid
-    const surfaceData: number[][] = [];
-    let zMin = Infinity;
-    let zMax = -Infinity;
-    for (const row of expiries) {
-      const order = row.xs.map((_, i) => i).sort((a, b) => row.xs[a] - row.xs[b]);
-      const xs: number[] = [];
-      const ys: number[] = [];
-      for (const idx of order) {
-        const x = row.xs[idx];
-        const v = row.ivs[idx];
-        if (xs.length && Math.abs(x - xs[xs.length - 1]) < 1e-9) {
-          ys[ys.length - 1] = (ys[ys.length - 1] + v) / 2;
-        } else {
-          xs.push(x);
-          ys.push(v);
-        }
-      }
-      for (const x of xSamples) {
-        const iv = lerp(x, xs, ys);
-        if (iv < zMin) zMin = iv;
-        if (iv > zMax) zMax = iv;
-        surfaceData.push([x, row.tte, iv]);
-      }
-    }
-    if (!Number.isFinite(zMin)) {
-      zMin = 0;
-      zMax = 1;
-    }
 
     // tight IV axis (rounded to 5%) so the surface fills the box vertically instead of
     // being squashed against a 0%-anchored axis

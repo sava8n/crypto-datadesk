@@ -34,6 +34,10 @@ export const PUT = '#ffcf4d';
 // zero-reference line, brighter than the gridlines
 export const ZERO = '#6c7a7a';
 
+// gamma-flip (zero-gamma) line and max-pain strike
+export const FLIP = '#ff3b30';
+export const MAX_PAIN = '#b06cf0';
+
 // OI moneyness buckets: calls = teal, puts = amber; ITM brighter, OTM deeper
 export const OI_SERIES = [
   { key: 'itm_calls', name: 'ITM Calls', color: '#5fded0', stack: 'calls' },
