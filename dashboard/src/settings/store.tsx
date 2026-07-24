@@ -23,7 +23,6 @@ function load(): Settings {
       ...DEFAULT_SETTINGS,
       ...saved,
       levels: { ...DEFAULT_SETTINGS.levels, ...saved.levels },
-      cot: { ...DEFAULT_SETTINGS.cot, ...saved.cot },
     };
   } catch {
     return DEFAULT_SETTINGS; // unparseable blob or storage blocked

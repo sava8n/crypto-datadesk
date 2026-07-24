@@ -9,10 +9,6 @@ import {
   priceWhole,
   ivFmt,
   dvolFmt,
-  coinEquiv,
-  coinEquivSigned,
-  coinFull,
-  signedPct,
 } from './format';
 
 describe('expiryLabel', () => {
@@ -99,37 +95,5 @@ describe('dvolFmt', () => {
   it('renders a fraction as a one-decimal index level', () => {
     expect(dvolFmt(0.382)).toBe('38.2');
     expect(dvolFmt(0.4)).toBe('40.0');
-  });
-});
-
-describe('coinEquiv', () => {
-  it('abbreviates and preserves the sign', () => {
-    expect(coinEquiv(-94384.5)).toBe('-94.4k');
-    expect(coinEquiv(2470)).toBe('2.5k');
-    expect(coinEquiv(500)).toBe('500');
-    expect(coinEquiv(-500)).toBe('-500');
-  });
-});
-
-describe('coinEquivSigned', () => {
-  it('prefixes a plus for positives only', () => {
-    expect(coinEquivSigned(2470)).toBe('+2.5k');
-    expect(coinEquivSigned(-2470)).toBe('-2.5k');
-    expect(coinEquivSigned(0)).toBe('0');
-  });
-});
-
-describe('coinFull', () => {
-  it('groups thousands with up to one decimal', () => {
-    expect(coinFull(94384.5)).toBe('94,384.5');
-    expect(coinFull(94384.56)).toBe('94,384.6');
-  });
-});
-
-describe('signedPct', () => {
-  it('prefixes a plus for positives only', () => {
-    expect(signedPct(12.34)).toBe('+12.3%');
-    expect(signedPct(-5.6)).toBe('-5.6%');
-    expect(signedPct(0)).toBe('0%');
   });
 });

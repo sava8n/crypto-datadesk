@@ -2,11 +2,6 @@ import { useEffect, useState } from 'react';
 
 import { CURRENCIES, type Settings } from '../../config';
 import { useSettingsControl } from '../../settings/store';
-import { COT_CATEGORIES, type CotCategoryKey } from '../../theme/charts';
-import { FLOW_WEEKS } from '../cot/flow';
-import { COT_METHODS } from '../cot/methods';
-import { COT_WINDOWS } from '../cot/windows';
-import { COT_ZOOMS } from '../cot/zoom';
 
 interface FieldProps {
   label: string;
@@ -57,18 +52,6 @@ export default function SettingsDrawer({ open, onClose }: { open: boolean; onClo
 
   const setLevel = (patch: Partial<Settings['levels']>) =>
     update({ levels: { ...settings.levels, ...patch } });
-
-  const setCot = (patch: Partial<Settings['cot']>) =>
-    update({ cot: { ...settings.cot, ...patch } });
-
-  const toggleParticipant = (key: CotCategoryKey) => {
-    const on = settings.cot.participants.includes(key);
-    if (on && settings.cot.participants.length === 1) return;
-    const next = COT_CATEGORIES.map((c) => c.key).filter((k) =>
-      k === key ? !on : settings.cot.participants.includes(k),
-    );
-    setCot({ participants: next });
-  };
 
   return (
     <>
@@ -180,88 +163,6 @@ export default function SettingsDrawer({ open, onClose }: { open: boolean; onClo
               hint="cluster max stacked-neighbor gap, in units of the median grid step"
               onCommit={(v) => setLevel({ gexClusterMaxGap: v })}
             />
-          </div>
-
-          <div className="settings__group">
-            <div className="settings__group-title">COT REPORTS</div>
-            <label className="settings__row">
-              <span className="settings__k">INDEX WINDOW</span>
-              <select
-                className="settings__select"
-                value={settings.cot.window}
-                onChange={(e) =>
-                  setCot({ window: Number(e.target.value) as Settings['cot']['window'] })
-                }
-              >
-                {COT_WINDOWS.map(({ value, label }) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="settings__row">
-              <span className="settings__k">INDEX METHOD</span>
-              <select
-                className="settings__select"
-                value={settings.cot.method}
-                onChange={(e) =>
-                  setCot({ method: e.target.value as Settings['cot']['method'] })
-                }
-              >
-                {COT_METHODS.map(({ value, label }) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="settings__row">
-              <span className="settings__k">FLOW LOOKBACK</span>
-              <select
-                className="settings__select"
-                value={settings.cot.flowWeeks}
-                onChange={(e) => setCot({ flowWeeks: Number(e.target.value) })}
-              >
-                {FLOW_WEEKS.map((n) => (
-                  <option key={n} value={n}>
-                    {n}W
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="settings__row">
-              <span className="settings__k">NET ZOOM</span>
-              <select
-                className="settings__select"
-                value={settings.cot.netZoom}
-                onChange={(e) =>
-                  setCot({ netZoom: e.target.value as Settings['cot']['netZoom'] })
-                }
-              >
-                {COT_ZOOMS.map(({ value, label }) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="settings__row">
-              <span className="settings__k">PARTICIPANTS</span>
-              <div className="settings__checks">
-                {COT_CATEGORIES.map((cat) => (
-                  <label key={cat.key} className="settings__check">
-                    <input
-                      type="checkbox"
-                      checked={settings.cot.participants.includes(cat.key)}
-                      onChange={() => toggleParticipant(cat.key)}
-                    />
-                    <span className="settings__chip" style={{ background: cat.color }} />
-                    {cat.name}
-                  </label>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
 

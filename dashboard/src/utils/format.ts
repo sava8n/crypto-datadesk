@@ -46,24 +46,3 @@ export const ivFmt = (v: number) => `${Math.round(v * 100)}%`;
 
 // DVOL index level: 0.382 -> "38.2"
 export const dvolFmt = (v: number) => (v * 100).toFixed(1);
-
-// coin-equivalent contracts, abbreviated, sign-aware: -94384.5 -> "-94.4k"
-export const coinEquiv = (v: number) => {
-  const abs = Math.abs(v);
-  const body =
-    abs >= 1000
-      ? `${(abs / 1000).toLocaleString('en-US', { maximumFractionDigits: 1 })}k`
-      : `${Math.round(abs)}`;
-  return v < 0 ? `-${body}` : body;
-};
-
-// delta variant with explicit plus: 2470 -> "+2.5k"
-export const coinEquivSigned = (v: number) => (v > 0 ? `+${coinEquiv(v)}` : coinEquiv(v));
-
-// coin-equivalent contracts, full: 94384.5 -> "94,384.5"
-export const coinFull = (v: number) =>
-  v.toLocaleString('en-US', { maximumFractionDigits: 1 });
-
-// signed percent: 12.34 -> "+12.3%"
-export const signedPct = (v: number) =>
-  `${v > 0 ? '+' : ''}${v.toLocaleString('en-US', { maximumFractionDigits: 1 })}%`;

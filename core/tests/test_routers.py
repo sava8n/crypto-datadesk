@@ -19,9 +19,6 @@ _MARKET_ENDPOINTS = [
     "/api/stats",
 ]
 
-_COT_ENDPOINTS = ["/api/cot/report", "/api/cot/history", "/api/cot/index"]
-
-
 def test_health(client):
     response = client.get("/api/health")
     assert response.status_code == 200
@@ -40,13 +37,6 @@ def test_oi_by_strike_with_expiry_returns_max_pain(client, market_state):
     response = client.get("/api/oi/strike", params={"expiry": expiry})
     assert response.status_code == 200
     assert response.json()["max_pain"] is not None
-
-
-@pytest.mark.parametrize("path", _COT_ENDPOINTS)
-def test_cot_endpoints_ok(client, path):
-    response = client.get(path)
-    assert response.status_code == 200
-    assert response.json()["currency"] == "BTC"
 
 
 def test_unsupported_currency_returns_422(client):

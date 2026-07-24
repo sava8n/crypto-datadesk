@@ -1,11 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import {
-  fetchStats,
-  fetchIVSurface,
-  fetchOIByStrike,
-  fetchCotReport,
-  fetchCotIndex,
-} from './client';
+import { fetchStats, fetchIVSurface, fetchOIByStrike } from './client';
 
 // minimal Response stand-in for the fetch mock
 function res(
@@ -60,13 +54,5 @@ describe('URL building', () => {
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/oi/strike?currency=BTC&expiry=2026-07-31T08%3A00%3A00Z',
     );
-  });
-
-  it('builds the COT report/index query strings, including defaults', async () => {
-    await fetchCotReport();
-    expect(fetchMock).toHaveBeenCalledWith('/api/cot/report?currency=BTC&window=52&method=rank');
-
-    await fetchCotIndex('BTC', 156, 'minmax');
-    expect(fetchMock).toHaveBeenCalledWith('/api/cot/index?currency=BTC&window=156&method=minmax');
   });
 });

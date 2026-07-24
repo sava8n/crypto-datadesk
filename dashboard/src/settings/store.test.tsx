@@ -22,16 +22,14 @@ describe('load (via SettingsProvider)', () => {
   it('spreads stored overrides over the defaults and deep-merges nested groups', () => {
     localStorage.setItem(
       KEY,
-      JSON.stringify({ currency: 'ETH', minDte: 5, levels: { range: 0.5 }, cot: { window: 156 } }),
+      JSON.stringify({ currency: 'ETH', minDte: 5, levels: { range: 0.5 } }),
     );
     const { result } = renderHook(() => useSettings(), { wrapper });
 
     expect(result.current.currency).toBe('ETH');
     expect(result.current.minDte).toBe(5);
     expect(result.current.maxDte).toBe(DEFAULT_SETTINGS.maxDte); // untouched
-    expect(result.current.levels).toEqual({ ...DEFAULT_SETTINGS.levels, range: 0.5 });
-    expect(result.current.cot.window).toBe(156);
-    expect(result.current.cot.method).toBe(DEFAULT_SETTINGS.cot.method); // deep-merged
+    expect(result.current.levels).toEqual({ ...DEFAULT_SETTINGS.levels, range: 0.5 }); // deep-merged
   });
 
   it('falls back to the defaults on an unparseable blob', () => {

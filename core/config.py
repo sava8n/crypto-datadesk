@@ -13,7 +13,6 @@ class Settings(BaseSettings):
     supported_currencies: str = "BTC"
     log_level: str = "INFO"
     market_cache_ttl_seconds: int = 10
-    cot_cache_ttl_seconds: int = 3600
     min_mark_price: float = 0.0005
 
     @property

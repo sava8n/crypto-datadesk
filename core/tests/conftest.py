@@ -85,32 +85,6 @@ def make_dvol_candles(n: int = 40, start: float = 50.0) -> list[list[float]]:
     ]
 
 
-def make_cot_records(dates=("2026-05-27", "2026-06-03", "2026-06-10"), codes=("133741", "133742")):
-    """Raw Socrata-style TFF records; unspecified position fields default to zero."""
-    records = []
-    for d in dates:
-        for code in codes:
-            records.append(
-                {
-                    "report_date_as_yyyy_mm_dd": d,
-                    "cftc_contract_market_code": code,
-                    "open_interest_all": "10000",
-                    "dealer_positions_long_all": "1000",
-                    "dealer_positions_short_all": "800",
-                    "dealer_positions_spread_all": "50",
-                    "asset_mgr_positions_long": "2000",
-                    "asset_mgr_positions_short": "1500",
-                    "lev_money_positions_long": "1200",
-                    "lev_money_positions_short": "1700",
-                    "nonrept_positions_long_all": "300",
-                    "nonrept_positions_short_all": "500",
-                    "traders_dealer_long_all": "5",
-                    "traders_dealer_short_all": "4",
-                }
-            )
-    return records
-
-
 def make_market_state():
     from market.state import MarketState
 
@@ -122,14 +96,6 @@ def make_market_state():
         spot_candles=make_spot_candles(),
         dvol_candles=make_dvol_candles(),
     )
-
-
-def make_cot_state():
-    from cot.contracts import BTC
-    from cot.normalize import build as normalize
-    from cot.state import CotState
-
-    return CotState(as_of=AS_OF, spec=BTC, tidy=normalize(make_cot_records()), price_candles=None)
 
 
 @pytest.fixture
@@ -148,12 +114,7 @@ def market_state():
 
 
 @pytest.fixture
-def cot_state():
-    return make_cot_state()
-
-
-@pytest.fixture
-def client(monkeypatch, market_state, cot_state):
+def client(monkeypatch, market_state):
     """A FastAPI TestClient with the network-backed loaders stubbed out."""
     from fastapi.testclient import TestClient
 
@@ -179,9 +140,5 @@ def client(monkeypatch, market_state, cot_state):
     )
     for mod in market_routers:
         monkeypatch.setattr(mod, "load_market_state", lambda cur, _s=market_state: _s)
-
-    import routers.cot
-
-    monkeypatch.setattr(routers.cot, "load_cot_state", lambda cur, _s=cot_state: _s)
 
     return TestClient(main.server)

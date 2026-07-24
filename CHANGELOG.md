@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.2] - 2026-07-24
+
+### Removed
+
+- **COT report**
+
 ## [0.0.1] - 2026-07-18
 
 Initial release.
