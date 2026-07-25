@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from volume.by_strike import VOLUME_BY_STRIKE_COLUMNS, build
+from analytics.positioning.traded_volume import build
 
 
 def test_volume_split_and_zero_flow_dropped():
@@ -16,7 +16,6 @@ def test_volume_split_and_zero_flow_dropped():
         }
     )
     out = build(chain)
-    assert list(out.columns) == VOLUME_BY_STRIKE_COLUMNS
     row = out[out["strike"] == 100.0].iloc[0]
     assert row["call_volume"] == 3.0
     assert row["put_volume"] == 5.0
@@ -24,7 +23,7 @@ def test_volume_split_and_zero_flow_dropped():
     assert set(out["strike"]) == {100.0}
 
 
-def test_volume_empty_is_typed():
+def test_volume_empty_is_typed(assert_declared_dtypes):
     out = build(pd.DataFrame({"strike": [], "volume": [], "option_type": []}))
     assert out.empty
-    assert list(out.columns) == VOLUME_BY_STRIKE_COLUMNS
+    assert_declared_dtypes(out)

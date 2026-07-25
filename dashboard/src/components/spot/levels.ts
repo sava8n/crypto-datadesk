@@ -94,8 +94,8 @@ export function buildLevels(
 
   const levels: PriceLevel[] = [];
 
-  if (gex?.flip != null && inRange(gex.flip)) {
-    levels.push({ price: gex.flip, title: 'GEX FLIP', color: FLIP });
+  if (gex?.gex_flip != null && inRange(gex.gex_flip)) {
+    levels.push({ price: gex.gex_flip, title: 'GEX FLIP', color: FLIP });
   }
 
   if (oiFront?.max_pain != null && oiFront.expiry != null && inRange(oiFront.max_pain)) {

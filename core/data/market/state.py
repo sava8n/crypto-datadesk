@@ -1,0 +1,149 @@
+"""One consistent view of the market: the snapshot inputs plus the derived data graph.
+
+The unfiltered book is the only chain input; the OTM and open-interest frames are
+projections of it. Derived products compute on first access and are memoized for the
+object's lifetime - one cache TTL window, so every endpoint serves the same numbers
+and shared intermediates (greeks chain, term structure, etc.) are built once.
+"""
+
+from __future__ import annotations
+
+from datetime import datetime
+from functools import cached_property
+
+import pandas as pd
+
+from analytics import greeks
+from analytics.frames import finite
+from analytics.iv import term
+from analytics.iv.skew import build as build_skew
+from analytics.positioning import gamma_exposure, open_interest, traded_volume
+from analytics.prob import distribution, quantiles
+from analytics.stats import atm_iv_at, dvol_stats, realized_vol
+from data.market import history
+from data.market.chain import prepare_oi_chain, prepare_otm_quotes
+
+
+class MarketState:
+    def __init__(
+        self,
+        as_of: datetime,
+        spot: float,
+        contracts: pd.DataFrame,
+        spot_candles: dict | None,
+        dvol_candles: list[list[float]] | None,
+    ) -> None:
+        self.as_of = as_of
+        self.spot = spot
+        self.contracts = contracts  # the book as sent; shared across requests, read-only
+        self.spot_candles = spot_candles  # TradingView arrays, trailing year
+        self.dvol_candles = dvol_candles  # [[ts_ms, o, h, l, c], …], trailing year
+
+    # ---- chain projections ----
+
+    @cached_property
+    def otm_quotes(self) -> pd.DataFrame:
+        return prepare_otm_quotes(self.contracts, self.spot)
+
+    @cached_property
+    def oi_chain(self) -> pd.DataFrame:
+        return prepare_oi_chain(self.contracts, self.spot)
+
+    # ---- shared intermediates ----
+
+    @cached_property
+    def greeks_chain(self) -> pd.DataFrame:
+        return greeks.build(self.otm_quotes)
+
+    @cached_property
+    def term_structure(self) -> pd.DataFrame:
+        return term.build(self.otm_quotes)
+
+    # ---- per-view products ----
+    #
+    # the IV surface and smile curves are not here: they are otm_quotes keyed by delta and
+    # by strike, and the response models already declare which columns that means
+
+    @cached_property
+    def skew(self) -> pd.DataFrame:
+        return build_skew(self.otm_quotes, self.term_structure)
+
+    @cached_property
+    def prob_curves(self) -> pd.DataFrame:
+        return distribution.build(self.otm_quotes)
+
+    @cached_property
+    def prob_quantiles(self) -> pd.DataFrame:
+        return quantiles.build(self.prob_curves)
+
+    @cached_property
+    def gex_by_strike(self) -> pd.DataFrame:
+        return gamma_exposure.build(self.greeks_chain, self.oi_chain)
+
+    @cached_property
+    def gex_flip(self) -> float | None:
+        return finite(gamma_exposure.flip_level(self.gex_by_strike, self.spot))
+
+    @cached_property
+    def oi_by_expiration(self) -> pd.DataFrame:
+        return open_interest.by_expiry(self.oi_chain)
+
+    def oi_by_strike(self, expiry: datetime | None = None) -> tuple[pd.DataFrame, float | None]:
+        """Open interest per strike, and the max-pain strike.
+
+        Intrinsic value and max pain are settlement analytics, so they come back only for
+        a single-expiry slice; over the whole chain the column is absent and max pain is
+        ``None``.
+        """
+        if expiry is None:
+            return open_interest.by_strike(self.oi_chain), None
+        slice_ = self.oi_chain[self.oi_chain["expiry"] == pd.Timestamp(expiry)]
+        return open_interest.with_settlement(slice_)
+
+    @cached_property
+    def volume_by_strike(self) -> pd.DataFrame:
+        return traded_volume.build(self.oi_chain)
+
+    @cached_property
+    def spot_history(self) -> pd.DataFrame:
+        """Daily spot candles; empty when no usable payload was fetched."""
+        return history.to_frame(self.spot_candles)
+
+    # ---- expiry lists for selectors (near-dated first) ----
+
+    @cached_property
+    def otm_expiries(self) -> list:
+        return [pd.Timestamp(e).to_pydatetime() for e in sorted(self.otm_quotes["expiry"].unique())]
+
+    @cached_property
+    def oi_expiries(self) -> list:
+        return [pd.Timestamp(e).to_pydatetime() for e in sorted(self.oi_chain["expiry"].unique())]
+
+    # ---- scalar stats ----
+    #
+    # every one goes through finite(): the builders compute with numpy, which returns NaN
+    # instead of raising, and "could not be computed" has to reach the caller as None
+
+    @cached_property
+    def iv30(self) -> float | None:
+        return finite(atm_iv_at(self.term_structure))
+
+    @cached_property
+    def _dvol_stats(self) -> tuple[float | None, float | None]:
+        dvol, rank = dvol_stats(self.dvol_candles or [])
+        return finite(dvol), finite(rank)
+
+    @property
+    def dvol(self) -> float | None:
+        return self._dvol_stats[0]
+
+    @property
+    def dvol_rank(self) -> float | None:
+        return self._dvol_stats[1]
+
+    @cached_property
+    def rv30(self) -> float | None:
+        closes = self.spot_history["close"]
+        if closes.empty:
+            return None
+        return finite(realized_vol(closes.tolist()))

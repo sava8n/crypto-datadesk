@@ -24,7 +24,7 @@ export default function GEXByStrikePanel({ data }: { data: GEXByStrikeResponse }
     const strikes = rows.map((p) => p.strike);
     const labels = strikes.map(strikeFmt);
 
-    const flipIdx = data.flip != null ? nearestIdx(strikes, data.flip) : -1;
+    const flipIdx = data.gex_flip != null ? nearestIdx(strikes, data.gex_flip) : -1;
 
     const markLineData: unknown[] = [];
     if (flipIdx >= 0) {
@@ -34,7 +34,7 @@ export default function GEXByStrikePanel({ data }: { data: GEXByStrikeResponse }
         label: {
           ...axisLabelStyle,
           color: FLIP,
-          formatter: () => `Flip ${usdFull(data.flip as number)}`,
+          formatter: () => `Flip ${usdFull(data.gex_flip as number)}`,
         },
       });
     }

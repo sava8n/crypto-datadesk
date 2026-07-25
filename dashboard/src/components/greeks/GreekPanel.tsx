@@ -25,7 +25,7 @@ interface Props {
 
 // One greek line (value vs strike) for a single expiry. Points are sorted by
 // strike, then value, so at the ATM crossover the OTM put (negative) precedes
-// the OTM call (positive) — reproducing delta's sign flip as a clean spike.
+// the OTM call (positive) - reproducing delta's sign flip as a clean spike.
 export default function GreekPanel({ points, label, color, valueFmt }: Props) {
   const option = useMemo<EChartsOption>(() => {
     const data = points

@@ -23,7 +23,7 @@ function gexResp(over: Partial<GEXByStrikeResponse> = {}): GEXByStrikeResponse {
     currency: 'BTC',
     spot: 100,
     as_of: '2026-07-18T00:00:00Z',
-    flip: null,
+    gex_flip: null,
     points: [],
     ...over,
   };
@@ -66,13 +66,13 @@ describe('buildLevels', () => {
 
   describe('GEX flip', () => {
     it('emits an in-range flip', () => {
-      expect(summarize(buildLevels(gexResp({ flip: 105 }), undefined, undefined, cfg))).toEqual([
+      expect(summarize(buildLevels(gexResp({ gex_flip: 105 }), undefined, undefined, cfg))).toEqual([
         { price: 105, title: 'GEX FLIP' },
       ]);
     });
 
     it('drops a flip outside ±range of spot', () => {
-      expect(buildLevels(gexResp({ flip: 200 }), undefined, undefined, cfg)).toEqual([]);
+      expect(buildLevels(gexResp({ gex_flip: 200 }), undefined, undefined, cfg)).toEqual([]);
     });
   });
 
@@ -157,7 +157,7 @@ describe('buildLevels', () => {
 
   describe('deduplication', () => {
     it('collapses coincident levels within tolerance, keeping the first', () => {
-      const gex = gexResp({ flip: 110 });
+      const gex = gexResp({ gex_flip: 110 });
       const front = oiResp({ max_pain: 110.5, expiry: '2026-07-31T08:00:00Z' });
       expect(summarize(buildLevels(gex, undefined, front, cfg))).toEqual([
         { price: 110, title: 'GEX FLIP' },
@@ -165,7 +165,7 @@ describe('buildLevels', () => {
     });
 
     it('keeps levels farther apart than tolerance', () => {
-      const gex = gexResp({ flip: 110 });
+      const gex = gexResp({ gex_flip: 110 });
       const front = oiResp({ max_pain: 113, expiry: '2026-07-31T08:00:00Z' });
       expect(buildLevels(gex, undefined, front, cfg)).toHaveLength(2);
     });

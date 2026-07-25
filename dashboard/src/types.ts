@@ -154,7 +154,7 @@ export interface GEXByStrikeResponse {
   currency: string;
   spot: number;
   as_of: string;
-  flip: number | null; // zero-gamma level: cumulative net-GEX crossing nearest spot
+  gex_flip: number | null; // zero-gamma level: cumulative net-GEX crossing nearest spot
   points: GEXByStrikePoint[];
 }
 

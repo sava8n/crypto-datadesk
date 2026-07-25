@@ -22,7 +22,7 @@ export default function OIStatTiles({ data }: { data: OIByStrikeResponse }) {
       <Tile label="TOTAL OPEN INTEREST" value={oiFull(stats.totalOI)} accent="total" />
       <Tile
         label="PUT/CALL RATIO"
-        value={stats.pcRatio != null ? stats.pcRatio.toFixed(2) : '—'}
+        value={stats.pcRatio != null ? stats.pcRatio.toFixed(2) : '-'}
         accent="pcr"
       />
       <Tile label="NOTIONAL VALUE" value={usdFull(stats.notional)} accent="notional" />

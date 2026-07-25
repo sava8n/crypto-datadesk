@@ -2,25 +2,34 @@
 
 from __future__ import annotations
 
+from datetime import time
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+VERSION = "0.1.0"
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="DATADESK_SERVICE_", extra="ignore")
 
-    # comma-separated values keep env parsing simple
     cors_origins: str = "http://localhost:5173,http://localhost:8080"
     supported_currencies: str = "BTC"
     log_level: str = "INFO"
     market_cache_ttl_seconds: int = 10
-    min_mark_price: float = 0.0005
-
-    # persistence: snapshot archive and its retention sweep
-    db_dsn: str = "postgresql+psycopg://datadesk:datadesk@localhost:5432/datadesk"
-    persistence_enabled: bool = True
-    snapshot_interval_seconds: int = 3600
+    deribit_api_url: str = "https://www.deribit.com/api/v2"
+    http_connect_timeout: float = 3.0
+    # must cover the multi-MB option book
+    http_read_timeout: float = 20.0
+    # how long a state may be served past its TTL when upstream is failing
+    max_stale_seconds: int = 300
+    db_dsn: str = "postgresql+psycopg://user:password@localhost:5432/datadesk"
+    snapshot_interval_minutes: int = 60
     retention_days: int = 365
-    retention_sweep_hour_utc: int = 0
+    retention_sweep_at_utc: time = time(0, 0)
+
+    @property
+    def snapshot_interval_seconds(self) -> int:
+        return self.snapshot_interval_minutes * 60
 
     @property
     def cors_origin_list(self) -> list[str]:

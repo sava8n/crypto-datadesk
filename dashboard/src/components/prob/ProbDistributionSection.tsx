@@ -44,7 +44,7 @@ export default function ProbDistributionSection({ currency }: { currency: string
             onChange={(e) => setPicked(e.target.value)}
             disabled={expiries.length === 0}
           >
-            {expiries.length === 0 && <option value="">—</option>}
+            {expiries.length === 0 && <option value="">-</option>}
             {expiries.map((iso) => (
               <option key={iso} value={iso}>
                 {expiryLabel(iso)}

@@ -1,8 +1,6 @@
-"""MarketState wires the pure builders together off in-memory frames (no network)."""
+"""MarketState wires the pure builders together off in-memory frames."""
 
 from __future__ import annotations
-
-import pandas as pd
 
 
 def test_derived_products_build(market_state):
@@ -26,9 +24,17 @@ def test_scalar_stats(market_state):
     assert market_state.rv30 is not None
 
 
-def test_oi_by_strike_single_expiry_slice(market_state):
-    expiry = market_state.oi_expiries[0]
-    grid, intrinsic, max_pain = market_state.oi_by_strike(pd.Timestamp(expiry))
+def test_oi_by_strike_single_expiry_carries_settlement(market_state):
+    grid, max_pain = market_state.oi_by_strike(market_state.oi_expiries[0])
     assert not grid.empty
-    assert intrinsic  # non-empty dict of strike -> intrinsic value
-    assert max_pain is not None
+    # the intrinsic value is joined on, one per strike, no gaps
+    assert grid["intrinsic_value"].notna().all()
+    assert max_pain in set(grid["strike"])
+
+
+def test_oi_by_strike_whole_chain_has_no_settlement(market_state):
+    """Intrinsic value and max pain conflate settlement dates across expiries."""
+    grid, max_pain = market_state.oi_by_strike()
+    assert not grid.empty
+    assert "intrinsic_value" not in grid.columns
+    assert max_pain is None

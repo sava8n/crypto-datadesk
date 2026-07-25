@@ -6,7 +6,7 @@ export default function StatusBar({ currency }: { currency: string }) {
   const { data, isError } = useStats(currency);
   const busy = useIsFetching() > 0;
 
-  const updated = data ? new Date(data.as_of).toLocaleTimeString('en-GB') : '—';
+  const updated = data ? new Date(data.as_of).toLocaleTimeString('en-GB') : '-';
 
   return (
     <footer className="statusbar">

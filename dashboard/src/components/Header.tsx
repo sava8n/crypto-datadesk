@@ -32,15 +32,15 @@ export default function Header({
       <div className="header__brand">◆ DATADESK</div>
       <div className="header__fields">
         <Field k="SYM" v={`${currency}-USD`} />
-        <Field k="SPOT" v={data?.spot != null ? `$${priceWhole(data.spot)}` : '—'} amber />
-        <Field k="DVOL" v={data?.dvol != null ? dvolFmt(data.dvol) : '—'} />
-        <Field k="IV RANK" v={data?.dvol_rank != null ? ivFmt(data.dvol_rank) : '—'} />
+        <Field k="SPOT" v={data?.spot != null ? `$${priceWhole(data.spot)}` : '-'} amber />
+        <Field k="DVOL" v={data?.dvol != null ? dvolFmt(data.dvol) : '-'} />
+        <Field k="IV RANK" v={data?.dvol_rank != null ? ivFmt(data.dvol_rank) : '-'} />
         <Field
           k="IV30/RV30"
           v={
             data?.iv30 != null && data?.rv30 != null
               ? `${ivFmt(data.iv30)}/${ivFmt(data.rv30)}`
-              : '—'
+              : '-'
           }
         />
         <Field k="SRC" v="DERIBIT" />
