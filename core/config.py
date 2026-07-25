@@ -15,6 +15,13 @@ class Settings(BaseSettings):
     market_cache_ttl_seconds: int = 10
     min_mark_price: float = 0.0005
 
+    # persistence: snapshot archive and its retention sweep
+    db_dsn: str = "postgresql+psycopg://datadesk:datadesk@localhost:5432/datadesk"
+    persistence_enabled: bool = True
+    snapshot_interval_seconds: int = 3600
+    retention_days: int = 365
+    retention_sweep_hour_utc: int = 0
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

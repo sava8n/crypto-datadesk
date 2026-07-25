@@ -20,6 +20,7 @@ from routers.prob import router as prob_router
 from routers.volume import router as volume_router
 from routers.spot import router as spot_router
 from routers.stats import router as stats_router
+from storage import service as storage
 
 setup_logging(settings.log_level)
 
@@ -28,7 +29,10 @@ setup_logging(settings.log_level)
 async def lifespan(app: FastAPI):
     # best-effort warm-up so the first request doesn't pay the upstream fetch
     await asyncio.to_thread(market_warm_up)
+    # equally best-effort: an unreachable archive logs and leaves the API serving
+    tasks = await storage.start()
     yield
+    await storage.stop(tasks)
 
 
 server = FastAPI(

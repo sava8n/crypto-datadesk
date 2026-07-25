@@ -1,8 +1,9 @@
-"""One consistent view of the market: snapshot inputs plus the derived data graph.
+"""One consistent view of the market: the snapshot inputs plus the derived data graph.
 
-Derived products compute on first access and are memoized for the object's
-lifetime - one cache TTL window, so every endpoint serves the same numbers and
-shared intermediates (greeks chain, term structure, etc.) are built once.
+The unfiltered book is the only chain input; the OTM and open-interest frames are
+projections of it. Derived products compute on first access and are memoized for the
+object's lifetime - one cache TTL window, so every endpoint serves the same numbers
+and shared intermediates (greeks chain, term structure, etc.) are built once.
 """
 
 from __future__ import annotations
@@ -17,6 +18,7 @@ from greeks.chain import build_chain
 from iv import curves, skew as skew_mod, surface, term_structure as term
 from oi import by_expiration, by_strike
 from prob import curves as prob_mod, quantiles as prob_quantiles_mod
+from shared.quotes import prepare_oi_chain, prepare_otm_quotes
 from stats.dvol import dvol_stats
 from stats.iv30 import atm_iv_at
 from stats.realized import realized_vol
@@ -28,17 +30,25 @@ class MarketState:
         self,
         as_of: datetime,
         spot: float,
-        otm_quotes: pd.DataFrame,
-        oi_chain: pd.DataFrame,
+        contracts: pd.DataFrame,
         spot_candles: dict | None,
         dvol_candles: list[list[float]] | None,
     ) -> None:
         self.as_of = as_of
         self.spot = spot
-        self.otm_quotes = otm_quotes  # shared across requests; treat as read-only
-        self.oi_chain = oi_chain  # shared across requests; treat as read-only
+        self.contracts = contracts  # the book as sent; shared across requests, read-only
         self.spot_candles = spot_candles  # TradingView arrays, trailing year
         self.dvol_candles = dvol_candles  # [[ts_ms, o, h, l, c], …], trailing year
+
+    # ---- chain projections ----
+
+    @cached_property
+    def otm_quotes(self) -> pd.DataFrame:
+        return prepare_otm_quotes(self.contracts, self.spot)
+
+    @cached_property
+    def oi_chain(self) -> pd.DataFrame:
+        return prepare_oi_chain(self.contracts, self.spot)
 
     # ---- shared intermediates ----
 

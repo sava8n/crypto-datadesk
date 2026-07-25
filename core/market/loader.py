@@ -21,7 +21,7 @@ from config import settings
 from market import history
 from market.state import MarketState
 from shared.cache import TTLCache
-from shared.quotes import prepare_oi_chain, prepare_otm_quotes
+from shared.quotes import prepare_contracts
 
 logger = logging.getLogger(__name__)
 
@@ -57,8 +57,7 @@ def load_market_state(cur: str) -> MarketState:
         return MarketState(
             as_of=datetime.now(timezone.utc),
             spot=spot,
-            otm_quotes=prepare_otm_quotes(summaries, spot),
-            oi_chain=prepare_oi_chain(summaries, spot),
+            contracts=prepare_contracts(summaries),
             spot_candles=_refresh_spot_candles(prev.spot_candles if prev else None, cur),
             dvol_candles=_refresh_dvol_candles(prev.dvol_candles if prev else None, cur),
         )
