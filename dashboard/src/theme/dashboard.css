@@ -124,47 +124,6 @@ body {
   font-weight: 700;
 }
 
-/* ---- Status tag ---- */
-.tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  border: 1px solid currentColor;
-  border-radius: 2px;
-  font-size: 11px;
-  letter-spacing: 1.5px;
-  white-space: nowrap;
-}
-
-.tag__dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: currentColor;
-  animation: pulse 1.6s ease-in-out infinite;
-}
-
-.tag--ok {
-  color: var(--green);
-}
-.tag--warn {
-  color: var(--yellow);
-}
-.tag--err {
-  color: var(--red);
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.35;
-  }
-}
-
 /* ---- Tabs ---- */
 .tabs {
   display: flex;
@@ -442,10 +401,6 @@ body {
 
 .statusbar__item {
   color: var(--text);
-}
-
-.statusbar__sep {
-  color: var(--border-bright);
 }
 
 .statusbar__spacer {

@@ -12,8 +12,8 @@ _DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 def setup_logging(level: str = "INFO") -> None:
     """Attach a stdout handler to the root logger at ``level``.
 
-    Called after uvicorn has already configured its own loggers, so 
-    application logs (which propagate to the root logger) become 
+    Called after uvicorn has already configured its own loggers, so
+    application logs (which propagate to the root logger) become
     visible with a consistent format.
     """
     handler = logging.StreamHandler(sys.stdout)

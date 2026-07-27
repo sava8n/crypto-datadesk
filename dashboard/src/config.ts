@@ -1,12 +1,14 @@
 import type { FrontExpiry } from './utils/expiry';
 
-export const CURRENCIES = ['BTC'];
+export const CURRENCIES = ['BTC'] as const;
+
+export type Currency = (typeof CURRENCIES)[number];
 
 // user-tunable inputs
 // the settings drawer overrides these and persists the overrides to localStorage
 export interface Settings {
   // currency book shown on load
-  currency: string;
+  currency: Currency;
 
   // DTE window
   // near-dated expiries out to the front month

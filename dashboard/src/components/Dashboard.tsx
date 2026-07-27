@@ -8,10 +8,8 @@ import IVSurfaceSection from './iv/IVSurfaceSection';
 import IVCurvesSection from './iv/IVCurvesSection';
 import TermStructureSection from './iv/TermStructureSection';
 import SkewSection from './iv/SkewSection';
-import DeltaSection from './greeks/DeltaSection';
-import GammaSection from './greeks/GammaSection';
-import ThetaSection from './greeks/ThetaSection';
-import VegaSection from './greeks/VegaSection';
+import GreekSection from './greeks/GreekSection';
+import { GREEKS } from './greeks/greeks';
 import BasisSection from './basis/BasisSection';
 import ProbCurvesSection from './prob/ProbCurvesSection';
 import ProbDistributionSection from './prob/ProbDistributionSection';
@@ -21,56 +19,55 @@ import OIByStrikeSection from './oi/OIByStrikeSection';
 import SpotHistorySection from './spot/SpotHistorySection';
 import VolumeByStrikeSection from './volume/VolumeByStrikeSection';
 
-export default function Dashboard({ currency }: { currency: string }) {
+export default function Dashboard() {
   const [tab, setTab] = useState<TabId>('positioning');
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <div className="dashboard">
-      <Header currency={currency} onOpenSettings={() => setSettingsOpen(true)} />
+      <Header onOpenSettings={() => setSettingsOpen(true)} />
 
-      <SpotHistorySection currency={currency} />
+      <SpotHistorySection />
 
       <Tabs active={tab} onSelect={setTab} />
 
       <main className="tab-body">
         {tab === 'positioning' && (
           <div className="panels">
-            <GEXByStrikeSection currency={currency} />
-            <OIByStrikeSection currency={currency} />
-            <OIByExpirationSection currency={currency} />
-            <VolumeByStrikeSection currency={currency} />
+            <GEXByStrikeSection />
+            <OIByStrikeSection />
+            <OIByExpirationSection />
+            <VolumeByStrikeSection />
           </div>
         )}
 
         {tab === 'volatility' && (
           <div className="panels">
-            <TermStructureSection currency={currency} />
-            <SkewSection currency={currency} />
-            <IVCurvesSection currency={currency} />
-            <IVSurfaceSection currency={currency} />
+            <TermStructureSection />
+            <SkewSection />
+            <IVCurvesSection />
+            <IVSurfaceSection />
           </div>
         )}
 
         {tab === 'probabilities' && (
           <div className="panels">
-            <ProbCurvesSection currency={currency} />
-            <ProbDistributionSection currency={currency} />
+            <ProbCurvesSection />
+            <ProbDistributionSection />
           </div>
         )}
 
         {tab === 'chain' && (
           <div className="panels panels--mini">
-            <DeltaSection currency={currency} />
-            <GammaSection currency={currency} />
-            <ThetaSection currency={currency} />
-            <VegaSection currency={currency} />
-            <BasisSection currency={currency} />
+            {GREEKS.map((g) => (
+              <GreekSection key={g.greek} {...g} />
+            ))}
+            <BasisSection />
           </div>
         )}
       </main>
 
-      <StatusBar currency={currency} />
+      <StatusBar />
 
       <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>

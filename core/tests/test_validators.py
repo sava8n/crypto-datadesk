@@ -1,18 +1,18 @@
-"""Request validators: the currency validator rejects with HTTP 422."""
+"""The currency dependency: normalizes case, rejects anything not configured."""
 
 from __future__ import annotations
 
 import pytest
 from fastapi import HTTPException
 
-from shared.currency import validate_currency
+from api.deps import currency
 
 
-def test_validate_currency_normalizes_case():
-    assert validate_currency("btc") == "BTC"
+def test_currency_normalizes_case():
+    assert currency("btc") == "BTC"
 
 
-def test_validate_currency_rejects_unsupported():
+def test_currency_rejects_unsupported():
     with pytest.raises(HTTPException) as exc:
-        validate_currency("xyz")
+        currency("xyz")
     assert exc.value.status_code == 422

@@ -5,10 +5,9 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from oi.by_expiration import OI_BY_EXPIRATION_COLUMNS, build as build_by_expiration
-from oi.by_strike import (
-    OI_BY_STRIKE_COLUMNS,
-    build as build_by_strike,
+from analytics.positioning.open_interest import (
+    by_expiry,
+    by_strike,
     intrinsic_values,
     max_pain,
 )
@@ -31,8 +30,7 @@ def test_by_expiration_bucketing():
             (_EXPIRY, 0.1, 90.0, 100.0, "P", 7.0),
         ]
     )
-    out = build_by_expiration(chain)
-    assert list(out.columns) == OI_BY_EXPIRATION_COLUMNS
+    out = by_expiry(chain)
     row = out.iloc[0]
     assert row["itm_calls"] == 10.0
     assert row["otm_calls"] == 20.0
@@ -40,21 +38,20 @@ def test_by_expiration_bucketing():
     assert row["otm_puts"] == 7.0
 
 
-def test_by_expiration_empty_is_typed():
-    out = build_by_expiration(_chain([]))
+def test_by_expiration_empty_is_typed(assert_declared_dtypes):
+    out = by_expiry(_chain([]))
     assert out.empty
-    assert list(out.columns) == OI_BY_EXPIRATION_COLUMNS
+    assert_declared_dtypes(out)
 
 
 def test_by_strike_bucketing():
     chain = _chain(
         [
             (_EXPIRY, 0.1, 90.0, 100.0, "C", 10.0),  # call, K < F -> ITM
-            (_EXPIRY, 0.1, 90.0, 100.0, "P", 7.0),   # put,  K < F -> OTM
+            (_EXPIRY, 0.1, 90.0, 100.0, "P", 7.0),  # put,  K < F -> OTM
         ]
     )
-    out = build_by_strike(chain)
-    assert list(out.columns) == OI_BY_STRIKE_COLUMNS
+    out = by_strike(chain)
     row = out[out["strike"] == 90.0].iloc[0]
     assert row["itm_calls"] == 10.0
     assert row["otm_puts"] == 7.0
@@ -69,7 +66,7 @@ def test_intrinsic_value_and_max_pain():
         ]
     )
     intrinsic = intrinsic_values(chain)
-    by_strike = dict(zip(intrinsic["strike"], intrinsic["intrinsic_value"]))
+    by_strike = dict(zip(intrinsic["strike"], intrinsic["intrinsic_value"], strict=True))
     # settle at 100: call pays 0, put pays (120-100)=20 -> 20
     assert by_strike[100.0] == pytest.approx(20.0)
     # settle at 120: call pays (120-100)=20, put pays 0 -> 20

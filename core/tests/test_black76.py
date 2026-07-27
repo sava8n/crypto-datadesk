@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from shared import black76
+from analytics import black76
 
 
 def test_norm_cdf_known_values():
@@ -25,7 +25,7 @@ def test_norm_pdf_peak_and_symmetry():
 
 
 def test_valid_mask_requires_all_strictly_positive():
-    # columns: all-ok, zero-fwd, zero-strike, zero-tte, zero-sigma, neg-fwd
+    # columns: all-ok, zero-forward, zero-strike, zero-tte, zero-sigma, negative-forward
     forward = np.array([100.0, 0.0, 100.0, 100.0, 100.0, -1.0])
     strike = np.array([100.0, 100.0, 0.0, 100.0, 100.0, 100.0])
     tte = np.array([0.5, 0.5, 0.5, 0.0, 0.5, 0.5])

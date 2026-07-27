@@ -9,11 +9,11 @@ See [CHANGELOG.md](CHANGELOG.md) for the full list of views and what each one co
 ## Quick start (Docker)
 
 ```sh
+cp .env.example .env # prepare env file
 docker compose up --build
 ```
 
 Then open **http://localhost:8080**.
-
 
 ## Local development
 
@@ -23,7 +23,7 @@ Service:
 cd core
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-dev.txt
 uvicorn main:server --reload # serves http://localhost:8000
 ```
 

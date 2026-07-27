@@ -8,18 +8,20 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from config import settings
+from api import errors
+from api.routers.gex import router as gex_router
+from api.routers.greeks import router as greeks_router
+from api.routers.health import router as health_router
+from api.routers.iv import router as iv_router
+from api.routers.oi import router as oi_router
+from api.routers.prob import router as prob_router
+from api.routers.spot import router as spot_router
+from api.routers.stats import router as stats_router
+from api.routers.volume import router as volume_router
+from config import VERSION, settings
+from data.market.loader import warm_up as market_warm_up
+from data.storage import service as storage
 from log_config import setup_logging
-from market.loader import warm_up as market_warm_up
-from routers.health import router as health_router
-from routers.iv import router as iv_router
-from routers.greeks import router as greeks_router
-from routers.gex import router as gex_router
-from routers.oi import router as oi_router
-from routers.prob import router as prob_router
-from routers.volume import router as volume_router
-from routers.spot import router as spot_router
-from routers.stats import router as stats_router
 
 setup_logging(settings.log_level)
 
@@ -28,15 +30,20 @@ setup_logging(settings.log_level)
 async def lifespan(app: FastAPI):
     # best-effort warm-up so the first request doesn't pay the upstream fetch
     await asyncio.to_thread(market_warm_up)
+    # equally best-effort: an unreachable storage db logs and leaves the API serving
+    tasks = await storage.start()
     yield
+    await storage.stop(tasks)
 
 
 server = FastAPI(
     title="Crypto Datadesk API",
-    version="0.0.2",
+    version=VERSION,
     description="REST analytics for crypto options (from Deribit).",
     lifespan=lifespan,
 )
+
+errors.register(server)
 
 server.add_middleware(
     CORSMiddleware,

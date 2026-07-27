@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-import numpy as np
+import math
+
 import pandas as pd
 import pytest
 
-from stats.dvol import dvol_stats
-from stats.iv30 import atm_iv_at
-from stats.realized import realized_vol
+from analytics.stats import atm_iv_at, dvol_stats, realized_vol
 
 
 def _candle(close):
@@ -40,16 +39,25 @@ def test_realized_vol_insufficient_data_returns_none():
     assert realized_vol([100.0, 101.0]) is None  # only one return
 
 
-def test_realized_vol_matches_manual():
-    closes = [100.0, 101.0, 102.0, 100.0, 103.0]
-    rets = np.diff(np.log(closes))
-    expected = rets.std(ddof=1) * np.sqrt(365.0)
-    assert realized_vol(closes) == pytest.approx(expected)
+def test_realized_vol_non_positive_close_is_nan():
+    """log(0) is -inf, so the std is NaN - callers turn that into None via finite()."""
+    assert math.isnan(realized_vol([100.0, 0.0, 102.0, 103.0]))
 
 
 def test_atm_iv_at_flat_term_returns_same_iv():
     term = pd.DataFrame({"tte_years": [0.05, 0.25], "atm_iv": [0.6, 0.6]})
     assert atm_iv_at(term, days=30) == pytest.approx(0.6)
+
+
+def test_atm_iv_at_interpolates_in_total_variance():
+    """The point of the module: variance is ~linear in tte, IV is not.
+
+    30d sits between a 0.05y 50-vol and a 0.25y 70-vol expiry. Interpolating total
+    variance gives ~0.606; interpolating IV directly would give ~0.532, so this
+    distinguishes the two rather than just checking a value in range.
+    """
+    term = pd.DataFrame({"tte_years": [0.05, 0.25], "atm_iv": [0.50, 0.70]})
+    assert atm_iv_at(term, days=30) == pytest.approx(0.6061146756184014)
 
 
 def test_atm_iv_at_clamps_beyond_chain():

@@ -1,4 +1,4 @@
-"""Put ``core/`` on ``sys.path`` so tests import modules regardless of the pytest invocation's pwd."""
+"""Put ``core/`` on ``sys.path`` so tests import modules whatever the pytest invocation's pwd."""
 
 import os
 import sys

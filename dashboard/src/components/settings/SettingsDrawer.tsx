@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { CURRENCIES, type Settings } from '../../config';
+import { CURRENCIES, type Currency, type Settings } from '../../config';
 import { useSettingsControl } from '../../settings/store';
 
 interface FieldProps {
@@ -38,8 +38,8 @@ function NumberField({ label, hint, value, step, min, onCommit }: FieldProps) {
 
 export default function SettingsDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { settings, update, reset } = useSettingsControl();
-  // remounts the fields after a reset, so their text state re-seeds from the defaults
-  const [nonce, setNonce] = useState(0);
+  // NumberField holds its own text state, so a reset only reaches the boxes by remounting them
+  const [resetCount, bumpResetCount] = useState(0);
 
   useEffect(() => {
     if (!open) return;
@@ -60,12 +60,12 @@ export default function SettingsDrawer({ open, onClose }: { open: boolean; onClo
       <aside className={`settings${open ? ' settings--open' : ''}`} aria-hidden={!open}>
         <div className="settings__head">
           <span className="settings__title">SETTINGS</span>
-          <button className="settings__close" onClick={onClose} aria-label="Close settings">
+          <button type="button" className="settings__close" onClick={onClose} aria-label="Close settings">
             ✕
           </button>
         </div>
 
-        <div className="settings__body" key={nonce}>
+        <div className="settings__body" key={resetCount}>
           <div className="settings__group">
             <div className="settings__group-title">BOOK</div>
             <label className="settings__row">
@@ -73,7 +73,7 @@ export default function SettingsDrawer({ open, onClose }: { open: boolean; onClo
               <select
                 className="settings__select"
                 value={settings.currency}
-                onChange={(e) => update({ currency: e.target.value })}
+                onChange={(e) => update({ currency: e.target.value as Currency })}
               >
                 {CURRENCIES.map((c) => (
                   <option key={c} value={c}>
@@ -171,7 +171,7 @@ export default function SettingsDrawer({ open, onClose }: { open: boolean; onClo
             className="refresh"
             onClick={() => {
               reset();
-              setNonce((n) => n + 1);
+              bumpResetCount((n) => n + 1);
             }}
           >
             ⟲ RESET DEFAULTS
