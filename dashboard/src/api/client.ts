@@ -12,12 +12,18 @@ import type {
   TermStructureResponse,
   VolumeByStrikeResponse,
 } from '../types';
+import { ENDPOINTS, type EndpointName } from './endpoints';
 
 export type GreekName = 'delta' | 'gamma' | 'theta' | 'vega';
+
+function url(name: EndpointName, params: Record<string, string>): string {
+  return `/api/${ENDPOINTS[name]}?${new URLSearchParams(params).toString()}`;
+}
 
 async function fetchJson<T>(url: string): Promise<T> {
   const resp = await fetch(url);
   if (!resp.ok) {
+    // FastAPI puts the reason in `detail`
     let detail = `HTTP ${resp.status}`;
     try {
       const body = await resp.json();
@@ -30,69 +36,41 @@ async function fetchJson<T>(url: string): Promise<T> {
   return (await resp.json()) as T;
 }
 
-export async function fetchIVSurface(currency = 'BTC'): Promise<IVSurfaceResponse> {
-  return fetchJson<IVSurfaceResponse>(`/api/iv/surface?currency=${encodeURIComponent(currency)}`);
-}
+export const fetchIVSurface = (currency: string): Promise<IVSurfaceResponse> =>
+  fetchJson(url('ivSurface', { currency }));
 
-export async function fetchIVCurves(currency = 'BTC'): Promise<IVCurvesResponse> {
-  return fetchJson<IVCurvesResponse>(`/api/iv/curves?currency=${encodeURIComponent(currency)}`);
-}
+export const fetchIVCurves = (currency: string): Promise<IVCurvesResponse> =>
+  fetchJson(url('ivCurves', { currency }));
 
-export async function fetchProbCurves(currency = 'BTC'): Promise<ProbCurvesResponse> {
-  return fetchJson<ProbCurvesResponse>(`/api/prob/curves?currency=${encodeURIComponent(currency)}`);
-}
+export const fetchTermStructure = (currency: string): Promise<TermStructureResponse> =>
+  fetchJson(url('termStructure', { currency }));
 
-export async function fetchTermStructure(currency = 'BTC'): Promise<TermStructureResponse> {
-  return fetchJson<TermStructureResponse>(
-    `/api/iv/term-structure?currency=${encodeURIComponent(currency)}`,
-  );
-}
+export const fetchSkew = (currency: string): Promise<SkewResponse> =>
+  fetchJson(url('skew', { currency }));
 
-export async function fetchSkew(currency = 'BTC'): Promise<SkewResponse> {
-  return fetchJson<SkewResponse>(`/api/iv/skew?currency=${encodeURIComponent(currency)}`);
-}
+export const fetchProbCurves = (currency: string): Promise<ProbCurvesResponse> =>
+  fetchJson(url('probCurves', { currency }));
 
-export async function fetchGreeksChain(currency = 'BTC'): Promise<GreeksChainResponse> {
-  return fetchJson<GreeksChainResponse>(
-    `/api/greeks/chain?currency=${encodeURIComponent(currency)}`,
-  );
-}
+export const fetchGreeksChain = (currency: string): Promise<GreeksChainResponse> =>
+  fetchJson(url('greeksChain', { currency }));
 
-export async function fetchGEXByStrike(currency = 'BTC'): Promise<GEXByStrikeResponse> {
-  return fetchJson<GEXByStrikeResponse>(
-    `/api/gex/strike?currency=${encodeURIComponent(currency)}`,
-  );
-}
+export const fetchGEXByStrike = (currency: string): Promise<GEXByStrikeResponse> =>
+  fetchJson(url('gexByStrike', { currency }));
 
-export async function fetchOIByExpiration(
-  currency = 'BTC',
-): Promise<OIByExpirationResponse> {
-  return fetchJson<OIByExpirationResponse>(
-    `/api/oi/expiration?currency=${encodeURIComponent(currency)}`,
-  );
-}
+export const fetchOIByExpiration = (currency: string): Promise<OIByExpirationResponse> =>
+  fetchJson(url('oiByExpiration', { currency }));
 
-export async function fetchOIByStrike(
-  currency = 'BTC',
+export const fetchOIByStrike = (
+  currency: string,
   expiry?: string,
-): Promise<OIByStrikeResponse> {
-  const params = new URLSearchParams({ currency });
-  if (expiry) params.set('expiry', expiry);
-  return fetchJson<OIByStrikeResponse>(`/api/oi/strike?${params.toString()}`);
-}
+): Promise<OIByStrikeResponse> =>
+  fetchJson(url('oiByStrike', expiry ? { currency, expiry } : { currency }));
 
-export async function fetchVolumeByStrike(currency = 'BTC'): Promise<VolumeByStrikeResponse> {
-  return fetchJson<VolumeByStrikeResponse>(
-    `/api/volume/strike?currency=${encodeURIComponent(currency)}`,
-  );
-}
+export const fetchVolumeByStrike = (currency: string): Promise<VolumeByStrikeResponse> =>
+  fetchJson(url('volumeByStrike', { currency }));
 
-export async function fetchStats(currency = 'BTC'): Promise<StatsResponse> {
-  return fetchJson<StatsResponse>(`/api/stats?currency=${encodeURIComponent(currency)}`);
-}
+export const fetchStats = (currency: string): Promise<StatsResponse> =>
+  fetchJson(url('stats', { currency }));
 
-export async function fetchSpotHistory(currency = 'BTC'): Promise<SpotHistoryResponse> {
-  return fetchJson<SpotHistoryResponse>(
-    `/api/spot/history?currency=${encodeURIComponent(currency)}`,
-  );
-}
+export const fetchSpotHistory = (currency: string): Promise<SpotHistoryResponse> =>
+  fetchJson(url('spotHistory', { currency }));

@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { moneynessX, lerp, buildSurfaceData } from './surface';
-import type { IVSurfacePoint } from '../../types';
+import {
+  buildSurfaceData,
+  deltaLabel,
+  expiryAt,
+  interpolate,
+  ivAxisBounds,
+  moneynessX,
+} from './surface';
+import type { IVSurfacePoint, OptionType } from '../../types';
 
 describe('moneynessX', () => {
   it('maps calls to the positive wing and puts to the negative wing, symmetric at ATM', () => {
@@ -11,26 +18,26 @@ describe('moneynessX', () => {
   });
 });
 
-describe('lerp', () => {
+describe('interpolate', () => {
   it('interpolates between nodes', () => {
-    expect(lerp(1.5, [1, 2], [10, 20])).toBeCloseTo(15);
+    expect(interpolate(1.5, [1, 2], [10, 20])).toBeCloseTo(15);
   });
 
   it('returns the node value at an exact node', () => {
-    expect(lerp(2, [1, 2, 3], [10, 20, 30])).toBeCloseTo(20);
+    expect(interpolate(2, [1, 2, 3], [10, 20, 30])).toBeCloseTo(20);
   });
 
   it('extrapolates flat past both ends', () => {
-    expect(lerp(0, [1, 2], [10, 20])).toBe(10);
-    expect(lerp(5, [1, 2], [10, 20])).toBe(20);
+    expect(interpolate(0, [1, 2], [10, 20])).toBe(10);
+    expect(interpolate(5, [1, 2], [10, 20])).toBe(20);
   });
 
   it('returns NaN for an empty series', () => {
-    expect(lerp(1, [], [])).toBeNaN();
+    expect(interpolate(1, [], [])).toBeNaN();
   });
 });
 
-const p = (delta: number, mark_iv: number, option_type: string, expiry = 'E1', tte = 0.1): IVSurfacePoint => ({
+const p = (delta: number, mark_iv: number, option_type: OptionType, expiry = 'E1', tte = 0.1): IVSurfacePoint => ({
   expiry,
   tte_years: tte,
   delta,
@@ -79,5 +86,47 @@ describe('buildSurfaceData', () => {
     expect(zMax).toBe(1);
     expect(tteMin).toBeUndefined();
     expect(tteMax).toBeUndefined();
+  });
+});
+
+describe('deltaLabel', () => {
+  it('names the ATM coordinate', () => {
+    expect(deltaLabel(0)).toBe('ATM');
+  });
+
+  it('labels the put wing on the negative side and the call wing on the positive', () => {
+    expect(deltaLabel(-0.25)).toBe('25p');
+    expect(deltaLabel(0.25)).toBe('25c');
+    expect(deltaLabel(0.4)).toBe('10c');
+  });
+
+  it('inverts moneynessX', () => {
+    expect(deltaLabel(moneynessX(0.25, 'C'))).toBe('25c');
+    expect(deltaLabel(moneynessX(-0.25, 'P'))).toBe('25p');
+    expect(deltaLabel(moneynessX(0.5, 'C'))).toBe('ATM');
+  });
+});
+
+describe('expiryAt', () => {
+  it('projects a tte offset onto a calendar date', () => {
+    const asOf = Date.parse('2026-07-26T00:00:00Z');
+    expect(expiryAt(asOf, 0)).toBe('26 Jul 26');
+  });
+
+  it('advances by whole days', () => {
+    const asOf = Date.parse('2026-07-26T00:00:00Z');
+    expect(expiryAt(asOf, 7 / 365.25)).toBe('02 Aug 26');
+  });
+});
+
+describe('ivAxisBounds', () => {
+  it('rounds outward to whole 5% steps', () => {
+    expect(ivAxisBounds(0.42, 0.61)).toEqual([0.4, 0.65]);
+  });
+
+  it('leaves an already-aligned range alone', () => {
+    const [lo, hi] = ivAxisBounds(0.4, 0.6);
+    expect(lo).toBeCloseTo(0.4);
+    expect(hi).toBeCloseTo(0.6);
   });
 });

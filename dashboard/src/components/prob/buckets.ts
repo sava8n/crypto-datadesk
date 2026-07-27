@@ -1,4 +1,5 @@
 import type { ProbCurvePoint } from '../../types';
+import { averageByStrike } from '../../utils/curves';
 import { strikeFmt } from '../../utils/format';
 
 export interface Bucket {
@@ -16,18 +17,7 @@ export interface BucketResult {
 // Open-ended tail buckets close the distribution to ~100%. A call and a put quoted at
 // the same strike are averaged. Masses clamp at 0 (guard against a non-monotone curve).
 export function buildBuckets(points: ProbCurvePoint[], spot: number): BucketResult {
-  const byStrike = new Map<number, number[]>();
-  for (const p of points) {
-    const probs = byStrike.get(p.strike);
-    if (probs) probs.push(p.prob_above);
-    else byStrike.set(p.strike, [p.prob_above]);
-  }
-  const curve = [...byStrike.entries()]
-    .sort((a, b) => a[0] - b[0])
-    .map(
-      ([strike, probs]) =>
-        [strike, probs.reduce((s, v) => s + v, 0) / probs.length] as [number, number],
-    );
+  const curve = averageByStrike(points, (p) => p.prob_above);
 
   if (curve.length === 0) return { buckets: [], spotBucket: -1 };
 

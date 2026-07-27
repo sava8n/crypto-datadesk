@@ -1,16 +1,16 @@
 import { useIsFetching } from '@tanstack/react-query';
 
-import { useStats } from '../hooks/useStats';
+import { useStats } from '../api/queries';
+import { timeLabel } from '../utils/format';
+import { useCurrency } from '../settings/store';
 
-export default function StatusBar({ currency }: { currency: string }) {
-  const { data, isError } = useStats(currency);
+export default function StatusBar() {
+  const { data, isError } = useStats(useCurrency());
   const busy = useIsFetching() > 0;
-
-  const updated = data ? new Date(data.as_of).toLocaleTimeString('en-GB') : '-';
 
   return (
     <footer className="statusbar">
-      <span className="statusbar__item">UPD {updated}</span>
+      <span className="statusbar__item">UPD {data ? timeLabel(data.as_of) : '-'}</span>
       <span className="statusbar__spacer" />
       {busy && <span className="statusbar__conn statusbar__conn--warn">● SYNCING</span>}
       {!busy && isError && <span className="statusbar__conn statusbar__conn--err">● ERR</span>}

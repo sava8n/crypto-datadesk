@@ -6,7 +6,7 @@ import type {
   OIByStrikePoint,
   OIByStrikeResponse,
   ProbCurvesResponse,
-  ProbQuantileRow,
+  ProbQuantilePoint,
 } from '../../types';
 
 const summarize = (levels: PriceLevel[]) => levels.map(({ price, title }) => ({ price, title }));
@@ -179,10 +179,10 @@ describe('buildLevels', () => {
   });
 });
 
-function quantile(expiry: string, o: Partial<ProbQuantileRow> = {}): ProbQuantileRow {
+function quantile(expiry: string, o: Partial<ProbQuantilePoint> = {}): ProbQuantilePoint {
   return { expiry, tte_years: 0.1, p16: null, p50: null, p84: null, ...o };
 }
-function probResp(quantiles: ProbQuantileRow[]): ProbCurvesResponse {
+function probResp(quantiles: ProbQuantilePoint[]): ProbCurvesResponse {
   return { currency: 'BTC', spot: 100, as_of: '2026-07-18T00:00:00Z', points: [], quantiles };
 }
 

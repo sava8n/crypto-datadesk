@@ -2,13 +2,16 @@ import { describe, it, expect } from 'vitest';
 import {
   expiryLabel,
   strikeFmt,
-  oiFmt,
-  oiFull,
+  strikeFull,
+  countShort,
+  countFull,
   usdShort,
   usdFull,
   priceWhole,
-  ivFmt,
+  pctWhole,
+  pctOne,
   dvolFmt,
+  dteLabel,
 } from './format';
 
 describe('expiryLabel', () => {
@@ -31,20 +34,27 @@ describe('strikeFmt', () => {
   });
 });
 
-describe('oiFmt', () => {
-  it('rounds values below 1000 and abbreviates the rest', () => {
-    expect(oiFmt(500)).toBe('500');
-    expect(oiFmt(999)).toBe('999');
-    expect(oiFmt(1000)).toBe('1k');
-    expect(oiFmt(1500)).toBe('1.5k');
-    expect(oiFmt(1234)).toBe('1.2k');
+describe('strikeFull', () => {
+  it('groups thousands', () => {
+    expect(strikeFull(62500)).toBe('62,500');
+    expect(strikeFull(900)).toBe('900');
   });
 });
 
-describe('oiFull', () => {
+describe('countShort', () => {
+  it('rounds values below 1000 and abbreviates the rest', () => {
+    expect(countShort(500)).toBe('500');
+    expect(countShort(999)).toBe('999');
+    expect(countShort(1000)).toBe('1k');
+    expect(countShort(1500)).toBe('1.5k');
+    expect(countShort(1234)).toBe('1.2k');
+  });
+});
+
+describe('countFull', () => {
   it('groups thousands with no fraction', () => {
-    expect(oiFull(1_234_567)).toBe('1,234,567');
-    expect(oiFull(999)).toBe('999');
+    expect(countFull(1_234_567)).toBe('1,234,567');
+    expect(countFull(999)).toBe('999');
   });
 });
 
@@ -84,10 +94,18 @@ describe('priceWhole', () => {
   });
 });
 
-describe('ivFmt', () => {
+describe('pctWhole', () => {
   it('renders a fraction as a whole percent', () => {
-    expect(ivFmt(0.42)).toBe('42%');
-    expect(ivFmt(1)).toBe('100%');
+    expect(pctWhole(0.42)).toBe('42%');
+    expect(pctWhole(1)).toBe('100%');
+  });
+});
+
+describe('pctOne', () => {
+  it('renders a fraction as a one-decimal percent with no suffix', () => {
+    expect(pctOne(0.4237)).toBe('42.4');
+    expect(pctOne(0.4)).toBe('40.0');
+    expect(pctOne(-0.015)).toBe('-1.5');
   });
 });
 
@@ -95,5 +113,12 @@ describe('dvolFmt', () => {
   it('renders a fraction as a one-decimal index level', () => {
     expect(dvolFmt(0.382)).toBe('38.2');
     expect(dvolFmt(0.4)).toBe('40.0');
+  });
+});
+
+describe('dteLabel', () => {
+  it('rounds to whole days and suffixes d', () => {
+    expect(dteLabel(6.7)).toBe('7d');
+    expect(dteLabel(0.2)).toBe('0d');
   });
 });

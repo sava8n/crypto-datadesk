@@ -74,6 +74,11 @@ export function useSettings(): Settings {
   return useSettingsContext().settings;
 }
 
+// the book every section reads; nothing drills it as a prop
+export function useCurrency(): Settings['currency'] {
+  return useSettingsContext().settings.currency;
+}
+
 export function useSettingsControl(): SettingsControl {
   return useSettingsContext();
 }

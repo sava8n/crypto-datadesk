@@ -6,7 +6,7 @@ import type {
 } from '../../types';
 import type { Settings } from '../../config';
 import { CALL, PUT, FLIP, MAX_PAIN } from '../../theme/charts';
-import { expiryLabel, oiFmt, usdShort } from '../../utils/format';
+import { expiryLabel, countShort, usdShort } from '../../utils/format';
 
 export type LevelConfig = Settings['levels'];
 
@@ -22,13 +22,13 @@ export interface QuantileBand {
   p84: number | null;
 }
 
-// largest strike of one option side; undefined when the side has no OI
+// heaviest strike by the picked OI measure; undefined when nothing carries OI
 function wall(
   pts: OIByStrikePoint[],
-  side: (p: OIByStrikePoint) => number,
+  pick: (p: OIByStrikePoint) => number,
 ): { strike: number; oi: number } | undefined {
   return pts
-    .map((p) => ({ strike: p.strike, oi: side(p) }))
+    .map((p) => ({ strike: p.strike, oi: pick(p) }))
     .filter((w) => w.oi > 0)
     .reduce<{ strike: number; oi: number } | undefined>(
       (best, w) => (best && best.oi >= w.oi ? best : w),
@@ -53,13 +53,13 @@ function clusterLevel(
   const sorted = pts.filter((p) => p.weight > 0).sort((a, b) => a.strike - b.strike);
   if (sorted.length === 0) return undefined;
 
-  let top = 0;
-  for (let i = 1; i < sorted.length; i++) if (sorted[i].weight > sorted[top].weight) top = i;
-  const minWeight = cfg.gexClusterMinWeight * sorted[top].weight;
+  let peak = 0;
+  for (let i = 1; i < sorted.length; i++) if (sorted[i].weight > sorted[peak].weight) peak = i;
+  const minWeight = cfg.gexClusterMinWeight * sorted[peak].weight;
 
-  let lo = top;
+  let lo = peak;
   while (lo > 0 && sorted[lo].strike - sorted[lo - 1].strike <= maxGap && sorted[lo - 1].weight >= minWeight) lo--;
-  let hi = top;
+  let hi = peak;
   while (hi < sorted.length - 1 && sorted[hi + 1].strike - sorted[hi].strike <= maxGap && sorted[hi + 1].weight >= minWeight) hi++;
 
   const cluster = sorted.slice(lo, hi + 1);
@@ -113,30 +113,43 @@ export function buildLevels(
       (p) => p.itm_calls + p.otm_calls,
     );
     if (callWall) {
-      levels.push({ price: callWall.strike, title: `CALL WALL ${oiFmt(callWall.oi)}`, color: CALL });
+      levels.push({ price: callWall.strike, title: `CALL WALL ${countShort(callWall.oi)}`, color: CALL });
     }
     const putWall = wall(
       eligible.filter((p) => p.strike <= spot),
       (p) => p.itm_puts + p.otm_puts,
     );
     if (putWall) {
-      levels.push({ price: putWall.strike, title: `PUT WALL ${oiFmt(putWall.oi)}`, color: PUT });
+      levels.push({ price: putWall.strike, title: `PUT WALL ${countShort(putWall.oi)}`, color: PUT });
     }
   }
 
   if (spot != null && gex) {
     const eligible = gex.points.filter((p) => inRange(p.strike));
-    const res = clusterLevel(
+    // call GEX is already positive above spot, so its weight needs no sign flip
+    const resistance = clusterLevel(
       eligible.filter((p) => p.strike >= spot).map((p) => ({ strike: p.strike, weight: p.call_gex })),
       cfg,
     );
-    if (res) levels.push({ price: res.price, title: `GEX RES ${usdShort(res.weight)}`, color: CALL });
+    if (resistance) {
+      levels.push({
+        price: resistance.price,
+        title: `GEX RES ${usdShort(resistance.weight)}`,
+        color: CALL,
+      });
+    }
     // dealers are short put gamma, so put GEX is negative, magnitude is the weight
-    const sup = clusterLevel(
+    const support = clusterLevel(
       eligible.filter((p) => p.strike <= spot).map((p) => ({ strike: p.strike, weight: -p.put_gex })),
       cfg,
     );
-    if (sup) levels.push({ price: sup.price, title: `GEX SUP ${usdShort(sup.weight)}`, color: PUT });
+    if (support) {
+      levels.push({
+        price: support.price,
+        title: `GEX SUP ${usdShort(support.weight)}`,
+        color: PUT,
+      });
+    }
   }
 
   return deduplicate(levels, cfg.tolerance);

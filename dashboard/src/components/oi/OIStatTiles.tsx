@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { OIByStrikeResponse } from '../../types';
-import { oiFull, usdFull } from '../../utils/format';
+import { countFull, usdFull } from '../../utils/format';
 import { oiStats } from './stats';
 
 function Tile({ label, value, accent }: { label: string; value: string; accent: string }) {
@@ -17,9 +17,9 @@ export default function OIStatTiles({ data }: { data: OIByStrikeResponse }) {
 
   return (
     <div className="oi-stats">
-      <Tile label="CALL OPEN INTEREST" value={oiFull(stats.callOI)} accent="call" />
-      <Tile label="PUT OPEN INTEREST" value={oiFull(stats.putOI)} accent="put" />
-      <Tile label="TOTAL OPEN INTEREST" value={oiFull(stats.totalOI)} accent="total" />
+      <Tile label="CALL OPEN INTEREST" value={countFull(stats.callOI)} accent="call" />
+      <Tile label="PUT OPEN INTEREST" value={countFull(stats.putOI)} accent="put" />
+      <Tile label="TOTAL OPEN INTEREST" value={countFull(stats.totalOI)} accent="total" />
       <Tile
         label="PUT/CALL RATIO"
         value={stats.pcRatio != null ? stats.pcRatio.toFixed(2) : '-'}

@@ -1,64 +1,40 @@
-import { useState } from 'react';
-
-import { useOIByStrike } from '../../hooks/useOIByStrike';
-import { useSettings } from '../../settings/store';
-import { frontExpiry } from '../../utils/expiry';
-import { expiryLabel } from '../../utils/format';
-import OIByStrikePanel from './OIByStrikePanel';
+import { useOIByStrike } from '../../api/queries';
+import ExpirySelect from '../controls/ExpirySelect';
+import Panel from '../panel/Panel';
+import { MIN_POINTS } from '../panel/minPoints';
+import { panelState } from '../panel/panelState';
+import { useCurrency } from '../../settings/store';
+import { useExpiryPicker } from '../controls/useExpiryPicker';
+import OIByStrikeChart from './OIByStrikeChart';
 import OIStatTiles from './OIStatTiles';
 
-export default function OIByStrikeSection({ currency }: { currency: string }) {
-  const all = useOIByStrike(currency);
-  const expiries = all.data?.expiries ?? [];
-  const { frontExpiry: frontPref } = useSettings();
-  const front = frontExpiry(expiries, frontPref);
+export default function OIByStrikeSection() {
+  const currency = useCurrency();
 
-  // null = untouched, take the front expiry;
-  // "" = user asked for all expirations
-  const [picked, setPicked] = useState<string | null>(null);
-  const kept = picked !== null && (picked === '' || expiries.includes(picked));
-  const selected = kept ? (picked as string) : front ?? '';
+  // the unfiltered call is what carries the expiry list; the selected slice is the
+  // only one the backend gives max_pain and intrinsic value for
+  const chain = useOIByStrike(currency);
+  const { selected, select } = useExpiryPicker(chain.data?.expiries ?? [], { allowAll: true });
 
-  const { data, isLoading, isError, error } = useOIByStrike(currency, selected || null);
-
-  const points = data?.points.length ?? 0;
+  const query = useOIByStrike(currency, selected || null);
+  const state = panelState(query, query.data, query.data?.points.length ?? 0, MIN_POINTS.bars);
 
   return (
-    <section className="panel">
-      <div className="panel__title">
-        <span className="panel__title-main">OPEN INTEREST BY STRIKE</span>
-        <span className="panel__title-sub">CONTRACTS · ITM/OTM × STRIKE</span>
-        <label className="expiry">
-          <span className="expiry__label">EXPIRY</span>
-          <select
-            className="expiry__select"
-            value={selected}
-            onChange={(e) => setPicked(e.target.value)}
-          >
-            <option value="">ALL EXPIRATIONS</option>
-            {expiries.map((iso) => (
-              <option key={iso} value={iso}>
-                {expiryLabel(iso)}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-
-      <div className="panel__body">
-        {isLoading && <div className="panel__msg">LOADING OPEN INTEREST…</div>}
-        {isError && (
-          <div className="panel__msg panel__msg--err">
-            ERR · {error?.message ?? 'REQUEST FAILED'}
-          </div>
-        )}
-        {!isLoading && !isError && data && points < 1 && (
-          <div className="panel__msg panel__msg--warn">INSUFFICIENT DATA · {points} PTS</div>
-        )}
-        {!isLoading && !isError && data && points >= 1 && <OIByStrikePanel data={data} />}
-      </div>
-
-      {!isLoading && !isError && data && points >= 1 && <OIStatTiles data={data} />}
-    </section>
+    <Panel
+      title="OPEN INTEREST BY STRIKE"
+      subtitle="CONTRACTS · ITM/OTM × STRIKE"
+      state={state}
+      controls={
+        <ExpirySelect
+          expiries={chain.data?.expiries ?? []}
+          selected={selected}
+          onSelect={select}
+          allLabel="ALL EXPIRATIONS"
+        />
+      }
+      footer={(data) => <OIStatTiles data={data} />}
+    >
+      {(data) => <OIByStrikeChart data={data} />}
+    </Panel>
   );
 }

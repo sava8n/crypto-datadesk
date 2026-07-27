@@ -1,12 +1,31 @@
-// Shared ECharts styling for the amber-terminal chart theme
+// Chart tokens for the amber-terminal theme
+
+export const MONO = 'monospace';
+
+// -- palette --------------------------------------------------------------
 
 export const AMBER = '#ffb000';
 export const GRID = '#243133';
 export const AXIS_LINE = '#3a4a4d';
-export const MONO = 'monospace';
+export const BLACK = '#000000';
+export const PANEL_BG = '#0b0e10';
 
 // legend/label text on multi-series charts
 export const TEXT = '#c8d0d0';
+
+// muted line, brighter than the gridlines: zero references and spot markers
+export const MUTED = '#6c7a7a';
+
+export const DANGER = '#ff3b30';
+export const VIOLET = '#b06cf0';
+export const UP = '#33ff66';
+export const DOWN = DANGER;
+
+// call/put split: calls = teal, puts = amber; ITM brighter, OTM deeper
+export const CALL = '#5fded0';
+export const CALL_DEEP = '#178f80';
+export const PUT = '#ffcf4d';
+export const PUT_DEEP = '#c8860b';
 
 // categorical palette for multi-expiry line charts, one color per series
 export const PALETTE = [
@@ -16,32 +35,36 @@ export const PALETTE = [
   '#d4b483',
 ];
 
+// -- semantic aliases -----------------------------------------------------
+
+// gamma-flip (zero-gamma) level
+export const FLIP = DANGER;
+// max-pain strike
+export const MAX_PAIN = VIOLET;
+// intrinsic-value overlay axis on the OI chain
+export const INTRINSIC = DANGER;
+// net GEX line
+export const NET_GEX = VIOLET;
+// distribution tail buckets
+export const TAIL = PUT_DEEP;
+
+// per-greek series colors;
+export const GREEK_COLORS = {
+  delta: '#4aa3ff',
+  gamma: '#33ff66',
+  theta: '#ff6b6b',
+  vega: '#ffb000',
+} as const;
+
+// -- text styles ----------------------------------------------------------
+
 export const axisLabelStyle = { color: AMBER, fontFamily: MONO, fontSize: 11 };
 export const axisNameStyle = { color: AMBER, fontFamily: MONO, fontSize: 13 };
 
 // base tooltip box; panels add trigger/formatter
 export const tooltipStyle = {
-  backgroundColor: '#0b0e10',
+  backgroundColor: PANEL_BG,
   borderColor: GRID,
   borderWidth: 1,
   textStyle: { color: AMBER, fontFamily: MONO, fontSize: 12 },
 };
-
-// single-shade call/put split: calls = teal, puts = amber
-export const CALL = '#5fded0';
-export const PUT = '#ffcf4d';
-
-// zero-reference line, brighter than the gridlines
-export const ZERO = '#6c7a7a';
-
-// gamma-flip (zero-gamma) line and max-pain strike
-export const FLIP = '#ff3b30';
-export const MAX_PAIN = '#b06cf0';
-
-// OI moneyness buckets: calls = teal, puts = amber; ITM brighter, OTM deeper
-export const OI_SERIES = [
-  { key: 'itm_calls', name: 'ITM Calls', color: '#5fded0', stack: 'calls' },
-  { key: 'otm_calls', name: 'OTM Calls', color: '#178f80', stack: 'calls' },
-  { key: 'itm_puts', name: 'ITM Puts', color: '#ffcf4d', stack: 'puts' },
-  { key: 'otm_puts', name: 'OTM Puts', color: '#c8860b', stack: 'puts' },
-] as const;

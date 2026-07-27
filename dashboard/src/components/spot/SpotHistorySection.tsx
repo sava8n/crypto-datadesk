@@ -1,52 +1,40 @@
 import { useMemo } from 'react';
 
-import { useGEXByStrike } from '../../hooks/useGEXByStrike';
-import { useOIByStrike } from '../../hooks/useOIByStrike';
-import { useProbCurves } from '../../hooks/useProbCurves';
-import { useSpotHistory } from '../../hooks/useSpotHistory';
-import { useSettings } from '../../settings/store';
+import { useGEXByStrike, useOIByStrike, useProbCurves, useSpotHistory } from '../../api/queries';
+import { useCurrency, useSettings } from '../../settings/store';
 import { frontExpiry } from '../../utils/expiry';
-import SpotHistoryPanel from './SpotHistoryPanel';
+import Panel from '../panel/Panel';
+import { MIN_POINTS } from '../panel/minPoints';
+import { panelState } from '../panel/panelState';
+import SpotHistoryChart from './SpotHistoryChart';
 import { buildLevels, buildQuantileBand } from './levels';
 
-export default function SpotHistorySection({ currency }: { currency: string }) {
-  const { data, isLoading, isError, error } = useSpotHistory(currency);
-  const candles = data?.candles ?? [];
-
+export default function SpotHistorySection() {
+  const currency = useCurrency();
   const { frontExpiry: frontPref, levels: levelCfg } = useSettings();
 
-  // options-derived levels
+  const query = useSpotHistory(currency);
+
+  // options-derived overlays; these queries share their cache entries with the
+  // positioning and probability tabs, so opening this panel costs no extra fetch
   const gex = useGEXByStrike(currency);
   const oiAll = useOIByStrike(currency);
   const front = oiAll.data ? frontExpiry(oiAll.data.expiries, frontPref) : undefined;
   const oiFront = useOIByStrike(currency, front);
   const prob = useProbCurves(currency);
+
   const levels = useMemo(
     () => buildLevels(gex.data, oiAll.data, oiFront.data, levelCfg),
     [gex.data, oiAll.data, oiFront.data, levelCfg],
   );
   const band = useMemo(() => buildQuantileBand(prob.data, front), [prob.data, front]);
 
+  const candles = query.data?.candles;
+  const state = panelState(query, candles, candles?.length ?? 0, MIN_POINTS.line);
+
   return (
-    <section className="panel panel--full">
-      <div className="panel__title">
-        <span className="panel__title-main">MARKET</span>
-        <span className="panel__title-sub">{currency}_USDC · 1D</span>
-      </div>
-      <div className="panel__body">
-        {isLoading && <div className="panel__msg">LOADING MARKET…</div>}
-        {isError && (
-          <div className="panel__msg panel__msg--err">
-            ERR · {error?.message ?? 'REQUEST FAILED'}
-          </div>
-        )}
-        {!isLoading && !isError && candles.length < 2 && (
-          <div className="panel__msg panel__msg--warn">INSUFFICIENT DATA · {candles.length} PTS</div>
-        )}
-        {!isLoading && !isError && candles.length >= 2 && (
-          <SpotHistoryPanel candles={candles} levels={levels} band={band} />
-        )}
-      </div>
-    </section>
+    <Panel title="MARKET" subtitle={`${currency}_USDC · 1D`} state={state} full>
+      {(data) => <SpotHistoryChart candles={data} levels={levels} band={band} />}
+    </Panel>
   );
 }

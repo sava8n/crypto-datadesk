@@ -1,28 +1,17 @@
-import { useVolumeByStrike } from '../../hooks/useVolumeByStrike';
-import VolumeByStrikePanel from './VolumeByStrikePanel';
+import { useVolumeByStrike } from '../../api/queries';
+import Panel from '../panel/Panel';
+import { MIN_POINTS } from '../panel/minPoints';
+import { panelState } from '../panel/panelState';
+import { useCurrency } from '../../settings/store';
+import VolumeByStrikeChart from './VolumeByStrikeChart';
 
-export default function VolumeByStrikeSection({ currency }: { currency: string }) {
-  const { data, isLoading, isError, error } = useVolumeByStrike(currency);
-  const points = data?.points.length ?? 0;
+export default function VolumeByStrikeSection() {
+  const query = useVolumeByStrike(useCurrency());
+  const state = panelState(query, query.data, query.data?.points.length ?? 0, MIN_POINTS.bars);
 
   return (
-    <section className="panel">
-      <div className="panel__title">
-        <span className="panel__title-main">VOLUME BY STRIKE</span>
-        <span className="panel__title-sub">CONTRACTS · 24H · CALLS/PUTS × STRIKE</span>
-      </div>
-      <div className="panel__body">
-        {isLoading && <div className="panel__msg">LOADING VOLUME…</div>}
-        {isError && (
-          <div className="panel__msg panel__msg--err">
-            ERR · {error?.message ?? 'REQUEST FAILED'}
-          </div>
-        )}
-        {!isLoading && !isError && data && points < 1 && (
-          <div className="panel__msg panel__msg--warn">INSUFFICIENT DATA · {points} PTS</div>
-        )}
-        {!isLoading && !isError && data && points >= 1 && <VolumeByStrikePanel data={data} />}
-      </div>
-    </section>
+    <Panel title="VOLUME BY STRIKE" subtitle="CONTRACTS · 24H · CALLS/PUTS × STRIKE" state={state}>
+      {(data) => <VolumeByStrikeChart data={data} />}
+    </Panel>
   );
 }

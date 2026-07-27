@@ -43,10 +43,10 @@ describe('update / reset', () => {
   it('patches settings and persists them to localStorage', () => {
     const { result } = renderHook(() => useSettingsControl(), { wrapper });
 
-    act(() => result.current.update({ currency: 'ETH' }));
+    act(() => result.current.update({ spotLookbackDays: 90 }));
 
-    expect(result.current.settings.currency).toBe('ETH');
-    expect(JSON.parse(localStorage.getItem(KEY)!).currency).toBe('ETH');
+    expect(result.current.settings.spotLookbackDays).toBe(90);
+    expect(JSON.parse(localStorage.getItem(KEY)!).spotLookbackDays).toBe(90);
   });
 
   it('restores the defaults on reset', () => {

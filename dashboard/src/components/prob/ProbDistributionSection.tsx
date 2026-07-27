@@ -1,74 +1,46 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
-import { useProbCurves } from '../../hooks/useProbCurves';
-import { useSettings } from '../../settings/store';
-import { frontExpiry } from '../../utils/expiry';
-import { expiryLabel } from '../../utils/format';
-import ProbDistributionPanel from './ProbDistributionPanel';
+import { useProbCurves } from '../../api/queries';
+import ExpirySelect from '../controls/ExpirySelect';
+import Panel from '../panel/Panel';
+import { MIN_POINTS } from '../panel/minPoints';
+import { panelState } from '../panel/panelState';
+import { useCurrency } from '../../settings/store';
+import { useExpiryPicker } from '../controls/useExpiryPicker';
+import ProbDistributionChart from './ProbDistributionChart';
 
-export default function ProbDistributionSection({ currency }: { currency: string }) {
+export default function ProbDistributionSection() {
   // same query key as the curves section, so the response is fetched once per currency
-  const { data, isLoading, isError, error } = useProbCurves(currency);
+  const query = useProbCurves(useCurrency());
 
-  // unique expiries, near-dated first
+  // this response carries no expiry list of its own, unlike the greeks and OI chains
   const expiries = useMemo(() => {
-    if (!data) return [];
-    const seen = new Map<string, number>();
-    for (const p of data.points) {
-      if (!seen.has(p.expiry)) seen.set(p.expiry, p.tte_years);
+    if (!query.data) return [];
+    const tteByExpiry = new Map<string, number>();
+    for (const p of query.data.points) {
+      if (!tteByExpiry.has(p.expiry)) tteByExpiry.set(p.expiry, p.tte_years);
     }
-    return [...seen.entries()].sort((a, b) => a[1] - b[1]).map(([iso]) => iso);
-  }, [data]);
+    return [...tteByExpiry.entries()].sort((a, b) => a[1] - b[1]).map(([iso]) => iso);
+  }, [query.data]);
 
-  const { frontExpiry: frontPref } = useSettings();
-  const [picked, setPicked] = useState<string | null>(null);
-  // fall back to the front expiry
-  const selectedExpiry =
-    picked && expiries.includes(picked) ? picked : frontExpiry(expiries, frontPref) ?? null;
+  const { selected, select } = useExpiryPicker(expiries);
 
   const points = useMemo(
-    () => (data && selectedExpiry ? data.points.filter((p) => p.expiry === selectedExpiry) : []),
-    [data, selectedExpiry],
+    () => (query.data && selected ? query.data.points.filter((p) => p.expiry === selected) : []),
+    [query.data, selected],
   );
 
+  const state = panelState(query, points, points.length, MIN_POINTS.family);
+  const spot = query.data?.spot ?? 0;
+
   return (
-    <section className="panel">
-      <div className="panel__title">
-        <span className="panel__title-main">IMPLIED PROBABILITY DISTRIBUTION</span>
-        <span className="panel__title-sub">STRIKE BUCKETS × P(K1&lt;S≤K2) · PER EXPIRY</span>
-        <label className="expiry">
-          <span className="expiry__label">EXPIRY</span>
-          <select
-            className="expiry__select"
-            value={selectedExpiry ?? ''}
-            onChange={(e) => setPicked(e.target.value)}
-            disabled={expiries.length === 0}
-          >
-            {expiries.length === 0 && <option value="">-</option>}
-            {expiries.map((iso) => (
-              <option key={iso} value={iso}>
-                {expiryLabel(iso)}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <div className="panel__body">
-        {isLoading && <div className="panel__msg">LOADING DISTRIBUTION…</div>}
-        {isError && (
-          <div className="panel__msg panel__msg--err">
-            ERR · {error?.message ?? 'REQUEST FAILED'}
-          </div>
-        )}
-        {!isLoading && !isError && data && points.length < 4 && (
-          <div className="panel__msg panel__msg--warn">
-            INSUFFICIENT DATA · {points.length} PTS
-          </div>
-        )}
-        {!isLoading && !isError && data && points.length >= 4 && (
-          <ProbDistributionPanel points={points} spot={data.spot} />
-        )}
-      </div>
-    </section>
+    <Panel
+      title="IMPLIED PROBABILITY DISTRIBUTION"
+      subtitle={'STRIKE BUCKETS × P(K1<S≤K2) · PER EXPIRY'}
+      state={state}
+      controls={<ExpirySelect expiries={expiries} selected={selected} onSelect={select} />}
+    >
+      {(data) => <ProbDistributionChart points={data} spot={spot} />}
+    </Panel>
   );
 }

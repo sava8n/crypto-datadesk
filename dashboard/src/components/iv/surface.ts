@@ -1,4 +1,5 @@
-import type { IVSurfacePoint } from '../../types';
+import type { IVSurfacePoint, OptionType } from '../../types';
+import { DATE_LOCALE, DAYS_PER_YEAR, MS_PER_DAY } from '../../utils/constants';
 
 export interface SurfaceData {
   surfaceData: number[][]; // flat list of [x, tte, iv] over the rectangular grid
@@ -15,11 +16,32 @@ interface ExpiryRow {
 }
 
 // strike-monotonic delta coordinate: put wing at x < 0, 50-delta at x = 0, call wing at x > 0
-export const moneynessX = (delta: number, optionType: string): number =>
-  optionType === 'P' ? -(0.5 + delta) : 0.5 - delta;
+export const moneynessX = (delta: number, option_type: OptionType): number =>
+  option_type === 'P' ? -(0.5 + delta) : 0.5 - delta;
+
+// inverse of moneynessX for axis labels: 0 -> "ATM", -0.25 -> "25p", +0.4 -> "10c"
+export const deltaLabel = (x: number): string => {
+  const pct = Math.round((0.5 - Math.abs(x)) * 100);
+  if (pct >= 50) return 'ATM';
+  return x < 0 ? `${pct}p` : `${pct}c`;
+};
+
+// a tte offset from `asOf` as a calendar date, so echarts may place ticks freely
+export const expiryAt = (asOfMs: number, tte: number): string =>
+  new Date(asOfMs + tte * DAYS_PER_YEAR * MS_PER_DAY).toLocaleDateString(DATE_LOCALE, {
+    day: '2-digit',
+    month: 'short',
+    year: '2-digit',
+  });
+
+// round an IV range out to whole 5% steps, so the surface fills the box vertically
+export const ivAxisBounds = (zMin: number, zMax: number): [number, number] => [
+  Math.floor(zMin / 0.05) * 0.05,
+  Math.ceil(zMax / 0.05) * 0.05,
+];
 
 // linear interpolation with flat extrapolation past the ends (xs must be ascending)
-export function lerp(x: number, xs: number[], ys: number[]): number {
+export function interpolate(x: number, xs: number[], ys: number[]): number {
   const n = xs.length;
   if (n === 0) return NaN;
   if (x <= xs[0]) return ys[0];
@@ -77,7 +99,7 @@ export function buildSurfaceData(
       }
     }
     for (const x of xSamples) {
-      const iv = lerp(x, xs, ys);
+      const iv = interpolate(x, xs, ys);
       if (iv < zMin) zMin = iv;
       if (iv > zMax) zMax = iv;
       surfaceData.push([x, row.tte, iv]);

@@ -1,54 +1,60 @@
 import { useIsFetching, useQueryClient } from '@tanstack/react-query';
 
-import { useStats } from '../hooks/useStats';
-import { dvolFmt, ivFmt, priceWhole } from '../utils/format';
+import { useStats } from '../api/queries';
+import { dvolFmt, pctWhole, priceWhole } from '../utils/format';
+import { useCurrency } from '../settings/store';
 
-function Field({ k, v, amber }: { k: string; v: string; amber?: boolean }) {
+function Field({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div className="field">
-      <span className="field__k">{k}</span>
-      <span className={`field__v${amber ? ' field__v--amber' : ''}`}>{v}</span>
+      <span className="field__k">{label}</span>
+      <span className={`field__v${highlight ? ' field__v--amber' : ''}`}>{value}</span>
     </div>
   );
 }
 
-export default function Header({
-  currency,
-  onOpenSettings,
-}: {
-  currency: string;
-  onOpenSettings: () => void;
-}) {
+export default function Header({ onOpenSettings }: { onOpenSettings: () => void }) {
+  const currency = useCurrency();
   const { data } = useStats(currency);
   const queryClient = useQueryClient();
   const busy = useIsFetching() > 0;
 
-  // invalidate rather than refetch: 
-  // mounted queries refetch now, the rest when their tab is next opened
+  // invalidate rather than refetch: mounted queries refetch now,
+  // the rest when their tab is next opened
   const refresh = () => queryClient.invalidateQueries();
 
   return (
     <header className="header">
       <div className="header__brand">◆ DATADESK</div>
       <div className="header__fields">
-        <Field k="SYM" v={`${currency}-USD`} />
-        <Field k="SPOT" v={data?.spot != null ? `$${priceWhole(data.spot)}` : '-'} amber />
-        <Field k="DVOL" v={data?.dvol != null ? dvolFmt(data.dvol) : '-'} />
-        <Field k="IV RANK" v={data?.dvol_rank != null ? ivFmt(data.dvol_rank) : '-'} />
+        <Field label="SYM" value={`${currency}-USD`} />
         <Field
-          k="IV30/RV30"
-          v={
+          label="SPOT"
+          value={data?.spot != null ? `$${priceWhole(data.spot)}` : '-'}
+          highlight
+        />
+        <Field label="DVOL" value={data?.dvol != null ? dvolFmt(data.dvol) : '-'} />
+        <Field label="IV RANK" value={data?.dvol_rank != null ? pctWhole(data.dvol_rank) : '-'} />
+        <Field
+          label="IV30/RV30"
+          value={
             data?.iv30 != null && data?.rv30 != null
-              ? `${ivFmt(data.iv30)}/${ivFmt(data.rv30)}`
+              ? `${pctWhole(data.iv30)}/${pctWhole(data.rv30)}`
               : '-'
           }
         />
-        <Field k="SRC" v="DERIBIT" />
+        <Field label="SRC" value="DERIBIT" />
       </div>
-      <button className="refresh" onClick={refresh} disabled={busy}>
+      <button type="button" className="refresh" onClick={refresh} disabled={busy}>
         {busy ? '⟳ SYNCING' : '⟳ REFRESH'}
       </button>
-      <button className="gear" onClick={onOpenSettings} aria-label="Settings" title="SETTINGS">
+      <button
+        type="button"
+        className="gear"
+        onClick={onOpenSettings}
+        aria-label="Settings"
+        title="SETTINGS"
+      >
         ⚙
       </button>
     </header>
