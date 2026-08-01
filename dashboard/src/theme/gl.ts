@@ -22,6 +22,15 @@ export interface Axis3DOption {
   };
 }
 
+/** the camera; roaming writes the user's angles back into it */
+export interface ViewControl {
+  alpha: number;
+  beta: number;
+  distance: number;
+  autoRotate: boolean;
+}
+
+// no viewControl: it is applied once by the wrapper, see EChart3D
 export interface Grid3DOption {
   boxWidth: number;
   boxDepth: number;
@@ -31,7 +40,6 @@ export interface Grid3DOption {
   axisTick: LineStyle;
   splitLine: LineStyle;
   axisPointer: { show: boolean; lineStyle: { color: string } };
-  viewControl: { alpha: number; beta: number; distance: number; autoRotate: boolean };
   light: {
     main: { intensity: number; shadow: boolean; alpha: number; beta: number };
     ambient: { intensity: number };

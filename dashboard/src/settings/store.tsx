@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 
-import { DEFAULT_SETTINGS, type Settings } from '../config';
+import { DEFAULT_SETTINGS, refreshMs, type Settings } from '../config';
 
 const KEY = 'datadesk.settings.v1';
 
@@ -77,6 +77,11 @@ export function useSettings(): Settings {
 // the book every section reads; nothing drills it as a prop
 export function useCurrency(): Settings['currency'] {
   return useSettingsContext().settings.currency;
+}
+
+// the poll period every query reads, in ms
+export function useRefreshMs(): number {
+  return refreshMs(useSettingsContext().settings.refreshSeconds);
 }
 
 export function useSettingsControl(): SettingsControl {

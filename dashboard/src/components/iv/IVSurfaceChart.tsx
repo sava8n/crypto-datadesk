@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import EChart3D from '../chart/EChart3D';
-import type { ECharts3DOption } from '../../theme/gl';
+import type { ECharts3DOption, ViewControl } from '../../theme/gl';
 import type { IVSurfaceResponse } from '../../types';
 import { pctOne, pctWhole } from '../../utils/format';
 import { buildSurfaceData, deltaLabel, expiryAt, ivAxisBounds } from './surface';
@@ -21,6 +21,9 @@ const DELTA_GRID_POINTS = 31;
 // clip the moneyness axis at 5-delta (|x| = 0.45): beyond it only sparse, noisy
 // deep-wing quotes remain and flat extrapolation would stretch them into a fake skirt
 const X_LIMIT = 0.45;
+
+// opening camera; the wrapper applies it once and the user roams from there
+const CAMERA: ViewControl = { alpha: 22, beta: 40, distance: 190, autoRotate: false };
 
 // viridis colour stops (low -> high IV)
 const VIRIDIS = [
@@ -57,8 +60,8 @@ export function buildIVSurfaceOption(data: IVSurfaceResponse): ECharts3DOption {
       type: 'continuous',
       show: true,
       dimension: 2,
-      min: zMin,
-      max: zMax,
+      min: zAxisMin,
+      max: zAxisMax,
       calculable: true,
       realtime: false,
       right: 14,
@@ -105,7 +108,6 @@ export function buildIVSurfaceOption(data: IVSurfaceResponse): ECharts3DOption {
       axisTick: { lineStyle: { color: AXIS_LINE } },
       splitLine: { lineStyle: { color: GRID } },
       axisPointer: { show: true, lineStyle: { color: AMBER } },
-      viewControl: { alpha: 22, beta: 40, distance: 190, autoRotate: false },
       light: {
         main: { intensity: 0.9, shadow: false, alpha: 30, beta: 40 },
         ambient: { intensity: 0.7 },
@@ -123,5 +125,7 @@ export function buildIVSurfaceOption(data: IVSurfaceResponse): ECharts3DOption {
 }
 
 export default function IVSurfaceChart({ data }: { data: IVSurfaceResponse }) {
-  return <EChart3D option={useMemo(() => buildIVSurfaceOption(data), [data])} />;
+  return (
+    <EChart3D option={useMemo(() => buildIVSurfaceOption(data), [data])} viewControl={CAMERA} />
+  );
 }

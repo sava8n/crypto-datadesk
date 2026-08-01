@@ -39,7 +39,7 @@ describe('buildGEXByStrikeOption', () => {
 
   it('labels the flip with the level, not the index', () => {
     const data = markLineOf(buildGEXByStrikeOption(resp(101, [100])));
-    const label = (data[0] as { label: { formatter: () => string } }).label;
-    expect(label.formatter()).toBe('Flip $101.00');
+    const label = (data[0] as { label: { formatter: string } }).label;
+    expect(label.formatter).toBe('Flip $101.00');
   });
 });

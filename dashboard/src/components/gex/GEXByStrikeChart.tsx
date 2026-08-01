@@ -64,7 +64,7 @@ export function buildGEXByStrikeOption(data: GEXByStrikeResponse): EChartsOption
                   label: {
                     ...axisLabelStyle,
                     color: FLIP,
-                    formatter: () => `Flip ${usdFull(flip)}`,
+                    formatter: `Flip ${usdFull(flip)}`,
                   },
                 },
               ]
