@@ -67,7 +67,7 @@ export function buildOIByStrikeOption(data: OIByStrikeResponse): EChartsOption {
         label: {
           ...axisLabelStyle,
           color: INTRINSIC,
-          formatter: () => `Max Pain ${usdFull(maxPain)}`,
+          formatter: `Max Pain ${usdFull(maxPain)}`,
         },
         data: [{ xAxis: maxPainIdx }],
       },

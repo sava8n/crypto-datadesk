@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { renderHook, act } from '@testing-library/react';
 
-import { SettingsProvider, useSettings, useSettingsControl } from './store';
-import { DEFAULT_SETTINGS } from '../config';
+import { SettingsProvider, useRefreshMs, useSettings, useSettingsControl } from './store';
+import { DEFAULT_SETTINGS, MIN_REFRESH_SECONDS } from '../config';
 
 const KEY = 'datadesk.settings.v1';
 
@@ -36,6 +36,27 @@ describe('load (via SettingsProvider)', () => {
     localStorage.setItem(KEY, '{ not json');
     const { result } = renderHook(() => useSettings(), { wrapper });
     expect(result.current).toEqual(DEFAULT_SETTINGS);
+  });
+
+  // a blob written before the field existed
+  it('picks up the default for a field the stored blob predates', () => {
+    localStorage.setItem(KEY, JSON.stringify({ currency: 'BTC', minDte: 5 }));
+    const { result } = renderHook(() => useSettings(), { wrapper });
+    expect(result.current.refreshSeconds).toBe(DEFAULT_SETTINGS.refreshSeconds);
+  });
+});
+
+describe('useRefreshMs', () => {
+  it('reports the configured period in milliseconds', () => {
+    localStorage.setItem(KEY, JSON.stringify({ refreshSeconds: 45 }));
+    const { result } = renderHook(() => useRefreshMs(), { wrapper });
+    expect(result.current).toBe(45_000);
+  });
+
+  it('clamps a stored period below the service cache floor', () => {
+    localStorage.setItem(KEY, JSON.stringify({ refreshSeconds: 0 }));
+    const { result } = renderHook(() => useRefreshMs(), { wrapper });
+    expect(result.current).toBe(MIN_REFRESH_SECONDS * 1000);
   });
 });
 

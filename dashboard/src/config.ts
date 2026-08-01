@@ -4,11 +4,22 @@ export const CURRENCIES = ['BTC'] as const;
 
 export type Currency = (typeof CURRENCIES)[number];
 
+// the service caches one market state per currency for this long
+// so a shorter poll period only re-serves the same snapshot
+export const MIN_REFRESH_SECONDS = 10;
+
+// poll period in ms, clamped to the service cache floor
+export const refreshMs = (seconds: number): number =>
+  Math.max(MIN_REFRESH_SECONDS, seconds) * 1000;
+
 // user-tunable inputs
 // the settings drawer overrides these and persists the overrides to localStorage
 export interface Settings {
   // currency book shown on load
   currency: Currency;
+
+  // seconds between polls
+  refreshSeconds: number;
 
   // DTE window
   // near-dated expiries out to the front month
@@ -32,6 +43,7 @@ export interface Settings {
 
 export const DEFAULT_SETTINGS: Settings = {
   currency: 'BTC',
+  refreshSeconds: 60,
   minDte: 0,
   maxDte: 30,
   frontExpiry: 'weekly',

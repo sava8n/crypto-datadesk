@@ -25,8 +25,10 @@ export function panelState<T>(
   min: number,
 ): PanelState<T> {
   if (query.isLoading) return { kind: 'loading' };
-  if (query.isError) return { kind: 'error', message: query.error?.message ?? 'REQUEST FAILED' };
-  if (value === undefined) return { kind: 'loading' };
+  if (value === undefined) {
+    if (query.isError) return { kind: 'error', message: query.error?.message ?? 'REQUEST FAILED' };
+    return { kind: 'loading' };
+  }
   if (count < min) return { kind: 'sparse', count };
   return { kind: 'ready', data: value };
 }

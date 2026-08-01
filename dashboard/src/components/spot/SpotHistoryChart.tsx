@@ -117,12 +117,16 @@ export default function SpotHistoryChart({ candles, levels, band }: Props) {
     }
   }, [rows, spotLookbackDays]);
 
-  // options-derived levels as horizontal price lines, resynced on each refetch
+  // keying the array on its contents to keep the labels still between real moves.
+  const levelKey = levels.map((lvl) => `${lvl.price}|${lvl.color}|${lvl.title}`).join(',');
+  const stableLevels = useMemo(() => levels, [levelKey]);
+
+  // options-derived levels as horizontal price lines, resynced when they move
   useEffect(() => {
     const series = seriesRef.current;
     if (!series) return;
     priceLinesRef.current.forEach((line) => series.removePriceLine(line));
-    priceLinesRef.current = levels.map((lvl) =>
+    priceLinesRef.current = stableLevels.map((lvl) =>
       series.createPriceLine({
         price: lvl.price,
         color: lvl.color,
@@ -132,7 +136,7 @@ export default function SpotHistoryChart({ candles, levels, band }: Props) {
         title: lvl.title,
       }),
     );
-  }, [levels]);
+  }, [stableLevels]);
 
   // implied quantile band as a background rectangle behind the candles
   useEffect(() => {

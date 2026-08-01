@@ -30,8 +30,13 @@ describe('panelState', () => {
     });
   });
 
-  it('prefers error over a value that is already present', () => {
-    expect(panelState(failed, 'data', 10, 1).kind).toBe('error');
+  // a poll fails on its own; blanking the panel would dispose the chart with it
+  it('keeps a value that is already present when a refetch fails', () => {
+    expect(panelState(failed, 'data', 10, 1)).toEqual({ kind: 'ready', data: 'data' });
+  });
+
+  it('reports sparse over an error when the value is present but thin', () => {
+    expect(panelState(failed, 'data', 2, 3)).toEqual({ kind: 'sparse', count: 2 });
   });
 
   // settled-but-empty is still loading: the alternative flashes "0 PTS" before first paint

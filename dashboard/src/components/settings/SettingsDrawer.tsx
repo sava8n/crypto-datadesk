@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { CURRENCIES, type Currency, type Settings } from '../../config';
+import { CURRENCIES, MIN_REFRESH_SECONDS, type Currency, type Settings } from '../../config';
 import { useSettingsControl } from '../../settings/store';
 
 interface FieldProps {
@@ -82,6 +82,18 @@ export default function SettingsDrawer({ open, onClose }: { open: boolean; onClo
                 ))}
               </select>
             </label>
+          </div>
+
+          <div className="settings__group">
+            <div className="settings__group-title">DATA</div>
+            <NumberField
+              label="REFRESH"
+              value={settings.refreshSeconds}
+              step={5}
+              min={MIN_REFRESH_SECONDS}
+              hint="seconds between polls; 10s is the service cache floor"
+              onCommit={(v) => update({ refreshSeconds: v })}
+            />
           </div>
 
           <div className="settings__group">

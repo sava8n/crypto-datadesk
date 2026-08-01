@@ -54,8 +54,8 @@ describe('buildOIByStrikeOption', () => {
 
   it('labels max pain with the price', () => {
     const option = buildOIByStrikeOption(resp(110, [110]));
-    const scatter = (option.series as { markLine?: { label: { formatter: () => string } } }[])[4];
-    expect(scatter.markLine?.label.formatter()).toBe('Max Pain $110.00');
+    const scatter = (option.series as { markLine?: { label: { formatter: string } } }[])[4];
+    expect(scatter.markLine?.label.formatter).toBe('Max Pain $110.00');
   });
 
   it('substitutes zero for a missing intrinsic value rather than dropping the bar', () => {

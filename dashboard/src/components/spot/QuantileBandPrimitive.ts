@@ -23,6 +23,9 @@ const LABEL_OFFSET_X = 8;
 
 type DrawTarget = Parameters<IPrimitivePaneRenderer['draw']>[0];
 
+const sameBand = (a: QuantileBand | null, b: QuantileBand | null): boolean =>
+  a === b || (a != null && b != null && a.p16 === b.p16 && a.p50 === b.p50 && a.p84 === b.p84);
+
 export class QuantileBandPrimitive implements ISeriesPrimitive<Time> {
   private series: ISeriesApi<SeriesType> | null = null;
   private requestUpdate: (() => void) | null = null;
@@ -49,7 +52,9 @@ export class QuantileBandPrimitive implements ISeriesPrimitive<Time> {
     return [this.paneView];
   }
 
+  // the section rebuilds the band on every poll, so an unchanged one must not repaint
   setBand(band: QuantileBand | null): void {
+    if (sameBand(this.band, band)) return;
     this.band = band;
     this.requestUpdate?.();
   }
