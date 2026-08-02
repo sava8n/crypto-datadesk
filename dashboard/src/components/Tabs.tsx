@@ -1,12 +1,13 @@
 import { Fragment } from 'react';
 
-export type TabId = 'positioning' | 'volatility' | 'probabilities' | 'history';
+export type TabId = 'positioning' | 'flow' | 'volatility' | 'probabilities' | 'history';
 
 const GROUPS: { label: string; tabs: { id: TabId; label: string }[] }[] = [
   {
     label: 'OPTIONS',
     tabs: [
       { id: 'positioning', label: 'POSITIONING' },
+      { id: 'flow', label: 'FLOW' },
       { id: 'volatility', label: 'VOLATILITY' },
       { id: 'probabilities', label: 'PROBABILITIES' },
       { id: 'history', label: 'HISTORY' },

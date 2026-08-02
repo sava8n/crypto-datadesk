@@ -28,3 +28,19 @@ class ProbQuantilePoint(BaseModel):
 class ProbCurvesResponse(MarketEnvelope):
     points: list[ProbCurvePoint]
     quantiles: list[ProbQuantilePoint]
+
+
+class ExpiryOutcomePoint(BaseModel):
+    expiry: datetime
+    # the archived snapshot the implied move was read from (nearest expiry - 1d)
+    reference_as_of: datetime
+    spot_ref: float
+    # implied +-1 sigma move in USD at the reference; None when the curve did not span it
+    em_implied: float | None = None
+    settlement: float
+    realized_move: float
+
+
+class ExpiryOutcomesResponse(BaseModel):
+    currency: str
+    points: list[ExpiryOutcomePoint]

@@ -20,6 +20,9 @@ import OIChangeSection from './oi/OIChangeSection';
 import RVConeSection from './iv/RVConeSection';
 import SpotHistorySection from './spot/SpotHistorySection';
 import VolumeByStrikeSection from './volume/VolumeByStrikeSection';
+import FlowByExpirationSection from './flow/FlowByExpirationSection';
+import FlowByStrikeSection from './flow/FlowByStrikeSection';
+import TapeSection from './flow/TapeSection';
 import GexLevelsHistorySection from './history/GexLevelsHistorySection';
 import OIHistorySection from './history/OIHistorySection';
 import SkewHistorySection from './history/SkewHistorySection';
@@ -46,6 +49,14 @@ export default function Dashboard() {
             <OIByExpirationSection />
             <OIChangeSection />
             <ExposureByStrikeSection />
+          </div>
+        )}
+
+        {tab === 'flow' && (
+          <div className="panels">
+            <FlowByStrikeSection />
+            <FlowByExpirationSection />
+            <TapeSection />
             <VolumeByStrikeSection />
           </div>
         )}

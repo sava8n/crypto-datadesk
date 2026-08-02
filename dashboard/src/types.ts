@@ -248,6 +248,79 @@ export interface RVConeResponse extends MarketEnvelope {
   points: RVConePoint[];
 }
 
+// tape-backed aggregates over a trailing window; no live-market dependency
+export interface FlowEnvelope {
+  currency: string;
+  window: OIChangeWindow;
+  start: string;
+  end: string;
+}
+
+// net taker flow: buys - sells, in contracts and USD premium
+export interface FlowStrikePoint {
+  strike: number;
+  call_contracts: number;
+  put_contracts: number;
+  call_premium: number;
+  put_premium: number;
+}
+
+export interface FlowByStrikeResponse extends FlowEnvelope {
+  points: FlowStrikePoint[];
+}
+
+export interface FlowExpirationPoint {
+  expiry: string;
+  call_contracts: number;
+  put_contracts: number;
+  call_premium: number;
+  put_premium: number;
+}
+
+export interface FlowByExpirationResponse extends FlowEnvelope {
+  points: FlowExpirationPoint[];
+}
+
+export interface TapePrint {
+  trade_id: string;
+  ts: string;
+  instrument_name: string;
+  expiry: string;
+  strike: number;
+  option_type: OptionType;
+  // taker side
+  direction: 'buy' | 'sell';
+  // premium in the base currency, per contract
+  price: number;
+  amount: number;
+  iv: number | null;
+  // price * index_price * amount; null when the print carried no index price
+  premium: number | null;
+  block_trade_id: string | null;
+  liquidation: string | null;
+}
+
+export interface TapeResponse {
+  currency: string;
+  points: TapePrint[];
+}
+
+export interface ExpiryOutcomePoint {
+  expiry: string;
+  // the archived snapshot the implied move was read from (nearest expiry - 1d)
+  reference_as_of: string;
+  spot_ref: number;
+  // implied +-1 sigma move in USD at the reference; null when the curve did not span it
+  em_implied: number | null;
+  settlement: number;
+  realized_move: number;
+}
+
+export interface ExpiryOutcomesResponse {
+  currency: string;
+  points: ExpiryOutcomePoint[];
+}
+
 export type Resolution = '1h' | '1d';
 
 // archive-backed series: the queried window, no live spot, no upstream dependency

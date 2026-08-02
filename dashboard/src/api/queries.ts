@@ -55,6 +55,34 @@ export function useOIByStrike(currency: string, expiry?: string | null) {
 }
 
 export const useRVCone = resourceHook('rvCone', client.fetchRVCone);
+export const useExpiryOutcomes = resourceHook('expiryOutcomes', client.fetchExpiryOutcomes);
+
+export function useFlowByStrike(currency: string, window: OIChangeWindow) {
+  return useQuery({
+    queryKey: ['flowStrike', currency, window],
+    queryFn: () => client.fetchFlowByStrike(currency, window),
+    placeholderData: keepPreviousData,
+    ...polling(useRefreshMs()),
+  });
+}
+
+export function useFlowByExpiration(currency: string, window: OIChangeWindow) {
+  return useQuery({
+    queryKey: ['flowExpiration', currency, window],
+    queryFn: () => client.fetchFlowByExpiration(currency, window),
+    placeholderData: keepPreviousData,
+    ...polling(useRefreshMs()),
+  });
+}
+
+export function useTape(currency: string, minPremium: number) {
+  return useQuery({
+    queryKey: ['flowTape', currency, minPremium],
+    queryFn: () => client.fetchTape(currency, minPremium),
+    placeholderData: keepPreviousData,
+    ...polling(useRefreshMs()),
+  });
+}
 export const useMaxPain = resourceHook('maxPain', client.fetchMaxPain);
 
 export function useExposure(currency: string, greek: ExposureGreek) {

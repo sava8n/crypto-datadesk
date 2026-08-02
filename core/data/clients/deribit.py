@@ -91,6 +91,40 @@ def fetch_option_summaries(currency: str = "BTC") -> list[dict]:
     )
 
 
+TRADES_PAGE_SIZE = 500
+
+
+def fetch_option_trades(currency: str, start_ms: int, end_ms: int) -> dict:
+    """One ascending page of option trades in ``[start_ms, end_ms]``.
+
+    ``{"trades": [...], "has_more": bool}`` - callers page by advancing
+    ``start_ms`` to the last trade's timestamp.
+    """
+    return _get(
+        "/public/get_last_trades_by_currency_and_time",
+        {
+            "currency": currency.upper(),
+            "kind": "option",
+            "start_timestamp": start_ms,
+            "end_timestamp": end_ms,
+            "count": TRADES_PAGE_SIZE,
+            "sorting": "asc",
+        },
+    )
+
+
+def fetch_delivery_prices(currency: str = "BTC", count: int = 40) -> list[dict]:
+    """Most recent daily settlement prices, newest first.
+
+    ``[{"date": "2026-08-01", "delivery_price": ...}, ...]``
+    """
+    return _get(
+        "/public/get_delivery_prices",
+        {"index_name": f"{currency.lower()}_usd", "offset": 0, "count": count},
+        key="data",
+    )
+
+
 def fetch_dvol_history(currency: str = "BTC", days: int = 365) -> list[list[float]]:
     """Daily DVOL candles ``[[ts_ms, open, high, low, close], …]`` for the past ``days``."""
     start_ms, end_ms = _window(days)

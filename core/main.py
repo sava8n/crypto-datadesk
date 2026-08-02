@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api import errors
+from api.routers.flow import router as flow_router
 from api.routers.gex import router as gex_router
 from api.routers.greeks import router as greeks_router
 from api.routers.health import router as health_router
@@ -66,3 +67,4 @@ server.include_router(spot_router, prefix="/api")
 server.include_router(stats_router, prefix="/api")
 server.include_router(vol_router, prefix="/api")
 server.include_router(history_router, prefix="/api")
+server.include_router(flow_router, prefix="/api")

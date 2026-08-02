@@ -7,7 +7,8 @@ from datetime import UTC, datetime, timedelta
 import pandas as pd
 import pytest
 
-from data.storage import read, series
+from data.clients.deribit import DeribitError
+from data.storage import flow, outcomes, read, series
 from data.storage.errors import StorageUnavailable
 
 # path -> the key holding the row array
@@ -228,6 +229,80 @@ def test_history_cm_bands_serves_percentiles(client, monkeypatch):
     assert body["resolution"] == "1d"
     assert body["points"][0]["atm_iv_p50"] == pytest.approx(0.32)
     assert body["points"][0]["count"] == 12
+
+
+def test_flow_by_strike_serves_pivoted_sums(client, monkeypatch):
+    rows = [
+        {
+            "strike": 60_000.0,
+            "call_contracts": 12.0,
+            "put_contracts": -5.0,
+            "call_premium": 100_000.0,
+            "put_premium": -40_000.0,
+        }
+    ]
+    monkeypatch.setattr(flow, "net_flow_by_strike", lambda ccy, start, end: rows)
+
+    body = client.get("/api/flow/strike").json()
+
+    assert body["window"] == "24h"
+    assert body["points"][0]["call_contracts"] == 12.0
+    assert body["points"][0]["put_premium"] == -40_000.0
+
+
+def test_flow_tape_serves_prints(client, monkeypatch):
+    print_ = {
+        "trade_id": "BTC-1",
+        "ts": datetime(2026, 8, 2, 12, tzinfo=UTC),
+        "instrument_name": "BTC-07AUG26-64000-C",
+        "expiry": datetime(2026, 8, 7, 8, tzinfo=UTC),
+        "strike": 64_000.0,
+        "option_type": "C",
+        "direction": "buy",
+        "price": 0.012,
+        "amount": 25.0,
+        "iv": 0.34,
+        "premium": 18_900.0,
+        "block_trade_id": None,
+        "liquidation": None,
+    }
+    monkeypatch.setattr(flow, "recent_prints", lambda ccy, limit, min_premium: [print_])
+
+    body = client.get("/api/flow/tape", params={"min_premium": 10_000}).json()
+
+    assert body["points"][0]["direction"] == "buy"
+    assert body["points"][0]["premium"] == 18_900.0
+
+
+def test_flow_unreachable_archive_is_503(client, monkeypatch):
+    def unavailable(ccy, start, end):
+        raise StorageUnavailable("archive unavailable")
+
+    monkeypatch.setattr(flow, "net_flow_by_expiry", unavailable)
+
+    assert client.get("/api/flow/expiration").status_code == 503
+
+
+def test_expiry_outcomes_serve_the_cache_when_upstream_is_down(client, monkeypatch):
+    row = {
+        "expiry": datetime(2026, 8, 1, 8, tzinfo=UTC),
+        "reference_as_of": datetime(2026, 7, 31, 8, tzinfo=UTC),
+        "spot_ref": 62_000.0,
+        "em_implied": 1_500.0,
+        "settlement": 63_000.0,
+        "realized_move": 1_000.0,
+    }
+
+    def failing_refresh(ccy, now, limit):
+        raise DeribitError("delivery prices unavailable")
+
+    monkeypatch.setattr(outcomes, "refresh", failing_refresh)
+    monkeypatch.setattr(outcomes, "stored", lambda ccy, limit: [row])
+
+    body = client.get("/api/prob/expiry-outcomes").json()
+
+    assert body["currency"] == "BTC"
+    assert body["points"][0]["realized_move"] == 1_000.0
 
 
 def test_history_vol_serves_archived_rows(client, monkeypatch):

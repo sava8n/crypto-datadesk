@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 LOCK_TIMEOUT_SECONDS = 5
 # ~175k contract rows per transaction at hourly captures of the BTC book
 SNAPSHOTS_PER_CHUNK = 200
+# ~5 days of BTC prints per transaction at ~10k/day
+TRADES_PER_CHUNK = 50_000
 
 
 def _aged_snapshot_ids(horizon: datetime, limit: int) -> list[int]:
@@ -49,6 +51,36 @@ def _delete_chunk(snapshot_ids: list[int]) -> tuple[int, int]:
     return contracts, snapshots
 
 
+def _delete_aged_trades(horizon: datetime) -> int:
+    """Delete prints older than ``horizon`` in bounded chunks; returns rows removed."""
+    total = 0
+    while True:
+        aged = (
+            select(schema.trade.c.trade_id)
+            .where(schema.trade.c.ts < horizon)
+            .limit(TRADES_PER_CHUNK)
+        )
+        with db.connection() as conn:
+            conn.execute(
+                text("select set_config('lock_timeout', :timeout, true)"),
+                {"timeout": f"{LOCK_TIMEOUT_SECONDS}s"},
+            )
+            removed = conn.execute(
+                schema.trade.delete().where(schema.trade.c.trade_id.in_(aged))
+            ).rowcount
+        total += removed
+        if removed < TRADES_PER_CHUNK:
+            return total
+
+
+def _delete_aged_outcomes(horizon: datetime) -> int:
+    """One small delete - a year holds only a few hundred outcome rows."""
+    with db.connection() as conn:
+        return conn.execute(
+            schema.expiry_outcome.delete().where(schema.expiry_outcome.c.expiry < horizon)
+        ).rowcount
+
+
 def prune() -> tuple[int, int]:
     """Delete everything older than the window; returns ``(contracts, snapshots)``."""
     horizon = cutoff(datetime.now(UTC), settings.retention_days)
@@ -59,10 +91,16 @@ def prune() -> tuple[int, int]:
         total_contracts += contracts
         total_snapshots += snapshots
 
+    trades = _delete_aged_trades(horizon)
+    outcomes = _delete_aged_outcomes(horizon)
+
     logger.info(
-        "retention sweep removed %d contracts and %d snapshots older than %s",
+        "retention sweep removed %d contracts, %d snapshots, %d prints and %d outcomes "
+        "older than %s",
         total_contracts,
         total_snapshots,
+        trades,
+        outcomes,
         horizon.isoformat(),
     )
     return total_contracts, total_snapshots

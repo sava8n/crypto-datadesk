@@ -606,3 +606,17 @@ body {
 .exp-table td:first-child {
   text-align: left;
 }
+
+/* ---- tape ---- */
+.tape-side--buy {
+  color: #5fded0;
+}
+
+.tape-side--sell {
+  color: #ff6b6b;
+}
+
+/* settled expiries carry history, not live positioning */
+.exp-table__settled td {
+  color: var(--text-dim);
+}

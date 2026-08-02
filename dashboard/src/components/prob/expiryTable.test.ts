@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
-import { buildExpiryRows } from './expiryTable';
-import type { MaxPainResponse, ProbQuantilePoint } from '../../types';
+import { buildExpiryRows, buildSettledRows } from './expiryTable';
+import type { ExpiryOutcomePoint, MaxPainResponse, ProbQuantilePoint } from '../../types';
 
 const maxPain = (points: MaxPainResponse['points']): MaxPainResponse => ({
   currency: 'BTC',
@@ -29,6 +29,24 @@ describe('buildExpiryRows', () => {
     expect(rows[0].maxPainPct).toBeCloseTo(-0.02);
     expect(rows[0].em).toBeCloseTo(5_000); // (p84 - p16) / 2
     expect(rows[0].emPct).toBeCloseTo(0.05);
+  });
+
+  it('shapes settled outcomes with percent context', () => {
+    const outcome: ExpiryOutcomePoint = {
+      expiry: '2026-08-01T08:00:00Z',
+      reference_as_of: '2026-07-31T08:00:00Z',
+      spot_ref: 100_000,
+      em_implied: 2_000,
+      settlement: 103_000,
+      realized_move: 3_000,
+    };
+    const rows = buildSettledRows([outcome, { ...outcome, expiry: 'e2', em_implied: null }]);
+    expect(rows[0].em).toBe(2_000);
+    expect(rows[0].emPct).toBeCloseTo(0.02);
+    expect(rows[0].realized).toBe(3_000);
+    expect(rows[0].realizedPct).toBeCloseTo(0.03);
+    expect(rows[1].em).toBeNull();
+    expect(rows[1].emPct).toBeNull();
   });
 
   it('leaves gaps null instead of dropping the expiry', () => {

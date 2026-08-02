@@ -1,7 +1,10 @@
 import type {
   CMBandsResponse,
+  ExpiryOutcomesResponse,
   ExposureGreek,
   ExposureResponse,
+  FlowByExpirationResponse,
+  FlowByStrikeResponse,
   GEXByStrikeResponse,
   GreeksChainResponse,
   IVCurvesResponse,
@@ -19,6 +22,7 @@ import type {
   SmileHistoryResponse,
   SpotHistoryResponse,
   StatsResponse,
+  TapeResponse,
   TermStructureResponse,
   VolHistoryResponse,
   VolumeByStrikeResponse,
@@ -92,6 +96,22 @@ export const fetchRVCone = (currency: string): Promise<RVConeResponse> =>
 
 export const fetchMaxPain = (currency: string): Promise<MaxPainResponse> =>
   fetchJson(url('maxPain', { currency }));
+
+export const fetchFlowByStrike = (
+  currency: string,
+  window: OIChangeWindow,
+): Promise<FlowByStrikeResponse> => fetchJson(url('flowStrike', { currency, window }));
+
+export const fetchFlowByExpiration = (
+  currency: string,
+  window: OIChangeWindow,
+): Promise<FlowByExpirationResponse> => fetchJson(url('flowExpiration', { currency, window }));
+
+export const fetchTape = (currency: string, minPremium: number): Promise<TapeResponse> =>
+  fetchJson(url('flowTape', { currency, min_premium: String(minPremium) }));
+
+export const fetchExpiryOutcomes = (currency: string): Promise<ExpiryOutcomesResponse> =>
+  fetchJson(url('expiryOutcomes', { currency }));
 
 export const fetchExposure = (
   currency: string,

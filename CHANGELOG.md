@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.0] - 2026-08-02
+
+### Added
+
+- **Trade tape** - every option print archived with its taker side, polled each minute
+- **Flow views** - net taker flow by strike and by expiration plus the raw tape, on a new FLOW tab
+
+### Changed
+
+- **Layout** - traded volume moved to FLOW
+
 ## [0.2.0] - 2026-08-02
 
 ### Added

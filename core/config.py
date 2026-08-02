@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     snapshot_interval_minutes: int = 60
     retention_days: int = 365
     retention_sweep_at_utc: time = time(0, 0)
+    tape_poll_seconds: int = 60
+    # how far back the first tape poll reaches when the archive is empty
+    tape_bootstrap_days: int = 7
 
     @property
     def snapshot_interval_seconds(self) -> int:
