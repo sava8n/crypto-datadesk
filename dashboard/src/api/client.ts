@@ -1,8 +1,12 @@
 import type {
+  CMBandsResponse,
+  ExposureGreek,
+  ExposureResponse,
   GEXByStrikeResponse,
   GreeksChainResponse,
   IVCurvesResponse,
   IVSurfaceResponse,
+  MaxPainResponse,
   OIByExpirationResponse,
   OIByStrikeResponse,
   OIChangeResponse,
@@ -12,6 +16,7 @@ import type {
   Resolution,
   RVConeResponse,
   SkewResponse,
+  SmileHistoryResponse,
   SpotHistoryResponse,
   StatsResponse,
   TermStructureResponse,
@@ -84,6 +89,27 @@ export const fetchOIChange = (
 
 export const fetchRVCone = (currency: string): Promise<RVConeResponse> =>
   fetchJson(url('rvCone', { currency }));
+
+export const fetchMaxPain = (currency: string): Promise<MaxPainResponse> =>
+  fetchJson(url('maxPain', { currency }));
+
+export const fetchExposure = (
+  currency: string,
+  greek: ExposureGreek,
+): Promise<ExposureResponse> => fetchJson(url('exposure', { currency, greek }));
+
+export const fetchSmileHistory = (
+  currency: string,
+  expiry: string,
+  window: OIChangeWindow,
+): Promise<SmileHistoryResponse> =>
+  fetchJson(url('smileHistory', { currency, expiry, window }));
+
+export const fetchCMBands = (
+  currency: string,
+  lookbackDays: number,
+): Promise<CMBandsResponse> =>
+  fetchJson(url('cmBands', { currency, lookback_days: String(lookbackDays) }));
 
 export const fetchVolHistory = (
   currency: string,

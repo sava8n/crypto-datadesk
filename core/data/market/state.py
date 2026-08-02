@@ -18,9 +18,9 @@ from analytics.frames import finite
 from analytics.vol import cone
 from analytics.iv import term
 from analytics.iv.skew import build as build_skew
-from analytics.positioning import gamma_exposure, open_interest, traded_volume
+from analytics.positioning import exposure, gamma_exposure, open_interest, traded_volume
 from analytics.prob import distribution, quantiles
-from analytics.stats import atm_iv_at, dvol_stats, realized_vol, skew_at
+from analytics.stats import atm_iv_at, cm_grid, dvol_stats, realized_vol, skew_at
 from data.market import history
 from data.market.chain import prepare_oi_chain, prepare_otm_quotes
 
@@ -88,6 +88,18 @@ class MarketState:
     @cached_property
     def oi_by_expiration(self) -> pd.DataFrame:
         return open_interest.by_expiry(self.oi_chain)
+
+    @cached_property
+    def max_pain_by_expiry(self) -> pd.DataFrame:
+        return open_interest.max_pain_by_expiry(self.oi_chain)
+
+    @cached_property
+    def vanna_exposure(self) -> pd.DataFrame:
+        return exposure.build(self.greeks_chain, self.oi_chain, "vanna")
+
+    @cached_property
+    def charm_exposure(self) -> pd.DataFrame:
+        return exposure.build(self.greeks_chain, self.oi_chain, "charm")
 
     def oi_by_strike(self, expiry: datetime | None = None) -> tuple[pd.DataFrame, float | None]:
         """Open interest per strike, and the max-pain strike.
@@ -186,6 +198,10 @@ class MarketState:
         if gex.empty:
             return None
         return finite(gex["net_gex"].sum())
+
+    @cached_property
+    def cm_grid(self) -> pd.DataFrame:
+        return cm_grid(self.term_structure, self.skew)
 
     @cached_property
     def _dvol_stats(self) -> tuple[float | None, float | None]:

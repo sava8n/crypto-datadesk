@@ -15,6 +15,9 @@ logger = logging.getLogger(__name__)
 
 Resolution = Literal["1h", "1d"]
 
+# change-window sizes shared by the baseline-diffing routes (OI change, smile history)
+WINDOWS = {"24h": timedelta(hours=24), "7d": timedelta(days=7)}
+
 # below this many daily observations a percentile says more about the window than the value
 MIN_PERCENTILE_POINTS = 30
 PERCENTILE_WINDOW_DAYS = 365
@@ -100,11 +103,48 @@ def iv30_percentile(currency: str, current: float | None) -> float | None:
     return sum(v <= current for v in values) / len(values)
 
 
-def baseline_snapshot(currency: str, target: datetime) -> tuple[int, datetime] | None:
-    """The latest archived ``(id, as_of)`` at or before ``target``."""
+def cm_bands(currency: str, start: datetime) -> list[dict]:
+    """Per-tenor percentiles of the CM grid over the window, daily-downsampled.
+
+    One row per tenor: p25/p50/p75 for atm_iv, rr25 and bf25 plus the number of daily
+    atm_iv observations behind them. ``percentile_cont`` ignores NULL inputs, so a
+    metric a day's chain did not span simply contributes nothing.
+    """
+    s, m = schema.snapshot.c, schema.cm_metric.c
+    day = func.date_trunc("day", s.as_of)
+    daily = (
+        select(m.tenor_days, m.atm_iv, m.rr25, m.bf25)
+        .join_from(schema.cm_metric, schema.snapshot, m.snapshot_id == s.id)
+        .where(s.currency == currency, s.as_of >= start)
+        .distinct(day, m.tenor_days)
+        .order_by(day, m.tenor_days, s.as_of.desc())
+        .subquery()
+    )
+
+    def pct(column, q: float):
+        return func.percentile_cont(q).within_group(column)
+
+    stmt = (
+        select(
+            daily.c.tenor_days,
+            *(
+                pct(daily.c[metric], q).label(f"{metric}_p{int(q * 100)}")
+                for metric in ("atm_iv", "rr25", "bf25")
+                for q in (0.25, 0.50, 0.75)
+            ),
+            func.count(daily.c.atm_iv).label("count"),
+        )
+        .group_by(daily.c.tenor_days)
+        .order_by(daily.c.tenor_days)
+    )
+    return _rows(stmt)
+
+
+def baseline_snapshot(currency: str, target: datetime) -> tuple[int, datetime, float] | None:
+    """The latest archived ``(id, as_of, spot)`` at or before ``target``."""
     c = schema.snapshot.c
     stmt = (
-        select(c.id, c.as_of)
+        select(c.id, c.as_of, c.spot)
         .where(c.currency == currency, c.as_of <= target)
         .order_by(c.as_of.desc())
         .limit(1)
@@ -112,7 +152,7 @@ def baseline_snapshot(currency: str, target: datetime) -> tuple[int, datetime] |
     rows = _rows(stmt)
     if not rows:
         return None
-    return int(rows[0]["id"]), rows[0]["as_of"]
+    return int(rows[0]["id"]), rows[0]["as_of"], float(rows[0]["spot"])
 
 
 def baseline_oi_by_strike(

@@ -10,6 +10,8 @@ from fastapi import APIRouter, Query
 from api.deps import CurrencyDep
 from api.responses import records
 from api.schemas.history import (
+    CMBandPoint,
+    CMBandsResponse,
     PositioningHistoryPoint,
     PositioningHistoryResponse,
     VolHistoryPoint,
@@ -39,6 +41,22 @@ def get_vol_history(
         end=end,
         resolution=resolution,
         points=records(series.vol_series(ccy, start, resolution), VolHistoryPoint),
+    )
+
+
+@router.get("/cm-bands", response_model=CMBandsResponse)
+def get_cm_bands(
+    ccy: CurrencyDep,
+    lookback_days: int = Query(90, ge=1, le=365),
+) -> CMBandsResponse:
+    """Percentile bands of the constant-maturity grid per tenor, daily-downsampled."""
+    start, end = _window(lookback_days)
+    return CMBandsResponse(
+        currency=ccy,
+        start=start,
+        end=end,
+        resolution="1d",
+        points=records(series.cm_bands(ccy, start), CMBandPoint),
     )
 
 

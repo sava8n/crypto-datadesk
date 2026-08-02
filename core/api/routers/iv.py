@@ -1,8 +1,13 @@
-"""Implied-volatility routes: surface, smile curves, skew and term structure."""
+"""Implied-volatility routes: surface, smile curves, skew, term structure and the
+archived smile."""
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from datetime import datetime
+from typing import Literal
+
+import pandas as pd
+from fastapi import APIRouter, Query
 
 from api.deps import CurrencyDep, StateDep
 from api.responses import envelope, points
@@ -13,9 +18,12 @@ from api.schemas.iv import (
     IVSurfaceResponse,
     SkewPoint,
     SkewResponse,
+    SmileHistoryResponse,
     TermStructurePoint,
     TermStructureResponse,
 )
+from data.market.chain import prepare_otm_quotes
+from data.storage import read, series
 
 router = APIRouter(prefix="/iv", tags=["volatility"])
 
@@ -35,6 +43,37 @@ def get_iv_curves(ccy: CurrencyDep, state: StateDep) -> IVCurvesResponse:
     return IVCurvesResponse(
         **envelope(ccy, state),
         points=points(state.otm_quotes, IVCurvePoint),
+    )
+
+
+@router.get("/smile-history", response_model=SmileHistoryResponse)
+def get_smile_history(
+    ccy: CurrencyDep,
+    state: StateDep,
+    expiry: datetime = Query(...),
+    window: Literal["24h", "7d"] = Query("24h"),
+) -> SmileHistoryResponse:
+    """The smile for ``expiry`` as the service served it ``window`` ago.
+
+    The archived book is restored and re-filtered through the same OTM quality gate as
+    the live curves, priced off the spot stored with the capture. ``baseline_as_of``
+    ``None`` with empty points means nothing that old is archived; an expiry that was
+    not yet listed then simply yields no points.
+    """
+    baseline = series.baseline_snapshot(ccy, state.as_of - series.WINDOWS[window])
+    if baseline is None:
+        return SmileHistoryResponse(
+            **envelope(ccy, state), expiry=expiry, window=window, points=[]
+        )
+
+    snapshot_id, baseline_as_of, spot_then = baseline
+    quotes = prepare_otm_quotes(read.load_contracts(snapshot_id), spot_then)
+    return SmileHistoryResponse(
+        **envelope(ccy, state),
+        expiry=expiry,
+        window=window,
+        baseline_as_of=baseline_as_of,
+        points=points(quotes[quotes["expiry"] == pd.Timestamp(expiry)], IVCurvePoint),
     )
 
 

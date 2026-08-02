@@ -10,6 +10,7 @@ from analytics.positioning.open_interest import (
     by_strike,
     intrinsic_values,
     max_pain,
+    max_pain_by_expiry,
     strike_change,
 )
 
@@ -79,6 +80,30 @@ def test_intrinsic_value_and_max_pain():
 def test_max_pain_empty_returns_none():
     empty = pd.DataFrame({"strike": [], "option_type": [], "open_interest": []})
     assert max_pain(intrinsic_values(empty)) is None
+
+
+def test_max_pain_by_expiry_settles_each_expiry_alone():
+    later = pd.Timestamp("2035-03-28", tz="UTC")
+    chain = _chain(
+        [
+            (_EXPIRY, 0.1, 100.0, 110.0, "C", 1.0),
+            (_EXPIRY, 0.1, 120.0, 110.0, "P", 1.0),
+            (later, 0.2, 200.0, 210.0, "C", 1.0),
+            (later, 0.2, 220.0, 210.0, "P", 5.0),
+        ]
+    )
+    out = max_pain_by_expiry(chain)
+    assert list(out["expiry"]) == [_EXPIRY, later]  # sorted by tte
+    # first expiry ties at 20 -> lowest strike wins (same rule as max_pain)
+    assert out.iloc[0]["max_pain"] == pytest.approx(100.0)
+    # second: settling at 200 pays the put 5 * 20 = 100; at 220 the call pays 20
+    assert out.iloc[1]["max_pain"] == pytest.approx(220.0)
+
+
+def test_max_pain_by_expiry_empty_is_typed(assert_declared_dtypes):
+    out = max_pain_by_expiry(_chain([]))
+    assert out.empty
+    assert_declared_dtypes(out)
 
 
 def test_strike_change_overlap_appearing_and_disappearing():

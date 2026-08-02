@@ -52,6 +52,36 @@ def skew_at(skew: pd.DataFrame, days: float = 30.0) -> tuple[float | None, float
     return rr, bf
 
 
+CM_TENOR_DAYS = (7.0, 14.0, 30.0, 60.0, 90.0, 180.0)
+CM_COLUMNS = ["tenor_days", "atm_iv", "rr25", "bf25"]
+
+
+def _covers(frame: pd.DataFrame, days: float) -> bool:
+    """Whether the term/skew frame's tte range spans the tenor without clamping."""
+    if frame.empty:
+        return False
+    tte = frame["tte_years"]
+    return bool(tte.iloc[0] <= days / YEAR_DAYS <= tte.iloc[-1])
+
+
+def cm_grid(term: pd.DataFrame, skew: pd.DataFrame) -> pd.DataFrame:
+    """Constant-maturity ATM IV and 25Δ skew per tenor, CM_COLUMNS.
+
+    Unlike the headline scalars, tenors outside a source frame's tte range yield NaN
+    rather than a clamped value: a clamped 180d "observation" from a 30d chain would
+    poison the percentile history the grid exists for. Tenors with no metric at all
+    are dropped.
+    """
+    rows = []
+    for days in CM_TENOR_DAYS:
+        atm = atm_iv_at(term, days) if _covers(term, days) else None
+        rr, bf = skew_at(skew, days) if _covers(skew, days) else (None, None)
+        if atm is None and rr is None and bf is None:
+            continue
+        rows.append({"tenor_days": days, "atm_iv": atm, "rr25": rr, "bf25": bf})
+    return pd.DataFrame(rows, columns=CM_COLUMNS, dtype=float)
+
+
 def realized_vol(closes: list[float], days: int = 30) -> float | None:
     """Annualized std of the last ``days`` daily log returns.
 

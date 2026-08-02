@@ -7,7 +7,7 @@ import math
 import pandas as pd
 import pytest
 
-from analytics.stats import atm_iv_at, dvol_stats, realized_vol, skew_at
+from analytics.stats import atm_iv_at, cm_grid, dvol_stats, realized_vol, skew_at
 
 
 def _candle(close):
@@ -86,3 +86,28 @@ def test_skew_at_clamps_beyond_chain():
 
 def test_skew_at_empty_returns_none_pair():
     assert skew_at(pd.DataFrame({"tte_years": [], "rr": [], "bf": []})) == (None, None)
+
+
+def test_cm_grid_covers_only_spanned_tenors():
+    """A tenor outside the chain's tte range is absent, not clamped - a clamped 180d
+    "observation" from a 30d chain would poison the percentile history."""
+    term = pd.DataFrame({"tte_years": [0.05, 0.30], "atm_iv": [0.6, 0.5]})
+    skew = pd.DataFrame({"tte_years": [0.05, 0.30], "rr": [-0.04, -0.06], "bf": [0.01, 0.02]})
+    out = cm_grid(term, skew)
+    # 7d and 14d sit before the front expiry, 180d past the back; 30/60/90 are spanned
+    assert list(out["tenor_days"]) == [30.0, 60.0, 90.0]
+    assert out[["atm_iv", "rr25", "bf25"]].notna().all().all()
+
+
+def test_cm_grid_partial_sources_leave_nan():
+    term = pd.DataFrame({"tte_years": [0.05, 0.30], "atm_iv": [0.6, 0.5]})
+    out = cm_grid(term, pd.DataFrame({"tte_years": [], "rr": [], "bf": []}))
+    assert list(out["tenor_days"]) == [30.0, 60.0, 90.0]
+    assert out["atm_iv"].notna().all()
+    assert out["rr25"].isna().all()
+
+
+def test_cm_grid_empty_sources_is_empty():
+    empty_term = pd.DataFrame({"tte_years": [], "atm_iv": []})
+    empty_skew = pd.DataFrame({"tte_years": [], "rr": [], "bf": []})
+    assert cm_grid(empty_term, empty_skew).empty

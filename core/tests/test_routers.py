@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
+import pandas as pd
 import pytest
 
-from data.storage import series
+from data.storage import read, series
 from data.storage.errors import StorageUnavailable
 
 # path -> the key holding the row array
@@ -22,6 +23,8 @@ _MARKET_ENDPOINTS = {
     "/api/prob/curves": "points",
     "/api/volume/strike": "points",
     "/api/vol/cone": "points",
+    "/api/gex/exposure": "points",
+    "/api/oi/max-pain": "points",
     "/api/spot/history": "candles",
     "/api/stats": None,
 }
@@ -138,7 +141,9 @@ def test_oi_strike_change_diffs_against_the_baseline(client, market_state, monke
             chain["strike"], chain["option_type"], chain["open_interest"], strict=True
         )
     ]
-    monkeypatch.setattr(series, "baseline_snapshot", lambda ccy, target: (1, baseline_as_of))
+    monkeypatch.setattr(
+        series, "baseline_snapshot", lambda ccy, target: (1, baseline_as_of, 100_000.0)
+    )
     monkeypatch.setattr(series, "baseline_oi_by_strike", lambda sid, expiry, now: halved)
 
     body = client.get("/api/oi/strike-change").json()
@@ -157,6 +162,72 @@ def test_oi_strike_change_without_a_baseline_is_empty(client, monkeypatch):
     assert body["window"] == "7d"
     assert body["baseline_as_of"] is None
     assert body["points"] == []
+
+
+def test_exposure_serves_both_greeks(client, market_state):
+    for greek, frame in (("vanna", market_state.vanna_exposure), ("charm", market_state.charm_exposure)):
+        body = client.get("/api/gex/exposure", params={"greek": greek}).json()
+        assert body["greek"] == greek
+        assert len(body["points"]) == len(frame)
+        assert body["points"][0]["net_exposure"] == pytest.approx(frame["net_exposure"].iloc[0])
+
+
+def test_max_pain_by_expiry_leads_with_the_front(client, market_state):
+    body = client.get("/api/oi/max-pain").json()
+    assert len(body["points"]) == len(market_state.oi_expiries)
+    assert body["points"][0]["max_pain"] == pytest.approx(market_state.max_pain_front)
+
+
+def test_smile_history_restores_the_archived_smile(client, market_state, monkeypatch):
+    baseline_as_of = market_state.as_of - timedelta(hours=24)
+    monkeypatch.setattr(
+        series, "baseline_snapshot", lambda ccy, target: (7, baseline_as_of, market_state.spot)
+    )
+    monkeypatch.setattr(read, "load_contracts", lambda sid: market_state.contracts)
+    expiry = market_state.otm_expiries[0]
+
+    body = client.get(
+        "/api/iv/smile-history", params={"expiry": expiry.isoformat(), "window": "24h"}
+    ).json()
+
+    assert body["baseline_as_of"].startswith(baseline_as_of.strftime("%Y-%m-%dT%H:%M:%S"))
+    quotes = market_state.otm_quotes
+    assert len(body["points"]) == int((quotes["expiry"] == pd.Timestamp(expiry)).sum())
+    assert all(p["mark_iv"] > 0 for p in body["points"])
+
+
+def test_smile_history_without_a_baseline_is_empty(client, market_state, monkeypatch):
+    monkeypatch.setattr(series, "baseline_snapshot", lambda ccy, target: None)
+
+    body = client.get(
+        "/api/iv/smile-history", params={"expiry": market_state.otm_expiries[0].isoformat()}
+    ).json()
+
+    assert body["baseline_as_of"] is None
+    assert body["points"] == []
+
+
+def test_history_cm_bands_serves_percentiles(client, monkeypatch):
+    row = {
+        "tenor_days": 30.0,
+        "atm_iv_p25": 0.30,
+        "atm_iv_p50": 0.32,
+        "atm_iv_p75": 0.35,
+        "rr25_p25": -0.06,
+        "rr25_p50": -0.05,
+        "rr25_p75": -0.04,
+        "bf25_p25": 0.005,
+        "bf25_p50": 0.008,
+        "bf25_p75": 0.012,
+        "count": 12,
+    }
+    monkeypatch.setattr(series, "cm_bands", lambda ccy, start: [row])
+
+    body = client.get("/api/history/cm-bands").json()
+
+    assert body["resolution"] == "1d"
+    assert body["points"][0]["atm_iv_p50"] == pytest.approx(0.32)
+    assert body["points"][0]["count"] == 12
 
 
 def test_history_vol_serves_archived_rows(client, monkeypatch):

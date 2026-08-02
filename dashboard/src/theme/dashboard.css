@@ -573,3 +573,36 @@ body {
   width: 100%;
   padding: 7px 0;
 }
+
+/* ---- expiry table ---- */
+.exp-table {
+  overflow: auto;
+}
+
+.exp-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.exp-table th {
+  color: var(--text-dim);
+  text-align: right;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-bright);
+  letter-spacing: 1px;
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.exp-table td {
+  color: var(--amber);
+  text-align: right;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.exp-table th:first-child,
+.exp-table td:first-child {
+  text-align: left;
+}

@@ -69,6 +69,20 @@ def test_snapshot_row_carries_derived_scalars(market_state):
         assert row[name] == getattr(market_state, name)
 
 
+def test_cm_rows_cover_the_spanned_tenors(market_state):
+    out = rows.cm_rows(market_state, 7)
+
+    assert len(out) == len(market_state.cm_grid)
+    assert len(out) > 0  # the conftest chain spans at least the 30d tenor
+    assert {r["snapshot_id"] for r in out} == {7}
+    assert all(r["tenor_days"] > 0 for r in out)
+
+
+def test_cm_rows_empty_grid_yields_no_rows():
+    empty = pd.DataFrame({"tenor_days": [], "atm_iv": [], "rr25": [], "bf25": []})
+    assert rows.cm_rows(_State(cm_grid=empty), 1) == []
+
+
 def test_contract_rows_cover_the_unfiltered_book(market_state):
     out = rows.contract_rows(market_state, 7)
 

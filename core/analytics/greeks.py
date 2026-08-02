@@ -4,6 +4,10 @@ delta = N(d1) calls, N(d1) - 1 puts
 gamma = n(d1) / (F sigma sqrt(T))                 per $1 of forward
 theta = -F n(d1) sigma / (2 sqrt(T)) / YEAR_DAYS  per calendar day
 vega  = F n(d1) sqrt(T) * VOL_POINT               per vol point
+vanna = -n(d1) d2 / sigma * VOL_POINT             delta change per vol point
+charm = n(d1) d2 / (2T) / YEAR_DAYS               delta change per calendar day
+
+Zero rates make vanna and charm identical for the call and put at a strike, like gamma.
 """
 
 from __future__ import annotations
@@ -27,6 +31,8 @@ GREEKS_COLUMNS = [
     "gamma",
     "theta",
     "vega",
+    "vanna",
+    "charm",
 ]
 
 # vega is quoted per vol *point* - a 0.01 move in sigma, which is a fraction (0.65 = 65%)
@@ -47,6 +53,7 @@ def build(quotes: pd.DataFrame) -> pd.DataFrame:
     valid = valid_mask(forward, strike, tte, sigma)
     with np.errstate(divide="ignore", invalid="ignore"):
         d1_values = d1(forward, strike, tte, sigma)
+        d2_values = d1_values - sigma * np.sqrt(tte)
         pdf = norm_pdf(d1_values)
         sqrt_tte = np.sqrt(tte)
         result["delta"] = np.where(valid, delta_from_d1(d1_values, is_call), np.nan)
@@ -55,4 +62,6 @@ def build(quotes: pd.DataFrame) -> pd.DataFrame:
             valid, -forward * pdf * sigma / (2.0 * sqrt_tte) / YEAR_DAYS, np.nan
         )
         result["vega"] = np.where(valid, forward * pdf * sqrt_tte * VOL_POINT, np.nan)
+        result["vanna"] = np.where(valid, -pdf * d2_values / sigma * VOL_POINT, np.nan)
+        result["charm"] = np.where(valid, pdf * d2_values / (2.0 * tte) / YEAR_DAYS, np.nan)
     return result[GREEKS_COLUMNS]

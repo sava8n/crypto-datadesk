@@ -2,17 +2,22 @@ import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
 
 import EChart from '../chart/EChart';
-import type { TermStructureResponse } from '../../types';
+import type { CMBandPoint, TermStructureResponse } from '../../types';
 import { DAYS_PER_YEAR } from '../../utils/constants';
 import { dteLabel, expiryLabel, pctOne, pctWhole } from '../../utils/format';
 import { AMBER } from '../../theme/charts';
 import { grid, itemTooltip, valueAxisX, valueAxisY } from '../../theme/options';
+import { bandRows, bandSeries } from './bands';
 
-export function buildTermStructureOption(data: TermStructureResponse): EChartsOption {
+export function buildTermStructureOption(
+  data: TermStructureResponse,
+  bands: CMBandPoint[] = [],
+): EChartsOption {
   // one ATM IV per expiry, plotted time-proportionally by days-to-expiry
   const rows = data.points
     .map((p) => ({ dte: p.tte_years * DAYS_PER_YEAR, iv: p.atm_iv, expiry: p.expiry }))
     .sort((a, b) => a.dte - b.dte);
+  const maxDte = rows[rows.length - 1]?.dte ?? 0;
 
   return {
     backgroundColor: 'transparent',
@@ -25,6 +30,8 @@ export function buildTermStructureOption(data: TermStructureResponse): EChartsOp
     xAxis: valueAxisX({ name: 'DTE', scale: true, min: 0, format: dteLabel }),
     yAxis: valueAxisY({ name: 'IV', scale: true, format: pctWhole }),
     series: [
+      // shaded p25-p75 of the archived CM grid, under the live curve
+      ...bandSeries(bandRows(bands, 'atm_iv', maxDte), AMBER),
       {
         type: 'line',
         name: 'ATM IV',
@@ -39,6 +46,12 @@ export function buildTermStructureOption(data: TermStructureResponse): EChartsOp
   };
 }
 
-export default function TermStructureChart({ data }: { data: TermStructureResponse }) {
-  return <EChart option={useMemo(() => buildTermStructureOption(data), [data])} />;
+export default function TermStructureChart({
+  data,
+  bands,
+}: {
+  data: TermStructureResponse;
+  bands?: CMBandPoint[];
+}) {
+  return <EChart option={useMemo(() => buildTermStructureOption(data, bands), [data, bands])} />;
 }

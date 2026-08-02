@@ -2,22 +2,24 @@ import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
 
 import EChart from '../chart/EChart';
-import type { SkewResponse } from '../../types';
+import type { CMBandPoint, SkewResponse } from '../../types';
 import { DAYS_PER_YEAR } from '../../utils/constants';
 import { dteLabel, expiryLabel, pctOne } from '../../utils/format';
 import { AMBER, CALL, MUTED } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, valueAxisX, valueAxisY } from '../../theme/options';
+import { bandRows, bandSeries } from './bands';
 
 const SERIES_NAMES = ['RR 25Δ', 'BF 25Δ'];
 
 // RR/BF live in single vol points, so one decimal: 0.042 -> "4.2%"
 const volPct = (v: number) => `${pctOne(v)}%`;
 
-export function buildSkewOption(data: SkewResponse): EChartsOption {
+export function buildSkewOption(data: SkewResponse, bands: CMBandPoint[] = []): EChartsOption {
   // one RR/BF pair per expiry, plotted time-proportionally by days-to-expiry
   const rows = data.points
     .map((p) => ({ dte: p.tte_years * DAYS_PER_YEAR, rr: p.rr, bf: p.bf, expiry: p.expiry }))
     .sort((a, b) => a.dte - b.dte);
+  const maxDte = rows[rows.length - 1]?.dte ?? 0;
 
   return {
     backgroundColor: 'transparent',
@@ -33,6 +35,8 @@ export function buildSkewOption(data: SkewResponse): EChartsOption {
     xAxis: valueAxisX({ name: 'DTE', scale: true, min: 0, format: dteLabel }),
     yAxis: valueAxisY({ name: 'ΔIV', scale: true, format: volPct }),
     series: [
+      // shaded p25-p75 of the archived CM risk reversal, under the live curves
+      ...bandSeries(bandRows(bands, 'rr25', maxDte), AMBER),
       {
         type: 'line',
         name: 'RR 25Δ',
@@ -65,6 +69,12 @@ export function buildSkewOption(data: SkewResponse): EChartsOption {
   };
 }
 
-export default function SkewChart({ data }: { data: SkewResponse }) {
-  return <EChart option={useMemo(() => buildSkewOption(data), [data])} />;
+export default function SkewChart({
+  data,
+  bands,
+}: {
+  data: SkewResponse;
+  bands?: CMBandPoint[];
+}) {
+  return <EChart option={useMemo(() => buildSkewOption(data, bands), [data, bands])} />;
 }

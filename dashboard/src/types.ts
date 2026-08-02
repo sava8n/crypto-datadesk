@@ -183,6 +183,40 @@ export interface OIByStrikeResponse extends MarketEnvelope {
 
 export type OIChangeWindow = '24h' | '7d';
 
+export interface MaxPainPoint {
+  expiry: string;
+  tte_years: number;
+  // null when the expiry's slice was uninvertible
+  max_pain: number | null;
+}
+
+export interface MaxPainResponse extends MarketEnvelope {
+  points: MaxPainPoint[];
+}
+
+export type ExposureGreek = 'vanna' | 'charm';
+
+export interface ExposurePoint {
+  strike: number;
+  call_exposure: number;
+  put_exposure: number;
+  net_exposure: number;
+}
+
+export interface ExposureResponse extends MarketEnvelope {
+  // dollar delta per 1 vol-pt (vanna) or per calendar day (charm)
+  greek: ExposureGreek;
+  points: ExposurePoint[];
+}
+
+export interface SmileHistoryResponse extends MarketEnvelope {
+  expiry: string;
+  window: OIChangeWindow;
+  // the archived book actually served; null = nothing archived that far back
+  baseline_as_of: string | null;
+  points: IVCurvePoint[];
+}
+
 export interface OIChangePoint {
   strike: number;
   call_oi_change: number;
@@ -255,4 +289,23 @@ export interface PositioningHistoryPoint {
 
 export interface PositioningHistoryResponse extends HistoryEnvelope {
   points: PositioningHistoryPoint[];
+}
+
+export interface CMBandPoint {
+  tenor_days: number;
+  atm_iv_p25: number | null;
+  atm_iv_p50: number | null;
+  atm_iv_p75: number | null;
+  rr25_p25: number | null;
+  rr25_p50: number | null;
+  rr25_p75: number | null;
+  bf25_p25: number | null;
+  bf25_p50: number | null;
+  bf25_p75: number | null;
+  // daily atm_iv observations behind the percentiles
+  count: number;
+}
+
+export interface CMBandsResponse extends HistoryEnvelope {
+  points: CMBandPoint[];
 }

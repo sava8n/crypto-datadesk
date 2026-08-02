@@ -47,3 +47,22 @@ class PositioningHistoryPoint(BaseModel):
 
 class PositioningHistoryResponse(HistoryEnvelope):
     points: list[PositioningHistoryPoint]
+
+
+class CMBandPoint(BaseModel):
+    tenor_days: float
+    atm_iv_p25: float | None = None
+    atm_iv_p50: float | None = None
+    atm_iv_p75: float | None = None
+    rr25_p25: float | None = None
+    rr25_p50: float | None = None
+    rr25_p75: float | None = None
+    bf25_p25: float | None = None
+    bf25_p50: float | None = None
+    bf25_p75: float | None = None
+    # daily atm_iv observations behind the percentiles
+    count: int
+
+
+class CMBandsResponse(HistoryEnvelope):
+    points: list[CMBandPoint]

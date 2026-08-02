@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -30,6 +31,14 @@ class IVCurvePoint(BaseModel):
 
 
 class IVCurvesResponse(MarketEnvelope):
+    points: list[IVCurvePoint]
+
+
+class SmileHistoryResponse(MarketEnvelope):
+    expiry: datetime
+    window: Literal["24h", "7d"]
+    # the archived book actually served; None = nothing archived that far back
+    baseline_as_of: datetime | None = None
     points: list[IVCurvePoint]
 
 

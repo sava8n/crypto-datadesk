@@ -1,9 +1,13 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import { useRefreshMs } from '../settings/store';
-import type { OIChangeWindow, Resolution } from '../types';
+import type { ExposureGreek, OIChangeWindow, Resolution } from '../types';
 import * as client from './client';
 import type { EndpointName } from './endpoints';
+
+// one fixed window for the percentile band overlays; a per-panel control would couple
+// the bands to a lookback the underlying live charts do not have
+export const BAND_LOOKBACK_DAYS = 90;
 
 /**
  * Poll options shared by every resource.
@@ -51,6 +55,39 @@ export function useOIByStrike(currency: string, expiry?: string | null) {
 }
 
 export const useRVCone = resourceHook('rvCone', client.fetchRVCone);
+export const useMaxPain = resourceHook('maxPain', client.fetchMaxPain);
+
+export function useExposure(currency: string, greek: ExposureGreek) {
+  return useQuery({
+    queryKey: ['exposure', currency, greek],
+    queryFn: () => client.fetchExposure(currency, greek),
+    // keep the chart populated while switching greek
+    placeholderData: keepPreviousData,
+    ...polling(useRefreshMs()),
+  });
+}
+
+export function useSmileHistory(
+  currency: string,
+  expiry: string | null,
+  window: OIChangeWindow,
+) {
+  return useQuery({
+    queryKey: ['smileHistory', currency, expiry, window],
+    queryFn: () => client.fetchSmileHistory(currency, expiry as string, window),
+    enabled: expiry != null,
+    placeholderData: keepPreviousData,
+    ...polling(useRefreshMs()),
+  });
+}
+
+export function useCMBands(currency: string) {
+  return useQuery({
+    queryKey: ['cmBands', currency],
+    queryFn: () => client.fetchCMBands(currency, BAND_LOOKBACK_DAYS),
+    ...polling(useRefreshMs()),
+  });
+}
 
 export function useOIChange(currency: string, window: OIChangeWindow, expiry?: string | null) {
   return useQuery({

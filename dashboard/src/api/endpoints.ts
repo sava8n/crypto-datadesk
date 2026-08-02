@@ -11,9 +11,13 @@ export const ENDPOINTS = {
   oiByStrike: 'oi/strike',
   volumeByStrike: 'volume/strike',
   oiChange: 'oi/strike-change',
+  maxPain: 'oi/max-pain',
+  exposure: 'gex/exposure',
+  smileHistory: 'iv/smile-history',
   rvCone: 'vol/cone',
   historyVol: 'history/vol',
   historyPositioning: 'history/positioning',
+  cmBands: 'history/cm-bands',
   stats: 'stats',
   spotHistory: 'spot/history',
 } as const;

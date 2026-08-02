@@ -87,3 +87,19 @@ Index(
     contract.c.option_type,
     contract.c.snapshot_id,
 )
+
+# constant-maturity tenor grid per capture; tenors a snapshot's chain did not span are
+# absent rather than clamped, so percentiles over this table stay honest
+cm_metric = Table(
+    "cm_metric",
+    metadata,
+    Column(
+        "snapshot_id", BigInteger, ForeignKey("snapshot.id", ondelete="CASCADE"), nullable=False
+    ),
+    Column("tenor_days", Float, nullable=False),
+    Column("atm_iv", Float),
+    Column("rr25", Float),
+    Column("bf25", Float),
+    PrimaryKeyConstraint("snapshot_id", "tenor_days"),
+    CheckConstraint("tenor_days > 0", name="ck_cm_metric_tenor_positive"),
+)

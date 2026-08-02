@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Literal
 
 import pandas as pd
@@ -12,6 +12,8 @@ from analytics.positioning import open_interest
 from api.deps import CurrencyDep, StateDep
 from api.responses import envelope, points
 from api.schemas.oi import (
+    MaxPainPoint,
+    MaxPainResponse,
     OIByExpirationPoint,
     OIByExpirationResponse,
     OIByStrikePoint,
@@ -23,7 +25,6 @@ from data.storage import series
 
 router = APIRouter(prefix="/oi", tags=["open-interest"])
 
-WINDOWS = {"24h": timedelta(hours=24), "7d": timedelta(days=7)}
 BASELINE_COLUMNS = ["strike", "option_type", "open_interest"]
 
 
@@ -57,6 +58,15 @@ def get_oi_by_strike(
     )
 
 
+@router.get("/max-pain", response_model=MaxPainResponse)
+def get_max_pain_by_expiry(ccy: CurrencyDep, state: StateDep) -> MaxPainResponse:
+    """Max-pain strike per expiry across the chain."""
+    return MaxPainResponse(
+        **envelope(ccy, state),
+        points=points(state.max_pain_by_expiry, MaxPainPoint),
+    )
+
+
 @router.get("/strike-change", response_model=OIChangeResponse)
 def get_oi_strike_change(
     ccy: CurrencyDep,
@@ -70,7 +80,7 @@ def get_oi_strike_change(
     ``baseline_as_of`` reports the baseline actually used; ``None`` with empty points
     means nothing that old is archived yet.
     """
-    baseline = series.baseline_snapshot(ccy, state.as_of - WINDOWS[window])
+    baseline = series.baseline_snapshot(ccy, state.as_of - series.WINDOWS[window])
     if baseline is None:
         return OIChangeResponse(
             **envelope(ccy, state),
@@ -80,7 +90,7 @@ def get_oi_strike_change(
             points=[],
         )
 
-    snapshot_id, baseline_as_of = baseline
+    snapshot_id, baseline_as_of, _spot = baseline
     then = pd.DataFrame(
         series.baseline_oi_by_strike(snapshot_id, expiry, state.as_of),
         columns=BASELINE_COLUMNS,

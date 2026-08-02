@@ -39,6 +39,16 @@ class OIByStrikeResponse(MarketEnvelope):
     points: list[OIByStrikePoint]
 
 
+class MaxPainPoint(BaseModel):
+    expiry: datetime
+    tte_years: float
+    max_pain: float | None = None  # None when the expiry's slice was uninvertible
+
+
+class MaxPainResponse(MarketEnvelope):
+    points: list[MaxPainPoint]
+
+
 class OIChangePoint(BaseModel):
     strike: float
     call_oi_change: float

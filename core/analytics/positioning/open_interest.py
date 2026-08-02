@@ -12,7 +12,14 @@ import logging
 import numpy as np
 import pandas as pd
 
-from analytics.frames import BUCKETS, as_declared_dtypes, empty_frame, moneyness_bucket, sum_by
+from analytics.frames import (
+    BUCKETS,
+    as_declared_dtypes,
+    empty_frame,
+    expiry_tte,
+    moneyness_bucket,
+    sum_by,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +27,7 @@ BY_EXPIRY_COLUMNS = ["expiry", "tte_years", *BUCKETS]
 BY_STRIKE_COLUMNS = ["strike", *BUCKETS]
 INTRINSIC_COLUMNS = ["strike", "intrinsic_value"]
 CHANGE_COLUMNS = ["strike", "call_oi_change", "put_oi_change"]
+MAX_PAIN_COLUMNS = ["expiry", "tte_years", "max_pain"]
 
 
 def by_expiry(chain: pd.DataFrame) -> pd.DataFrame:
@@ -131,3 +139,25 @@ def max_pain(intrinsic: pd.DataFrame) -> float | None:
     if intrinsic.empty:
         return None
     return float(intrinsic.loc[intrinsic["intrinsic_value"].idxmin(), "strike"])
+
+
+def max_pain_by_expiry(chain: pd.DataFrame) -> pd.DataFrame:
+    """Max-pain strike per expiry, sorted by tte.
+
+    Each expiry settles on its own date, so this is the per-expiry loop the
+    single-expiry constraint on ``intrinsic_values`` demands.
+    """
+    if chain.empty:
+        return empty_frame(MAX_PAIN_COLUMNS)
+    rows = [
+        {
+            "expiry": expiry,
+            "tte_years": expiry_tte(group),
+            "max_pain": max_pain(intrinsic_values(group)),
+        }
+        for expiry, group in chain.groupby("expiry", sort=False)
+    ]
+    result = (
+        pd.DataFrame(rows, columns=MAX_PAIN_COLUMNS).sort_values("tte_years").reset_index(drop=True)
+    )
+    return as_declared_dtypes(result)

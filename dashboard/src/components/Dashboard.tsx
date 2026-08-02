@@ -13,7 +13,10 @@ import { GREEKS } from './greeks/greeks';
 import BasisSection from './basis/BasisSection';
 import ProbCurvesSection from './prob/ProbCurvesSection';
 import ProbDistributionSection from './prob/ProbDistributionSection';
+import ExposureSection from './gex/ExposureSection';
 import GEXByStrikeSection from './gex/GEXByStrikeSection';
+import SmileCompareSection from './iv/SmileCompareSection';
+import ExpiryTableSection from './prob/ExpiryTableSection';
 import OIByExpirationSection from './oi/OIByExpirationSection';
 import OIByStrikeSection from './oi/OIByStrikeSection';
 import OIChangeSection from './oi/OIChangeSection';
@@ -24,6 +27,7 @@ import GexLevelsHistorySection from './history/GexLevelsHistorySection';
 import OIHistorySection from './history/OIHistorySection';
 import SkewHistorySection from './history/SkewHistorySection';
 import VolHistorySection from './history/VolHistorySection';
+import VrpSection from './history/VrpSection';
 
 export default function Dashboard() {
   const [tab, setTab] = useState<TabId>('positioning');
@@ -44,6 +48,7 @@ export default function Dashboard() {
             <OIByStrikeSection />
             <OIByExpirationSection />
             <OIChangeSection />
+            <ExposureSection />
             <VolumeByStrikeSection />
           </div>
         )}
@@ -55,6 +60,7 @@ export default function Dashboard() {
             <IVCurvesSection />
             <IVSurfaceSection />
             <RVConeSection />
+            <SmileCompareSection />
           </div>
         )}
 
@@ -64,6 +70,7 @@ export default function Dashboard() {
             <SkewHistorySection />
             <OIHistorySection />
             <GexLevelsHistorySection />
+            <VrpSection />
           </div>
         )}
 
@@ -71,6 +78,7 @@ export default function Dashboard() {
           <div className="panels">
             <ProbCurvesSection />
             <ProbDistributionSection />
+            <ExpiryTableSection />
           </div>
         )}
 

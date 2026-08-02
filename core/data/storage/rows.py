@@ -53,6 +53,8 @@ class Archivable(Protocol):
     def max_pain_front(self) -> float | None: ...
     @property
     def gex_net_total(self) -> float | None: ...
+    @property
+    def cm_grid(self) -> pd.DataFrame: ...
 
 
 # scalars derived from (contracts, spot) alone - no candle history involved, so the
@@ -98,6 +100,19 @@ def snapshot_row(state: Archivable, currency: str) -> dict | None:
         "gex_flip": finite(state.gex_flip),
         **derived_row(state),
     }
+
+
+def cm_rows(state: Archivable, snapshot_id: int) -> list[dict]:
+    """One row per constant-maturity tenor the capture's chain spanned; NaN -> None."""
+    grid = state.cm_grid
+    if grid.empty:
+        return []
+    rows_ = grid.astype(object)
+    rows_.insert(0, "snapshot_id", snapshot_id)
+    return [
+        {key: (None if pd.isna(value) else value) for key, value in record.items()}
+        for record in rows_.to_dict("records")
+    ]
 
 
 def contract_rows(state: Archivable, snapshot_id: int) -> list[dict]:

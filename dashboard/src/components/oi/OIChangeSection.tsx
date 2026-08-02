@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useOIChange } from '../../api/queries';
 import type { OIChangeWindow } from '../../types';
 import ExpirySelect from '../controls/ExpirySelect';
+import WindowSelect from '../controls/WindowSelect';
 import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
@@ -10,36 +11,6 @@ import { useCurrency } from '../../settings/store';
 import { useExpiryPicker } from '../controls/useExpiryPicker';
 import { expiryLabel, timeLabel } from '../../utils/format';
 import OIChangeChart from './OIChangeChart';
-
-const WINDOWS: { value: OIChangeWindow; label: string }[] = [
-  { value: '24h', label: '24H' },
-  { value: '7d', label: '7D' },
-];
-
-function WindowSelect({
-  window,
-  onSelect,
-}: {
-  window: OIChangeWindow;
-  onSelect: (w: OIChangeWindow) => void;
-}) {
-  return (
-    <label className="expiry">
-      <span className="expiry__label">WINDOW</span>
-      <select
-        className="expiry__select"
-        value={window}
-        onChange={(e) => onSelect(e.target.value as OIChangeWindow)}
-      >
-        {WINDOWS.map(({ value, label }) => (
-          <option key={value} value={value}>
-            {label}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
 
 export default function OIChangeSection() {
   const currency = useCurrency();
