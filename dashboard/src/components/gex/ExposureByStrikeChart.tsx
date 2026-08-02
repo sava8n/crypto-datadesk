@@ -10,7 +10,7 @@ import { axisTooltip, categoryAxisX, grid, legendBar, valueAxisY } from '../../t
 // dollar delta gained per 1 vol-pt rise (vanna) or per calendar day passing (charm)
 const AXIS_NAMES = { vanna: 'VEX / VOL PT', charm: 'CEX / DAY' } as const;
 
-export function buildExposureOption(data: ExposureResponse): EChartsOption {
+export function buildExposureByStrikeOption(data: ExposureResponse): EChartsOption {
   const rows = [...data.points].sort((a, b) => a.strike - b.strike);
 
   return {
@@ -53,6 +53,6 @@ export function buildExposureOption(data: ExposureResponse): EChartsOption {
   };
 }
 
-export default function ExposureChart({ data }: { data: ExposureResponse }) {
-  return <EChart option={useMemo(() => buildExposureOption(data), [data])} />;
+export default function ExposureByStrikeChart({ data }: { data: ExposureResponse }) {
+  return <EChart option={useMemo(() => buildExposureByStrikeOption(data), [data])} />;
 }

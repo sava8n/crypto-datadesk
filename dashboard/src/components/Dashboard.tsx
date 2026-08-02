@@ -4,16 +4,13 @@ import Header from './Header';
 import StatusBar from './StatusBar';
 import SettingsDrawer from './settings/SettingsDrawer';
 import Tabs, { type TabId } from './Tabs';
-import IVSurfaceSection from './iv/IVSurfaceSection';
 import IVCurvesSection from './iv/IVCurvesSection';
 import TermStructureSection from './iv/TermStructureSection';
 import SkewSection from './iv/SkewSection';
-import GreekSection from './greeks/GreekSection';
-import { GREEKS } from './greeks/greeks';
 import BasisSection from './basis/BasisSection';
 import ProbCurvesSection from './prob/ProbCurvesSection';
 import ProbDistributionSection from './prob/ProbDistributionSection';
-import ExposureSection from './gex/ExposureSection';
+import ExposureByStrikeSection from './gex/ExposureByStrikeSection';
 import GEXByStrikeSection from './gex/GEXByStrikeSection';
 import SmileCompareSection from './iv/SmileCompareSection';
 import ExpiryTableSection from './prob/ExpiryTableSection';
@@ -48,7 +45,7 @@ export default function Dashboard() {
             <OIByStrikeSection />
             <OIByExpirationSection />
             <OIChangeSection />
-            <ExposureSection />
+            <ExposureByStrikeSection />
             <VolumeByStrikeSection />
           </div>
         )}
@@ -58,19 +55,20 @@ export default function Dashboard() {
             <TermStructureSection />
             <SkewSection />
             <IVCurvesSection />
-            <IVSurfaceSection />
-            <RVConeSection />
             <SmileCompareSection />
+            <RVConeSection />
+            <BasisSection />
           </div>
         )}
 
+        {/* ordered to mirror the live tabs: volatility series first, then positioning */}
         {tab === 'history' && (
           <div className="panels">
             <VolHistorySection />
             <SkewHistorySection />
+            <VrpSection />
             <OIHistorySection />
             <GexLevelsHistorySection />
-            <VrpSection />
           </div>
         )}
 
@@ -79,15 +77,6 @@ export default function Dashboard() {
             <ProbCurvesSection />
             <ProbDistributionSection />
             <ExpiryTableSection />
-          </div>
-        )}
-
-        {tab === 'chain' && (
-          <div className="panels panels--mini">
-            {GREEKS.map((g) => (
-              <GreekSection key={g.greek} {...g} />
-            ))}
-            <BasisSection />
           </div>
         )}
       </main>

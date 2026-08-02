@@ -14,6 +14,10 @@
 - **Vanna/charm exposure** - dealer exposure by strike for the higher-order greeks
 - **Expiries table** - max pain and the implied ±1σ move per expiry
 
+### Changed
+
+- **Layout** - CHAIN tab retired: basis moved to VOLATILITY; the per-strike greek panels and the 3D IV surface are unmounted (kept in the codebase as deprecated)
+
 ## [0.1.1] - 2026-08-01
 
 ### Added

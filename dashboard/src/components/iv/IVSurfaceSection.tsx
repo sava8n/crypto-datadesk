@@ -1,3 +1,5 @@
+// Deprecated: unmounted since 0.2.0 - the smile curves / term structure / skew panels
+// carry the same information in readable 2D.
 import { useIVSurface } from '../../api/queries';
 import DTEControl from '../controls/DTEControl';
 import Panel from '../panel/Panel';

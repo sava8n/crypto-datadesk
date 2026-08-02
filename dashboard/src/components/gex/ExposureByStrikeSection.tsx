@@ -6,7 +6,7 @@ import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
 import { useCurrency } from '../../settings/store';
-import ExposureChart from './ExposureChart';
+import ExposureByStrikeChart from './ExposureByStrikeChart';
 
 const GREEKS: { value: ExposureGreek; label: string }[] = [
   { value: 'vanna', label: 'VANNA' },
@@ -38,19 +38,19 @@ function GreekSelect({
   );
 }
 
-export default function ExposureSection() {
+export default function ExposureByStrikeSection() {
   const [greek, setGreek] = useState<ExposureGreek>('vanna');
   const query = useExposure(useCurrency(), greek);
   const state = panelState(query, query.data, query.data?.points.length ?? 0, MIN_POINTS.bars);
 
   return (
     <Panel
-      title="VANNA / CHARM EXPOSURE"
+      title="VANNA / CHARM EXPOSURE BY STRIKE"
       subtitle="USD Δ · CALLS + / PUTS - × STRIKE"
       state={state}
       controls={<GreekSelect greek={greek} onSelect={setGreek} />}
     >
-      {(data) => <ExposureChart data={data} />}
+      {(data) => <ExposureByStrikeChart data={data} />}
     </Panel>
   );
 }
