@@ -1,3 +1,5 @@
+// Deprecated: unmounted since 0.2.0 (the whole CHAIN tab) - per-strike greek profiles
+// carry little day-to-day signal next to the OI-weighted exposure panels.
 import { useMemo } from 'react';
 
 import { useGreeksChain } from '../../api/queries';

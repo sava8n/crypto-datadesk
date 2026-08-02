@@ -6,10 +6,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from analytics.black76 import d2
 from analytics.greeks import build
 from data.market.chain import prepare_otm_quotes
 
-_GREEKS = ["delta", "gamma", "theta", "vega"]
+_GREEKS = ["delta", "gamma", "theta", "vega", "vanna", "charm"]
 
 
 def _quotes(strikes, forward=100_000.0, tte=0.05, iv=0.6, option_type="C"):
@@ -72,6 +73,34 @@ def test_invalid_row_is_nan():
     # a zero-tte contract fails valid_mask, so every greek must be NaN
     chain = build(_quotes([100_000.0], tte=0.0))
     assert chain[_GREEKS].isna().all().all()
+
+
+def test_vanna_and_charm_cross_check(otm_quotes):
+    """Both close over d2 and the already-pinned vega/theta:
+
+    vanna = -vega d2 / (F sigma sqrt(T)), charm = -theta d2 / (F sigma sqrt(T)).
+    """
+    chain = build(otm_quotes)
+    forward = otm_quotes["forward"].to_numpy(dtype=float)
+    sigma = otm_quotes["mark_iv"].to_numpy(dtype=float)
+    tte = otm_quotes["tte_years"].to_numpy(dtype=float)
+    d2_values = d2(forward, otm_quotes["strike"].to_numpy(dtype=float), tte, sigma)
+    scale = d2_values / (forward * sigma * np.sqrt(tte))
+    np.testing.assert_allclose(chain["vanna"], -chain["vega"] * scale)
+    np.testing.assert_allclose(chain["charm"], -chain["theta"] * scale)
+
+
+def test_vanna_and_charm_are_leg_symmetric():
+    """Zero rates: the call and put at identical inputs share both values."""
+    call = build(_quotes([110_000.0], option_type="C")).iloc[0]
+    put = build(_quotes([110_000.0], option_type="P")).iloc[0]
+    assert call["vanna"] == pytest.approx(put["vanna"])
+    assert call["charm"] == pytest.approx(put["charm"])
+
+
+def test_otm_call_delta_decays():
+    """Charm of an OTM call is negative - its delta bleeds toward zero as time passes."""
+    assert build(_quotes([130_000.0], option_type="C")).iloc[0]["charm"] < 0
 
 
 def test_put_and_call_deltas_differ_by_one():

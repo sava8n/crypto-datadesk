@@ -12,13 +12,22 @@ import logging
 import numpy as np
 import pandas as pd
 
-from analytics.frames import BUCKETS, as_declared_dtypes, empty_frame, moneyness_bucket, sum_by
+from analytics.frames import (
+    BUCKETS,
+    as_declared_dtypes,
+    empty_frame,
+    expiry_tte,
+    moneyness_bucket,
+    sum_by,
+)
 
 logger = logging.getLogger(__name__)
 
 BY_EXPIRY_COLUMNS = ["expiry", "tte_years", *BUCKETS]
 BY_STRIKE_COLUMNS = ["strike", *BUCKETS]
 INTRINSIC_COLUMNS = ["strike", "intrinsic_value"]
+CHANGE_COLUMNS = ["strike", "call_oi_change", "put_oi_change"]
+MAX_PAIN_COLUMNS = ["expiry", "tte_years", "max_pain"]
 
 
 def by_expiry(chain: pd.DataFrame) -> pd.DataFrame:
@@ -51,6 +60,42 @@ def by_strike(chain: pd.DataFrame) -> pd.DataFrame:
     result = pivot.reset_index().sort_values("strike").reset_index(drop=True)
     logger.info("open interest by strike built for %d strikes", len(result))
     return as_declared_dtypes(result[BY_STRIKE_COLUMNS])
+
+
+def _oi_sums(chain: pd.DataFrame) -> pd.DataFrame:
+    """Call/put open-interest totals per strike, columns ``C``/``P``."""
+    if chain.empty:
+        return pd.DataFrame(columns=["C", "P"], dtype=float)
+    pivot = sum_by(
+        chain[["strike", "option_type", "open_interest"]],
+        "strike",
+        "option_type",
+        "open_interest",
+        ("C", "P"),
+    )
+    return pivot[["C", "P"]]
+
+
+def strike_change(current: pd.DataFrame, baseline: pd.DataFrame) -> pd.DataFrame:
+    """Per-strike call/put open-interest delta between two books, sorted by strike.
+
+    Outer join on strike with a missing side counting as zero, so a strike appearing
+    reads as its full OI and one disappearing as the full negative. Strikes unchanged
+    on both sides are dropped.
+    """
+    now, then = _oi_sums(current), _oi_sums(baseline)
+    joined = now.join(then, how="outer", lsuffix="_now", rsuffix="_then").fillna(0.0)
+    result = pd.DataFrame(
+        {
+            "strike": joined.index.to_numpy(dtype=float),
+            "call_oi_change": (joined["C_now"] - joined["C_then"]).to_numpy(),
+            "put_oi_change": (joined["P_now"] - joined["P_then"]).to_numpy(),
+        }
+    )
+    result = result[(result["call_oi_change"] != 0.0) | (result["put_oi_change"] != 0.0)]
+    if result.empty:
+        return empty_frame(CHANGE_COLUMNS)
+    return as_declared_dtypes(result.sort_values("strike").reset_index(drop=True))
 
 
 def with_settlement(chain: pd.DataFrame) -> tuple[pd.DataFrame, float | None]:
@@ -94,3 +139,25 @@ def max_pain(intrinsic: pd.DataFrame) -> float | None:
     if intrinsic.empty:
         return None
     return float(intrinsic.loc[intrinsic["intrinsic_value"].idxmin(), "strike"])
+
+
+def max_pain_by_expiry(chain: pd.DataFrame) -> pd.DataFrame:
+    """Max-pain strike per expiry, sorted by tte.
+
+    Each expiry settles on its own date, so this is the per-expiry loop the
+    single-expiry constraint on ``intrinsic_values`` demands.
+    """
+    if chain.empty:
+        return empty_frame(MAX_PAIN_COLUMNS)
+    rows = [
+        {
+            "expiry": expiry,
+            "tte_years": expiry_tte(group),
+            "max_pain": max_pain(intrinsic_values(group)),
+        }
+        for expiry, group in chain.groupby("expiry", sort=False)
+    ]
+    result = (
+        pd.DataFrame(rows, columns=MAX_PAIN_COLUMNS).sort_values("tte_years").reset_index(drop=True)
+    )
+    return as_declared_dtypes(result)

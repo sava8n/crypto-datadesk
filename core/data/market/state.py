@@ -15,11 +15,12 @@ import pandas as pd
 
 from analytics import greeks
 from analytics.frames import finite
+from analytics.vol import cone
 from analytics.iv import term
 from analytics.iv.skew import build as build_skew
-from analytics.positioning import gamma_exposure, open_interest, traded_volume
+from analytics.positioning import exposure, gamma_exposure, open_interest, traded_volume
 from analytics.prob import distribution, quantiles
-from analytics.stats import atm_iv_at, dvol_stats, realized_vol
+from analytics.stats import atm_iv_at, cm_grid, dvol_stats, realized_vol, skew_at
 from data.market import history
 from data.market.chain import prepare_oi_chain, prepare_otm_quotes
 
@@ -88,6 +89,18 @@ class MarketState:
     def oi_by_expiration(self) -> pd.DataFrame:
         return open_interest.by_expiry(self.oi_chain)
 
+    @cached_property
+    def max_pain_by_expiry(self) -> pd.DataFrame:
+        return open_interest.max_pain_by_expiry(self.oi_chain)
+
+    @cached_property
+    def vanna_exposure(self) -> pd.DataFrame:
+        return exposure.build(self.greeks_chain, self.oi_chain, "vanna")
+
+    @cached_property
+    def charm_exposure(self) -> pd.DataFrame:
+        return exposure.build(self.greeks_chain, self.oi_chain, "charm")
+
     def oi_by_strike(self, expiry: datetime | None = None) -> tuple[pd.DataFrame, float | None]:
         """Open interest per strike, and the max-pain strike.
 
@@ -109,6 +122,10 @@ class MarketState:
         """Daily spot candles; empty when no usable payload was fetched."""
         return history.to_frame(self.spot_candles)
 
+    @cached_property
+    def rv_cone(self) -> pd.DataFrame:
+        return cone.build(self.spot_history["close"].tolist())
+
     # ---- expiry lists for selectors (near-dated first) ----
 
     @cached_property
@@ -127,6 +144,64 @@ class MarketState:
     @cached_property
     def iv30(self) -> float | None:
         return finite(atm_iv_at(self.term_structure))
+
+    @cached_property
+    def iv7(self) -> float | None:
+        return finite(atm_iv_at(self.term_structure, days=7.0))
+
+    @cached_property
+    def _skew_cm7(self) -> tuple[float | None, float | None]:
+        rr, bf = skew_at(self.skew, days=7.0)
+        return finite(rr), finite(bf)
+
+    @cached_property
+    def _skew_cm30(self) -> tuple[float | None, float | None]:
+        rr, bf = skew_at(self.skew, days=30.0)
+        return finite(rr), finite(bf)
+
+    @property
+    def rr25_7(self) -> float | None:
+        return self._skew_cm7[0]
+
+    @property
+    def bf25_7(self) -> float | None:
+        return self._skew_cm7[1]
+
+    @property
+    def rr25_30(self) -> float | None:
+        return self._skew_cm30[0]
+
+    @property
+    def bf25_30(self) -> float | None:
+        return self._skew_cm30[1]
+
+    @cached_property
+    def oi_total_calls(self) -> float | None:
+        chain = self.oi_chain
+        return finite(chain.loc[chain["option_type"] == "C", "open_interest"].sum())
+
+    @cached_property
+    def oi_total_puts(self) -> float | None:
+        chain = self.oi_chain
+        return finite(chain.loc[chain["option_type"] == "P", "open_interest"].sum())
+
+    @cached_property
+    def max_pain_front(self) -> float | None:
+        expiries = self.oi_expiries
+        if not expiries:
+            return None
+        return finite(self.oi_by_strike(expiries[0])[1])
+
+    @cached_property
+    def gex_net_total(self) -> float | None:
+        gex = self.gex_by_strike
+        if gex.empty:
+            return None
+        return finite(gex["net_gex"].sum())
+
+    @cached_property
+    def cm_grid(self) -> pd.DataFrame:
+        return cm_grid(self.term_structure, self.skew)
 
     @cached_property
     def _dvol_stats(self) -> tuple[float | None, float | None]:

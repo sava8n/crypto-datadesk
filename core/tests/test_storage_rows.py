@@ -32,6 +32,7 @@ def test_snapshot_row_carries_identity_and_scalars(market_state):
 
 
 def test_snapshot_row_nulls_non_finite_scalars():
+    derived = dict.fromkeys(rows.DERIVED_SCALARS)
     row = rows.snapshot_row(
         _State(
             spot=100_000.0,
@@ -40,6 +41,7 @@ def test_snapshot_row_nulls_non_finite_scalars():
             dvol=0.55,
             dvol_rank=math.inf,
             gex_flip=np.float64(1.5),
+            **{**derived, "oi_total_calls": math.nan, "gex_net_total": np.float64(2.5)},
         ),
         "BTC",
     )
@@ -47,8 +49,10 @@ def test_snapshot_row_nulls_non_finite_scalars():
     assert row["rv30"] is None
     assert row["dvol_rank"] is None
     assert row["dvol"] == 0.55
+    assert row["oi_total_calls"] is None
     # numpy scalars become plain floats so the driver does not have to adapt them
     assert type(row["gex_flip"]) is float
+    assert type(row["gex_net_total"]) is float
 
 
 def test_snapshot_row_rejects_unusable_spot():
@@ -57,6 +61,26 @@ def test_snapshot_row_rejects_unusable_spot():
     assert rows.snapshot_row(_State(spot=math.nan, **scalars), "BTC") is None
     assert rows.snapshot_row(_State(spot=0.0, **scalars), "BTC") is None
     assert rows.snapshot_row(_State(spot=-1.0, **scalars), "BTC") is None
+
+
+def test_snapshot_row_carries_derived_scalars(market_state):
+    row = rows.snapshot_row(market_state, "BTC")
+    for name in rows.DERIVED_SCALARS:
+        assert row[name] == getattr(market_state, name)
+
+
+def test_cm_rows_cover_the_spanned_tenors(market_state):
+    out = rows.cm_rows(market_state, 7)
+
+    assert len(out) == len(market_state.cm_grid)
+    assert len(out) > 0  # the conftest chain spans at least the 30d tenor
+    assert {r["snapshot_id"] for r in out} == {7}
+    assert all(r["tenor_days"] > 0 for r in out)
+
+
+def test_cm_rows_empty_grid_yields_no_rows():
+    empty = pd.DataFrame({"tenor_days": [], "atm_iv": [], "rr25": [], "bf25": []})
+    assert rows.cm_rows(_State(cm_grid=empty), 1) == []
 
 
 def test_contract_rows_cover_the_unfiltered_book(market_state):

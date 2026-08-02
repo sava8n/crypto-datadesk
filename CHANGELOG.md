@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.0] - 2026-08-02
+
+### Added
+
+- **History views** - archived vol, skew, open-interest and GEX/levels series with a new HISTORY tab
+- **Open interest change** - per-strike OI delta against the archive over a 24h/7d window
+- **Realized-vol cone** - rolling RV percentiles per window with the implied term structure overlaid
+- **IV percentile** - true trailing-year percentile of 30d ATM IV in the header once enough history accrues
+- **Percentile bands** - constant-maturity tenor grid archived per snapshot, with 90-day p25-p75 bands on the term-structure and skew panels
+- **Smile compare** - the current smile against the archived one from 24h/7d ago
+- **Vol risk premium** - IV30 against the realized vol observed 30 days later
+- **Vanna/charm exposure** - dealer exposure by strike for the higher-order greeks
+- **Expiries table** - max pain and the implied ±1σ move per expiry
+
+### Changed
+
+- **Layout** - CHAIN tab retired: basis moved to VOLATILITY; the per-strike greek panels and the 3D IV surface are unmounted (kept in the codebase as deprecated)
+
 ## [0.1.1] - 2026-08-01
 
 ### Added

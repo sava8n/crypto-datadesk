@@ -1,12 +1,19 @@
-"""Gamma-exposure route: dollar GEX by strike across the full chain."""
+"""Dealer-exposure routes: dollar GEX and vanna/charm exposure by strike."""
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from typing import Literal
+
+from fastapi import APIRouter, Query
 
 from api.deps import CurrencyDep, StateDep
 from api.responses import envelope, points
-from api.schemas.gex import GEXByStrikePoint, GEXByStrikeResponse
+from api.schemas.gex import (
+    ExposurePoint,
+    ExposureResponse,
+    GEXByStrikePoint,
+    GEXByStrikeResponse,
+)
 
 router = APIRouter(prefix="/gex", tags=["gex"])
 
@@ -18,4 +25,19 @@ def get_gex_by_strike(ccy: CurrencyDep, state: StateDep) -> GEXByStrikeResponse:
         **envelope(ccy, state),
         gex_flip=state.gex_flip,
         points=points(state.gex_by_strike, GEXByStrikePoint),
+    )
+
+
+@router.get("/exposure", response_model=ExposureResponse)
+def get_exposure_by_strike(
+    ccy: CurrencyDep,
+    state: StateDep,
+    greek: Literal["vanna", "charm"] = Query("vanna"),
+) -> ExposureResponse:
+    """Dollar vanna or charm exposure per strike (calls +, puts -)."""
+    frame = state.vanna_exposure if greek == "vanna" else state.charm_exposure
+    return ExposureResponse(
+        **envelope(ccy, state),
+        greek=greek,
+        points=points(frame, ExposurePoint),
     )

@@ -22,23 +22,16 @@ export function buildBasisOption(data: TermStructureResponse): EChartsOption {
         return `${expiryLabel(r.expiry)}<br/>DTE ${dteLabel(r.dte)} · FWD ${usdFull(r.forward)}<br/>BASIS ${volPct(r.basis)} · ANN ${volPct(r.basisAnn)}`;
       },
     }),
-    grid: grid('mini'),
-    xAxis: valueAxisX({
-      name: 'DTE',
-      nameGap: 26,
-      scale: true,
-      min: 0,
-      format: dteLabel,
-      compact: true,
-    }),
-    yAxis: valueAxisY({ scale: true, format: volPct, compact: true }),
+    grid: grid('series'),
+    xAxis: valueAxisX({ name: 'DTE', scale: true, min: 0, format: dteLabel }),
+    yAxis: valueAxisY({ name: 'ANN', scale: true, format: volPct }),
     series: [
       {
         type: 'line',
         name: 'Annualized Basis',
         data: rows.map((r) => [r.dte, r.basisAnn]),
         showSymbol: true,
-        symbolSize: 5,
+        symbolSize: 6,
         itemStyle: { color: AMBER },
         lineStyle: { width: 1.5, color: AMBER },
         emphasis: { focus: 'series', lineStyle: { width: 3 } },

@@ -1,15 +1,26 @@
 import type {
+  CMBandsResponse,
+  ExposureGreek,
+  ExposureResponse,
   GEXByStrikeResponse,
   GreeksChainResponse,
   IVCurvesResponse,
   IVSurfaceResponse,
+  MaxPainResponse,
   OIByExpirationResponse,
   OIByStrikeResponse,
+  OIChangeResponse,
+  OIChangeWindow,
+  PositioningHistoryResponse,
   ProbCurvesResponse,
+  Resolution,
+  RVConeResponse,
   SkewResponse,
+  SmileHistoryResponse,
   SpotHistoryResponse,
   StatsResponse,
   TermStructureResponse,
+  VolHistoryResponse,
   VolumeByStrikeResponse,
 } from '../types';
 import { ENDPOINTS, type EndpointName } from './endpoints';
@@ -68,6 +79,53 @@ export const fetchOIByStrike = (
 
 export const fetchVolumeByStrike = (currency: string): Promise<VolumeByStrikeResponse> =>
   fetchJson(url('volumeByStrike', { currency }));
+
+export const fetchOIChange = (
+  currency: string,
+  window: OIChangeWindow,
+  expiry?: string,
+): Promise<OIChangeResponse> =>
+  fetchJson(url('oiChange', expiry ? { currency, window, expiry } : { currency, window }));
+
+export const fetchRVCone = (currency: string): Promise<RVConeResponse> =>
+  fetchJson(url('rvCone', { currency }));
+
+export const fetchMaxPain = (currency: string): Promise<MaxPainResponse> =>
+  fetchJson(url('maxPain', { currency }));
+
+export const fetchExposure = (
+  currency: string,
+  greek: ExposureGreek,
+): Promise<ExposureResponse> => fetchJson(url('exposure', { currency, greek }));
+
+export const fetchSmileHistory = (
+  currency: string,
+  expiry: string,
+  window: OIChangeWindow,
+): Promise<SmileHistoryResponse> =>
+  fetchJson(url('smileHistory', { currency, expiry, window }));
+
+export const fetchCMBands = (
+  currency: string,
+  lookbackDays: number,
+): Promise<CMBandsResponse> =>
+  fetchJson(url('cmBands', { currency, lookback_days: String(lookbackDays) }));
+
+export const fetchVolHistory = (
+  currency: string,
+  lookbackDays: number,
+  resolution: Resolution,
+): Promise<VolHistoryResponse> =>
+  fetchJson(url('historyVol', { currency, lookback_days: String(lookbackDays), resolution }));
+
+export const fetchPositioningHistory = (
+  currency: string,
+  lookbackDays: number,
+  resolution: Resolution,
+): Promise<PositioningHistoryResponse> =>
+  fetchJson(
+    url('historyPositioning', { currency, lookback_days: String(lookbackDays), resolution }),
+  );
 
 export const fetchStats = (currency: string): Promise<StatsResponse> =>
   fetchJson(url('stats', { currency }));

@@ -10,6 +10,8 @@ from analytics.positioning.open_interest import (
     by_strike,
     intrinsic_values,
     max_pain,
+    max_pain_by_expiry,
+    strike_change,
 )
 
 _EXPIRY = pd.Timestamp("2035-01-31", tz="UTC")
@@ -78,3 +80,60 @@ def test_intrinsic_value_and_max_pain():
 def test_max_pain_empty_returns_none():
     empty = pd.DataFrame({"strike": [], "option_type": [], "open_interest": []})
     assert max_pain(intrinsic_values(empty)) is None
+
+
+def test_max_pain_by_expiry_settles_each_expiry_alone():
+    later = pd.Timestamp("2035-03-28", tz="UTC")
+    chain = _chain(
+        [
+            (_EXPIRY, 0.1, 100.0, 110.0, "C", 1.0),
+            (_EXPIRY, 0.1, 120.0, 110.0, "P", 1.0),
+            (later, 0.2, 200.0, 210.0, "C", 1.0),
+            (later, 0.2, 220.0, 210.0, "P", 5.0),
+        ]
+    )
+    out = max_pain_by_expiry(chain)
+    assert list(out["expiry"]) == [_EXPIRY, later]  # sorted by tte
+    # first expiry ties at 20 -> lowest strike wins (same rule as max_pain)
+    assert out.iloc[0]["max_pain"] == pytest.approx(100.0)
+    # second: settling at 200 pays the put 5 * 20 = 100; at 220 the call pays 20
+    assert out.iloc[1]["max_pain"] == pytest.approx(220.0)
+
+
+def test_max_pain_by_expiry_empty_is_typed(assert_declared_dtypes):
+    out = max_pain_by_expiry(_chain([]))
+    assert out.empty
+    assert_declared_dtypes(out)
+
+
+def test_strike_change_overlap_appearing_and_disappearing():
+    now = _chain(
+        [
+            (_EXPIRY, 0.1, 100.0, 100.0, "C", 30.0),  # grew from 10
+            (_EXPIRY, 0.1, 110.0, 100.0, "P", 5.0),  # appeared
+        ]
+    )
+    then = _chain(
+        [
+            (_EXPIRY, 0.1, 100.0, 100.0, "C", 10.0),
+            (_EXPIRY, 0.1, 120.0, 100.0, "P", 8.0),  # disappeared
+        ]
+    )
+    out = strike_change(now, then)
+    by_k = {row["strike"]: row for _, row in out.iterrows()}
+    assert by_k[100.0]["call_oi_change"] == pytest.approx(20.0)
+    assert by_k[110.0]["put_oi_change"] == pytest.approx(5.0)
+    assert by_k[120.0]["put_oi_change"] == pytest.approx(-8.0)
+    assert list(out["strike"]) == sorted(out["strike"])
+
+
+def test_strike_change_drops_unchanged_strikes():
+    book = _chain([(_EXPIRY, 0.1, 100.0, 100.0, "C", 10.0)])
+    assert strike_change(book, book).empty
+
+
+def test_strike_change_empty_sides_are_typed(assert_declared_dtypes):
+    empty = _chain([])
+    out = strike_change(empty, empty)
+    assert out.empty
+    assert_declared_dtypes(out)

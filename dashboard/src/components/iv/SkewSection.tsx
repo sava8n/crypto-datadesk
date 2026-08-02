@@ -1,4 +1,4 @@
-import { useSkew } from '../../api/queries';
+import { useCMBands, useSkew } from '../../api/queries';
 import DTEControl from '../controls/DTEControl';
 import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
@@ -8,18 +8,21 @@ import { useDteWindowed } from '../controls/useDteWindow';
 import SkewChart from './SkewChart';
 
 export default function SkewSection() {
-  const query = useSkew(useCurrency());
+  const currency = useCurrency();
+  const query = useSkew(currency);
+  // best-effort context: an unreachable archive just leaves the band off
+  const bands = useCMBands(currency);
   const { windowed, count, dteProps } = useDteWindowed(query.data);
   const state = panelState(query, windowed, count, MIN_POINTS.series);
 
   return (
     <Panel
       title="25Δ SKEW"
-      subtitle="2D · RR / BF × EXPIRY"
+      subtitle="2D · RR / BF × EXPIRY · 90D RR BAND"
       state={state}
       controls={<DTEControl {...dteProps} />}
     >
-      {(data) => <SkewChart data={data} />}
+      {(data) => <SkewChart data={data} bands={bands.data?.points} />}
     </Panel>
   );
 }

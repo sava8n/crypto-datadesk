@@ -34,6 +34,15 @@ snapshot = Table(
     Column("dvol", Float),
     Column("dvol_rank", Float),
     Column("gex_flip", Float),
+    Column("iv7", Float),
+    Column("rr25_7", Float),
+    Column("bf25_7", Float),
+    Column("rr25_30", Float),
+    Column("bf25_30", Float),
+    Column("oi_total_calls", Float),
+    Column("oi_total_puts", Float),
+    Column("max_pain_front", Float),
+    Column("gex_net_total", Float),
     # doubles as the index the currency+range read path uses, ascending on both columns
     UniqueConstraint("currency", "as_of", name="uq_snapshot_currency_as_of"),
     CheckConstraint("spot > 0", name="ck_snapshot_spot_positive"),
@@ -77,4 +86,20 @@ Index(
     contract.c.strike,
     contract.c.option_type,
     contract.c.snapshot_id,
+)
+
+# constant-maturity tenor grid per capture; tenors a snapshot's chain did not span are
+# absent rather than clamped, so percentiles over this table stay honest
+cm_metric = Table(
+    "cm_metric",
+    metadata,
+    Column(
+        "snapshot_id", BigInteger, ForeignKey("snapshot.id", ondelete="CASCADE"), nullable=False
+    ),
+    Column("tenor_days", Float, nullable=False),
+    Column("atm_iv", Float),
+    Column("rr25", Float),
+    Column("bf25", Float),
+    PrimaryKeyConstraint("snapshot_id", "tenor_days"),
+    CheckConstraint("tenor_days > 0", name="ck_cm_metric_tenor_positive"),
 )

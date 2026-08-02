@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -36,3 +37,27 @@ class OIByStrikeResponse(MarketEnvelope):
     expiry: datetime | None = None  # echo of the selected expiry; None = all
     max_pain: float | None = None  # single-expiry only
     points: list[OIByStrikePoint]
+
+
+class MaxPainPoint(BaseModel):
+    expiry: datetime
+    tte_years: float
+    max_pain: float | None = None  # None when the expiry's slice was uninvertible
+
+
+class MaxPainResponse(MarketEnvelope):
+    points: list[MaxPainPoint]
+
+
+class OIChangePoint(BaseModel):
+    strike: float
+    call_oi_change: float
+    put_oi_change: float
+
+
+class OIChangeResponse(MarketEnvelope):
+    window: Literal["24h", "7d"]
+    baseline_as_of: datetime | None = None  # None = nothing archived that far back
+    expiries: list[datetime]
+    expiry: datetime | None = None  # echo of the selected expiry; None = all
+    points: list[OIChangePoint]

@@ -35,6 +35,46 @@ class Archivable(Protocol):
     def dvol_rank(self) -> float | None: ...
     @property
     def gex_flip(self) -> float | None: ...
+    @property
+    def iv7(self) -> float | None: ...
+    @property
+    def rr25_7(self) -> float | None: ...
+    @property
+    def bf25_7(self) -> float | None: ...
+    @property
+    def rr25_30(self) -> float | None: ...
+    @property
+    def bf25_30(self) -> float | None: ...
+    @property
+    def oi_total_calls(self) -> float | None: ...
+    @property
+    def oi_total_puts(self) -> float | None: ...
+    @property
+    def max_pain_front(self) -> float | None: ...
+    @property
+    def gex_net_total(self) -> float | None: ...
+    @property
+    def cm_grid(self) -> pd.DataFrame: ...
+
+
+# scalars derived from (contracts, spot) alone - no candle history involved, so the
+# backfill can restore them for any archived book
+DERIVED_SCALARS = (
+    "iv7",
+    "rr25_7",
+    "bf25_7",
+    "rr25_30",
+    "bf25_30",
+    "oi_total_calls",
+    "oi_total_puts",
+    "max_pain_front",
+    "gex_net_total",
+)
+
+
+def derived_row(state: Archivable) -> dict:
+    """The candle-free derived scalars, finite-or-None per column."""
+    return {name: finite(getattr(state, name)) for name in DERIVED_SCALARS}
 
 
 def snapshot_row(state: Archivable, currency: str) -> dict | None:
@@ -58,7 +98,21 @@ def snapshot_row(state: Archivable, currency: str) -> dict | None:
         "dvol": finite(state.dvol),
         "dvol_rank": finite(state.dvol_rank),
         "gex_flip": finite(state.gex_flip),
+        **derived_row(state),
     }
+
+
+def cm_rows(state: Archivable, snapshot_id: int) -> list[dict]:
+    """One row per constant-maturity tenor the capture's chain spanned; NaN -> None."""
+    grid = state.cm_grid
+    if grid.empty:
+        return []
+    rows_ = grid.astype(object)
+    rows_.insert(0, "snapshot_id", snapshot_id)
+    return [
+        {key: (None if pd.isna(value) else value) for key, value in record.items()}
+        for record in rows_.to_dict("records")
+    ]
 
 
 def contract_rows(state: Archivable, snapshot_id: int) -> list[dict]:

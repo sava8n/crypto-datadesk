@@ -43,6 +43,9 @@ def record(state: rows.Archivable, currency: str) -> int | None:
         contracts = rows.contract_rows(state, snapshot_id)
         if contracts:
             conn.execute(schema.contract.insert(), contracts)
+        cm = rows.cm_rows(state, snapshot_id)
+        if cm:
+            conn.execute(schema.cm_metric.insert(), cm)
 
     logger.info(
         "recorded snapshot id=%d currency=%s as_of=%s with %d contracts",
