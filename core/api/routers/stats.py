@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from api.deps import CurrencyDep, StateDep
 from api.responses import envelope
 from api.schemas.stats import StatsResponse
+from data.storage import series
 
 router = APIRouter(tags=["stats"])
 
@@ -20,4 +21,5 @@ def get_stats(ccy: CurrencyDep, state: StateDep) -> StatsResponse:
         dvol_rank=state.dvol_rank,
         iv30=state.iv30,
         rv30=state.rv30,
+        iv30_percentile=series.iv30_percentile(ccy, state.iv30),
     )

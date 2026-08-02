@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 
-export type TabId = 'positioning' | 'volatility' | 'chain' | 'probabilities';
+export type TabId = 'positioning' | 'volatility' | 'chain' | 'probabilities' | 'history';
 
 const GROUPS: { label: string; tabs: { id: TabId; label: string }[] }[] = [
   {
@@ -10,6 +10,7 @@ const GROUPS: { label: string; tabs: { id: TabId; label: string }[] }[] = [
       { id: 'volatility', label: 'VOLATILITY' },
       { id: 'probabilities', label: 'PROBABILITIES' },
       { id: 'chain', label: 'CHAIN' },
+      { id: 'history', label: 'HISTORY' },
     ],
   },
 ];

@@ -26,7 +26,17 @@ export default function Header({ onOpenSettings }: { onOpenSettings: () => void 
           highlight
         />
         <Field label="DVOL" value={data?.dvol != null ? dvolFmt(data.dvol) : '-'} />
-        <Field label="IV RANK" value={data?.dvol_rank != null ? pctWhole(data.dvol_rank) : '-'} />
+        {/* true percentile once enough archive has accrued; DVOL range position until then */}
+        <Field
+          label={data?.iv30_percentile != null ? 'IV PCTL' : 'DVOL RANK'}
+          value={
+            data?.iv30_percentile != null
+              ? pctWhole(data.iv30_percentile)
+              : data?.dvol_rank != null
+                ? pctWhole(data.dvol_rank)
+                : '-'
+          }
+        />
         <Field
           label="IV30/RV30"
           value={

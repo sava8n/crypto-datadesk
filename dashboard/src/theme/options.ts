@@ -73,6 +73,15 @@ export const valueAxisX = (o: AxisOpts = {}): XAXisComponentOption => ({
   }),
 });
 
+// history panels: ISO timestamps plotted proportionally in time
+export const timeAxisX = (o: { compact?: boolean } = {}): XAXisComponentOption => ({
+  type: 'time',
+  axisLine: { lineStyle: { color: AXIS_LINE } },
+  axisTick: { lineStyle: { color: AXIS_LINE } },
+  axisLabel: { color: AMBER, fontFamily: MONO, fontSize: o.compact ? 10 : 11 },
+  splitLine: { lineStyle: { color: GRID } },
+});
+
 export const categoryAxisX = (
   data: string[],
   o: { rotate?: number; interval?: number | 'auto'; compact?: boolean } = {},

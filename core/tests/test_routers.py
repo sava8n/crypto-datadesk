@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
+
 import pytest
+
+from data.storage import series
+from data.storage.errors import StorageUnavailable
 
 # path -> the key holding the row array
 _MARKET_ENDPOINTS = {
@@ -16,6 +21,7 @@ _MARKET_ENDPOINTS = {
     "/api/oi/strike": "points",
     "/api/prob/curves": "points",
     "/api/volume/strike": "points",
+    "/api/vol/cone": "points",
     "/api/spot/history": "candles",
     "/api/stats": None,
 }
@@ -108,6 +114,104 @@ def test_oi_by_strike_without_expiry_has_no_settlement(client):
     assert body["expiry"] is None
     assert body["max_pain"] is None
     assert all(p["intrinsic_value"] is None for p in body["points"])
+
+
+def test_stats_reports_iv30_percentile(client, monkeypatch):
+    monkeypatch.setattr(series, "iv30_percentile", lambda ccy, current: 0.42)
+    assert client.get("/api/stats").json()["iv30_percentile"] == pytest.approx(0.42)
+
+
+def test_rv_cone_windows_fit_the_candle_history(client):
+    """The conftest state carries 40 daily closes - enough for 7/14/30d, not 60/90d."""
+    points = client.get("/api/vol/cone").json()["points"]
+    assert {p["days"] for p in points} == {7, 14, 30}
+    assert all(p["p10"] <= p["p50"] <= p["p90"] for p in points)
+
+
+def test_oi_strike_change_diffs_against_the_baseline(client, market_state, monkeypatch):
+    """Baseline at half the current OI -> the delta is the other half."""
+    baseline_as_of = market_state.as_of - timedelta(hours=25)
+    chain = market_state.oi_chain
+    halved = [
+        {"strike": s, "option_type": t, "open_interest": oi / 2}
+        for s, t, oi in zip(
+            chain["strike"], chain["option_type"], chain["open_interest"], strict=True
+        )
+    ]
+    monkeypatch.setattr(series, "baseline_snapshot", lambda ccy, target: (1, baseline_as_of))
+    monkeypatch.setattr(series, "baseline_oi_by_strike", lambda sid, expiry, now: halved)
+
+    body = client.get("/api/oi/strike-change").json()
+
+    assert body["window"] == "24h"
+    assert body["baseline_as_of"].startswith(baseline_as_of.strftime("%Y-%m-%dT%H:%M:%S"))
+    total = sum(p["call_oi_change"] + p["put_oi_change"] for p in body["points"])
+    assert total == pytest.approx(chain["open_interest"].sum() / 2)
+
+
+def test_oi_strike_change_without_a_baseline_is_empty(client, monkeypatch):
+    monkeypatch.setattr(series, "baseline_snapshot", lambda ccy, target: None)
+
+    body = client.get("/api/oi/strike-change", params={"window": "7d"}).json()
+
+    assert body["window"] == "7d"
+    assert body["baseline_as_of"] is None
+    assert body["points"] == []
+
+
+def test_history_vol_serves_archived_rows(client, monkeypatch):
+    row = {
+        "as_of": datetime(2026, 7, 30, tzinfo=UTC),
+        "spot": 63_000.0,
+        "iv7": 0.31,
+        "iv30": 0.33,
+        "term_slope": 0.02,
+        "rv30": 0.27,
+        "dvol": 0.35,
+        "rr25_7": -0.04,
+        "bf25_7": 0.008,
+        "rr25_30": -0.05,
+        "bf25_30": 0.01,
+    }
+    monkeypatch.setattr(series, "vol_series", lambda ccy, start, resolution: [row])
+
+    body = client.get("/api/history/vol", params={"lookback_days": 7, "resolution": "1h"}).json()
+
+    assert body["currency"] == "BTC"
+    assert body["resolution"] == "1h"
+    assert body["points"][0]["term_slope"] == pytest.approx(0.02)
+    # a history envelope reports its window, not a live market
+    assert "spot" not in body
+
+
+def test_history_positioning_serves_archived_rows(client, monkeypatch):
+    row = {
+        "as_of": datetime(2026, 7, 30, tzinfo=UTC),
+        "spot": 63_000.0,
+        "oi_total_calls": 24_000.0,
+        "oi_total_puts": 5_600.0,
+        "gex_net_total": 1.2e7,
+        "gex_flip": 99_000.0,
+        "max_pain_front": 64_000.0,
+    }
+    monkeypatch.setattr(series, "positioning_series", lambda ccy, start, resolution: [row])
+
+    body = client.get("/api/history/positioning").json()
+
+    assert body["resolution"] == "1d"  # the default
+    assert body["points"][0]["max_pain_front"] == 64_000.0
+
+
+def test_history_unreachable_archive_is_503(client, monkeypatch):
+    def unavailable(ccy, start, resolution):
+        raise StorageUnavailable("archive unavailable")
+
+    monkeypatch.setattr(series, "vol_series", unavailable)
+
+    response = client.get("/api/history/vol")
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "archive unavailable"}
 
 
 def test_unsupported_currency_returns_422(client):

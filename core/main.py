@@ -12,11 +12,13 @@ from api import errors
 from api.routers.gex import router as gex_router
 from api.routers.greeks import router as greeks_router
 from api.routers.health import router as health_router
+from api.routers.history import router as history_router
 from api.routers.iv import router as iv_router
 from api.routers.oi import router as oi_router
 from api.routers.prob import router as prob_router
 from api.routers.spot import router as spot_router
 from api.routers.stats import router as stats_router
+from api.routers.vol import router as vol_router
 from api.routers.volume import router as volume_router
 from config import VERSION, settings
 from data.market.loader import warm_up as market_warm_up
@@ -62,3 +64,5 @@ server.include_router(prob_router, prefix="/api")
 server.include_router(volume_router, prefix="/api")
 server.include_router(spot_router, prefix="/api")
 server.include_router(stats_router, prefix="/api")
+server.include_router(vol_router, prefix="/api")
+server.include_router(history_router, prefix="/api")

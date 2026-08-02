@@ -36,6 +36,22 @@ def atm_iv_at(term: pd.DataFrame, days: float = 30.0) -> float | None:
     return math.sqrt(variance / horizon)
 
 
+def skew_at(skew: pd.DataFrame, days: float = 30.0) -> tuple[float | None, float | None]:
+    """(25Δ RR, 25Δ BF) at a fixed ``days`` horizon, linear in tte between expiries.
+
+    The horizon is clamped into the skew term structure's tte range, mirroring
+    ``atm_iv_at``. The total-variance identity does not apply to vol differences, so
+    plain linear interpolation is used.
+    """
+    if skew.empty:
+        return None, None
+    tte = skew["tte_years"].to_numpy(dtype=float)  # build() returns rows sorted by tte
+    horizon = float(np.clip(days / YEAR_DAYS, tte[0], tte[-1]))
+    rr = float(np.interp(horizon, tte, skew["rr"].to_numpy(dtype=float)))
+    bf = float(np.interp(horizon, tte, skew["bf"].to_numpy(dtype=float)))
+    return rr, bf
+
+
 def realized_vol(closes: list[float], days: int = 30) -> float | None:
     """Annualized std of the last ``days`` daily log returns.
 

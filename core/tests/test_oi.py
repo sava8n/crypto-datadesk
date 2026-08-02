@@ -10,6 +10,7 @@ from analytics.positioning.open_interest import (
     by_strike,
     intrinsic_values,
     max_pain,
+    strike_change,
 )
 
 _EXPIRY = pd.Timestamp("2035-01-31", tz="UTC")
@@ -78,3 +79,36 @@ def test_intrinsic_value_and_max_pain():
 def test_max_pain_empty_returns_none():
     empty = pd.DataFrame({"strike": [], "option_type": [], "open_interest": []})
     assert max_pain(intrinsic_values(empty)) is None
+
+
+def test_strike_change_overlap_appearing_and_disappearing():
+    now = _chain(
+        [
+            (_EXPIRY, 0.1, 100.0, 100.0, "C", 30.0),  # grew from 10
+            (_EXPIRY, 0.1, 110.0, 100.0, "P", 5.0),  # appeared
+        ]
+    )
+    then = _chain(
+        [
+            (_EXPIRY, 0.1, 100.0, 100.0, "C", 10.0),
+            (_EXPIRY, 0.1, 120.0, 100.0, "P", 8.0),  # disappeared
+        ]
+    )
+    out = strike_change(now, then)
+    by_k = {row["strike"]: row for _, row in out.iterrows()}
+    assert by_k[100.0]["call_oi_change"] == pytest.approx(20.0)
+    assert by_k[110.0]["put_oi_change"] == pytest.approx(5.0)
+    assert by_k[120.0]["put_oi_change"] == pytest.approx(-8.0)
+    assert list(out["strike"]) == sorted(out["strike"])
+
+
+def test_strike_change_drops_unchanged_strikes():
+    book = _chain([(_EXPIRY, 0.1, 100.0, 100.0, "C", 10.0)])
+    assert strike_change(book, book).empty
+
+
+def test_strike_change_empty_sides_are_typed(assert_declared_dtypes):
+    empty = _chain([])
+    out = strike_change(empty, empty)
+    assert out.empty
+    assert_declared_dtypes(out)

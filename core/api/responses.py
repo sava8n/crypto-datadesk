@@ -26,6 +26,11 @@ def points[M: BaseModel](frame: pd.DataFrame, model: type[M]) -> list[M]:
     return _adapter(model).validate_python(frame.to_dict("records"))
 
 
+def records[M: BaseModel](rows: list[dict], model: type[M]) -> list[M]:
+    """Validate mapping rows into ``model`` - the from-storage twin of ``points``."""
+    return _adapter(model).validate_python(rows)
+
+
 def envelope(ccy: str, state: MarketState) -> dict:
     """The ``MarketEnvelope`` fields, ready to splat into a response model."""
     return {"currency": ccy, "spot": state.spot, "as_of": state.as_of}

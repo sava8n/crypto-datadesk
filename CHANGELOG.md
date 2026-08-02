@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.0] - 2026-08-02
+
+### Added
+
+- **History views** - archived vol, skew, open-interest and GEX/levels series with a new HISTORY tab
+- **Open interest change** - per-strike OI delta against the archive over a 24h/7d window
+- **Realized-vol cone** - rolling RV percentiles per window with the implied term structure overlaid
+- **IV percentile** - true trailing-year percentile of 30d ATM IV in the header once enough history accrues
+
 ## [0.1.1] - 2026-08-01
 
 ### Added

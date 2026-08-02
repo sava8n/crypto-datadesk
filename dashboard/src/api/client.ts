@@ -5,11 +5,17 @@ import type {
   IVSurfaceResponse,
   OIByExpirationResponse,
   OIByStrikeResponse,
+  OIChangeResponse,
+  OIChangeWindow,
+  PositioningHistoryResponse,
   ProbCurvesResponse,
+  Resolution,
+  RVConeResponse,
   SkewResponse,
   SpotHistoryResponse,
   StatsResponse,
   TermStructureResponse,
+  VolHistoryResponse,
   VolumeByStrikeResponse,
 } from '../types';
 import { ENDPOINTS, type EndpointName } from './endpoints';
@@ -68,6 +74,32 @@ export const fetchOIByStrike = (
 
 export const fetchVolumeByStrike = (currency: string): Promise<VolumeByStrikeResponse> =>
   fetchJson(url('volumeByStrike', { currency }));
+
+export const fetchOIChange = (
+  currency: string,
+  window: OIChangeWindow,
+  expiry?: string,
+): Promise<OIChangeResponse> =>
+  fetchJson(url('oiChange', expiry ? { currency, window, expiry } : { currency, window }));
+
+export const fetchRVCone = (currency: string): Promise<RVConeResponse> =>
+  fetchJson(url('rvCone', { currency }));
+
+export const fetchVolHistory = (
+  currency: string,
+  lookbackDays: number,
+  resolution: Resolution,
+): Promise<VolHistoryResponse> =>
+  fetchJson(url('historyVol', { currency, lookback_days: String(lookbackDays), resolution }));
+
+export const fetchPositioningHistory = (
+  currency: string,
+  lookbackDays: number,
+  resolution: Resolution,
+): Promise<PositioningHistoryResponse> =>
+  fetchJson(
+    url('historyPositioning', { currency, lookback_days: String(lookbackDays), resolution }),
+  );
 
 export const fetchStats = (currency: string): Promise<StatsResponse> =>
   fetchJson(url('stats', { currency }));

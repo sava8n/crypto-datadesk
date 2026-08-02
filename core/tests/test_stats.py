@@ -7,7 +7,7 @@ import math
 import pandas as pd
 import pytest
 
-from analytics.stats import atm_iv_at, dvol_stats, realized_vol
+from analytics.stats import atm_iv_at, dvol_stats, realized_vol, skew_at
 
 
 def _candle(close):
@@ -68,3 +68,21 @@ def test_atm_iv_at_clamps_beyond_chain():
 
 def test_atm_iv_at_empty_returns_none():
     assert atm_iv_at(pd.DataFrame({"tte_years": [], "atm_iv": []})) is None
+
+
+def test_skew_at_interpolates_linearly():
+    skew = pd.DataFrame({"tte_years": [0.05, 0.25], "rr": [-0.04, -0.06], "bf": [0.01, 0.02]})
+    frac = (30.0 / 365.25 - 0.05) / 0.20
+    rr, bf = skew_at(skew, days=30)
+    assert rr == pytest.approx(-0.04 - 0.02 * frac)
+    assert bf == pytest.approx(0.01 + 0.01 * frac)
+
+
+def test_skew_at_clamps_beyond_chain():
+    skew = pd.DataFrame({"tte_years": [0.1, 0.2], "rr": [-0.04, -0.06], "bf": [0.01, 0.02]})
+    assert skew_at(skew, days=400) == (pytest.approx(-0.06), pytest.approx(0.02))
+    assert skew_at(skew, days=1) == (pytest.approx(-0.04), pytest.approx(0.01))
+
+
+def test_skew_at_empty_returns_none_pair():
+    assert skew_at(pd.DataFrame({"tte_years": [], "rr": [], "bf": []})) == (None, None)

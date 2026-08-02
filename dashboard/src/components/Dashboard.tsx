@@ -16,8 +16,14 @@ import ProbDistributionSection from './prob/ProbDistributionSection';
 import GEXByStrikeSection from './gex/GEXByStrikeSection';
 import OIByExpirationSection from './oi/OIByExpirationSection';
 import OIByStrikeSection from './oi/OIByStrikeSection';
+import OIChangeSection from './oi/OIChangeSection';
+import RVConeSection from './iv/RVConeSection';
 import SpotHistorySection from './spot/SpotHistorySection';
 import VolumeByStrikeSection from './volume/VolumeByStrikeSection';
+import GexLevelsHistorySection from './history/GexLevelsHistorySection';
+import OIHistorySection from './history/OIHistorySection';
+import SkewHistorySection from './history/SkewHistorySection';
+import VolHistorySection from './history/VolHistorySection';
 
 export default function Dashboard() {
   const [tab, setTab] = useState<TabId>('positioning');
@@ -37,6 +43,7 @@ export default function Dashboard() {
             <GEXByStrikeSection />
             <OIByStrikeSection />
             <OIByExpirationSection />
+            <OIChangeSection />
             <VolumeByStrikeSection />
           </div>
         )}
@@ -47,6 +54,16 @@ export default function Dashboard() {
             <SkewSection />
             <IVCurvesSection />
             <IVSurfaceSection />
+            <RVConeSection />
+          </div>
+        )}
+
+        {tab === 'history' && (
+          <div className="panels">
+            <VolHistorySection />
+            <SkewHistorySection />
+            <OIHistorySection />
+            <GexLevelsHistorySection />
           </div>
         )}
 

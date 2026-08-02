@@ -10,6 +10,10 @@ export const ENDPOINTS = {
   oiByExpiration: 'oi/expiration',
   oiByStrike: 'oi/strike',
   volumeByStrike: 'volume/strike',
+  oiChange: 'oi/strike-change',
+  rvCone: 'vol/cone',
+  historyVol: 'history/vol',
+  historyPositioning: 'history/positioning',
   stats: 'stats',
   spotHistory: 'spot/history',
 } as const;

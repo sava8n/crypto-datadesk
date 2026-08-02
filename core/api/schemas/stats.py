@@ -10,3 +10,5 @@ class StatsResponse(MarketEnvelope):
     dvol_rank: float | None  # last close's position in the trailing-year range, [0, 1]
     iv30: float | None  # 30d constant-maturity ATM IV
     rv30: float | None  # 30d close-to-close realized vol, annualized
+    # percentile of iv30 among the trailing year's archived daily observations
+    iv30_percentile: float | None = None

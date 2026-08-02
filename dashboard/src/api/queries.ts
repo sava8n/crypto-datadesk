@@ -1,6 +1,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import { useRefreshMs } from '../settings/store';
+import type { OIChangeWindow, Resolution } from '../types';
 import * as client from './client';
 import type { EndpointName } from './endpoints';
 
@@ -44,6 +45,37 @@ export function useOIByStrike(currency: string, expiry?: string | null) {
     queryKey: ['oiByStrike', currency, expiry ?? 'all'],
     queryFn: () => client.fetchOIByStrike(currency, expiry ?? undefined),
     // keep the dropdown + chart populated while switching expiry
+    placeholderData: keepPreviousData,
+    ...polling(useRefreshMs()),
+  });
+}
+
+export const useRVCone = resourceHook('rvCone', client.fetchRVCone);
+
+export function useOIChange(currency: string, window: OIChangeWindow, expiry?: string | null) {
+  return useQuery({
+    queryKey: ['oiChange', currency, window, expiry ?? 'all'],
+    queryFn: () => client.fetchOIChange(currency, window, expiry ?? undefined),
+    // keep the chart populated while switching window or expiry
+    placeholderData: keepPreviousData,
+    ...polling(useRefreshMs()),
+  });
+}
+
+// resolution follows the lookback (see useLookback), so it is not part of the key
+export function useVolHistory(currency: string, days: number, resolution: Resolution) {
+  return useQuery({
+    queryKey: ['historyVol', currency, days],
+    queryFn: () => client.fetchVolHistory(currency, days, resolution),
+    placeholderData: keepPreviousData,
+    ...polling(useRefreshMs()),
+  });
+}
+
+export function usePositioningHistory(currency: string, days: number, resolution: Resolution) {
+  return useQuery({
+    queryKey: ['historyPositioning', currency, days],
+    queryFn: () => client.fetchPositioningHistory(currency, days, resolution),
     placeholderData: keepPreviousData,
     ...polling(useRefreshMs()),
   });
