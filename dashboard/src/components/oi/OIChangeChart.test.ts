@@ -9,6 +9,7 @@ const resp = (points: OIChangeResponse['points']): OIChangeResponse => ({
   as_of: '2026-08-01T00:00:00Z',
   window: '24h',
   baseline_as_of: '2026-07-31T00:00:00Z',
+  baseline_stale: false,
   expiries: [],
   expiry: null,
   points,

@@ -1,10 +1,11 @@
 """Dollar-gamma exposure (GEX) by strike.
 
-    dollar GEX = OI · Γ · F² · SPOT_MOVE      calls +, puts -
+    dollar GEX = signed_OI · Γ · F² · SPOT_MOVE
 
 Gamma is strike-symmetric, so the one OTM quote that survived the quality filters prices
 both legs' open interest; OI at a strike with no such quote has no gamma and is dropped.
-Signs follow the usual dealer-positioning assumption: long call gamma, short put gamma.
+A chain without a ``signed_oi`` column is signed by the classic dealer-positioning
+assumption: long call gamma (+OI), short put gamma (-OI).
 """
 
 from __future__ import annotations
@@ -26,7 +27,7 @@ SPOT_MOVE = 0.01
 
 
 def build(greeks_chain: pd.DataFrame, oi_chain: pd.DataFrame) -> pd.DataFrame:
-    """Per-strike dollar GEX (calls +, puts -), sorted by strike."""
+    """Per-strike dollar GEX, sorted by strike; sign carried by ``signed_oi``."""
     logger.info(
         "building GEX from %d greek rows and %d OI contracts", len(greeks_chain), len(oi_chain)
     )
@@ -43,10 +44,12 @@ def build(greeks_chain: pd.DataFrame, oi_chain: pd.DataFrame) -> pd.DataFrame:
         logger.warning("no OI contract matched a gamma-bearing OTM quote")
         return empty_frame(GEX_COLUMNS)
 
-    dollar = merged["open_interest"] * merged["gamma"] * merged["forward"] ** 2 * SPOT_MOVE
     is_call = merged["option_type"] == "C"
+    if "signed_oi" not in merged.columns:
+        merged["signed_oi"] = np.where(is_call, merged["open_interest"], -merged["open_interest"])
+    dollar = merged["signed_oi"] * merged["gamma"] * merged["forward"] ** 2 * SPOT_MOVE
     merged["call_gex"] = np.where(is_call, dollar, 0.0)
-    merged["put_gex"] = np.where(is_call, 0.0, -dollar)
+    merged["put_gex"] = np.where(is_call, 0.0, dollar)
 
     per_strike = merged.groupby("strike", as_index=False)[["call_gex", "put_gex"]].sum()
     per_strike["net_gex"] = per_strike["call_gex"] + per_strike["put_gex"]

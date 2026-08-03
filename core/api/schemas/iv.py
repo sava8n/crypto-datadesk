@@ -39,6 +39,8 @@ class SmileHistoryResponse(MarketEnvelope):
     window: Literal["24h", "7d"]
     # the archived book actually served; None = nothing archived that far back
     baseline_as_of: datetime | None = None
+    # the baseline used is much younger than the window claims (short/gappy archive)
+    baseline_stale: bool = False
     points: list[IVCurvePoint]
 
 

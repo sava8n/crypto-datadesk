@@ -44,6 +44,7 @@ export default function OIChangeSection() {
               <span className="oi-stat__label">Δ SINCE</span>
               <span className="oi-stat__value">
                 {expiryLabel(data.baseline_as_of)} {timeLabel(data.baseline_as_of)}
+                {data.baseline_stale && ' · STALE'}
               </span>
             </div>
           </div>

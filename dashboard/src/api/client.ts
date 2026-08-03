@@ -5,6 +5,7 @@ import type {
   ExposureResponse,
   FlowByExpirationResponse,
   FlowByStrikeResponse,
+  GexConvention,
   GEXByStrikeResponse,
   GreeksChainResponse,
   IVCurvesResponse,
@@ -69,8 +70,10 @@ export const fetchProbCurves = (currency: string): Promise<ProbCurvesResponse> =
 export const fetchGreeksChain = (currency: string): Promise<GreeksChainResponse> =>
   fetchJson(url('greeksChain', { currency }));
 
-export const fetchGEXByStrike = (currency: string): Promise<GEXByStrikeResponse> =>
-  fetchJson(url('gexByStrike', { currency }));
+export const fetchGEXByStrike = (
+  currency: string,
+  convention: GexConvention = 'assumption',
+): Promise<GEXByStrikeResponse> => fetchJson(url('gexByStrike', { currency, convention }));
 
 export const fetchOIByExpiration = (currency: string): Promise<OIByExpirationResponse> =>
   fetchJson(url('oiByExpiration', { currency }));
@@ -116,7 +119,8 @@ export const fetchExpiryOutcomes = (currency: string): Promise<ExpiryOutcomesRes
 export const fetchExposure = (
   currency: string,
   greek: ExposureGreek,
-): Promise<ExposureResponse> => fetchJson(url('exposure', { currency, greek }));
+  convention: GexConvention = 'assumption',
+): Promise<ExposureResponse> => fetchJson(url('exposure', { currency, greek, convention }));
 
 export const fetchSmileHistory = (
   currency: string,

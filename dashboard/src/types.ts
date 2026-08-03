@@ -146,9 +146,17 @@ export interface GEXByStrikePoint {
   net_gex: number;
 }
 
+// how dealer inventory is signed: the classic calls+/puts- assumption or cumulative taker flow
+export type GexConvention = 'assumption' | 'flow';
+
 export interface GEXByStrikeResponse extends MarketEnvelope {
   // zero-gamma level: cumulative net-GEX crossing nearest spot
   gex_flip: number | null;
+  convention: GexConvention;
+  // earliest archived print backing the flow signing; null under assumption or empty tape
+  tape_start: string | null;
+  // share of open interest whose sign the tape explains; null under assumption
+  oi_explained_fraction: number | null;
   points: GEXByStrikePoint[];
 }
 
@@ -206,6 +214,11 @@ export interface ExposurePoint {
 export interface ExposureResponse extends MarketEnvelope {
   // dollar delta per 1 vol-pt (vanna) or per calendar day (charm)
   greek: ExposureGreek;
+  convention: GexConvention;
+  // earliest archived print backing the flow signing; null under assumption or empty tape
+  tape_start: string | null;
+  // share of open interest whose sign the tape explains; null under assumption
+  oi_explained_fraction: number | null;
   points: ExposurePoint[];
 }
 
@@ -214,6 +227,8 @@ export interface SmileHistoryResponse extends MarketEnvelope {
   window: OIChangeWindow;
   // the archived book actually served; null = nothing archived that far back
   baseline_as_of: string | null;
+  // the baseline used is much younger than the window claims (short/gappy archive)
+  baseline_stale: boolean;
   points: IVCurvePoint[];
 }
 
@@ -227,6 +242,8 @@ export interface OIChangeResponse extends MarketEnvelope {
   window: OIChangeWindow;
   // the archived book actually diffed against; null = nothing archived that far back
   baseline_as_of: string | null;
+  // the baseline used is much younger than the window claims (short/gappy archive)
+  baseline_stale: boolean;
   expiries: string[];
   // selected expiry; null = all
   expiry: string | null;
@@ -254,6 +271,8 @@ export interface FlowEnvelope {
   window: OIChangeWindow;
   start: string;
   end: string;
+  // earliest archived print; later than `start` means the window is truncated
+  tape_start: string | null;
 }
 
 // net taker flow: buys - sells, in contracts and USD premium

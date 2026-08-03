@@ -7,6 +7,7 @@ import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
 import { useCurrency } from '../../settings/store';
+import { coverageSuffix } from './coverage';
 import FlowByStrikeChart from './FlowByStrikeChart';
 
 export default function FlowByStrikeSection() {
@@ -17,7 +18,7 @@ export default function FlowByStrikeSection() {
   return (
     <Panel
       title="NET FLOW BY STRIKE"
-      subtitle="TAKER BUYS − SELLS · CONTRACTS × STRIKE"
+      subtitle={`TAKER BUYS - SELLS · CONTRACTS × STRIKE${coverageSuffix(query.data)}`}
       state={state}
       controls={<WindowSelect window={window} onSelect={setWindow} />}
     >

@@ -36,7 +36,9 @@ export default function SmileCompareSection() {
     return {
       current: selected ? curves.data.points.filter((p) => p.expiry === selected) : [],
       previous: history.data?.points ?? [],
-      previousLabel: WINDOW_LABELS[window],
+      previousLabel: history.data?.baseline_stale
+        ? `${WINDOW_LABELS[window]} · STALE`
+        : WINDOW_LABELS[window],
     };
   }, [curves.data, history.data, selected, window]);
   const state = panelState(curves, value, value?.current.length ?? 0, MIN_POINTS.line);

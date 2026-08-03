@@ -39,6 +39,7 @@ def get_flow_by_strike(
         window=window,
         start=start,
         end=end,
+        tape_start=flow.tape_start(ccy),
         points=records(flow.net_flow_by_strike(ccy, start, end), FlowStrikePoint),
     )
 
@@ -55,6 +56,7 @@ def get_flow_by_expiration(
         window=window,
         start=start,
         end=end,
+        tape_start=flow.tape_start(ccy),
         points=records(flow.net_flow_by_expiry(ccy, start, end), FlowExpirationPoint),
     )
 

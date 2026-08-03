@@ -7,6 +7,7 @@ import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
 import { useCurrency } from '../../settings/store';
+import { coverageSuffix } from './coverage';
 import FlowByExpirationChart from './FlowByExpirationChart';
 
 export default function FlowByExpirationSection() {
@@ -17,7 +18,7 @@ export default function FlowByExpirationSection() {
   return (
     <Panel
       title="NET FLOW BY EXPIRATION"
-      subtitle="TAKER BUYS − SELLS · CONTRACTS × EXPIRY"
+      subtitle={`TAKER BUYS - SELLS · CONTRACTS × EXPIRY${coverageSuffix(query.data)}`}
       state={state}
       controls={<WindowSelect window={window} onSelect={setWindow} />}
     >

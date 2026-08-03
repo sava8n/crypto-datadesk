@@ -24,6 +24,9 @@ function gexResp(over: Partial<GEXByStrikeResponse> = {}): GEXByStrikeResponse {
     spot: 100,
     as_of: '2026-07-18T00:00:00Z',
     gex_flip: null,
+    convention: 'assumption',
+    tape_start: null,
+    oi_explained_fraction: null,
     points: [],
     ...over,
   };

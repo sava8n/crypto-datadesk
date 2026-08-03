@@ -97,6 +97,8 @@ def snapshot_row(state: Archivable, currency: str) -> dict | None:
         "rv30": finite(state.rv30),
         "dvol": finite(state.dvol),
         "dvol_rank": finite(state.dvol_rank),
+        # gex_flip and gex_net_total stay assumption-convention so the archived series
+        # keeps one meaning as the tape deepens; flow-signed figures are served live only
         "gex_flip": finite(state.gex_flip),
         **derived_row(state),
     }

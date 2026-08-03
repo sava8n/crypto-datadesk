@@ -8,6 +8,7 @@ const resp = (points: FlowByStrikeResponse['points']): FlowByStrikeResponse => (
   window: '24h',
   start: '2026-08-01T12:00:00Z',
   end: '2026-08-02T12:00:00Z',
+  tape_start: null,
   points,
 });
 

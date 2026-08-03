@@ -17,6 +17,8 @@ class FlowEnvelope(BaseModel):
     window: Literal["24h", "7d"]
     start: datetime
     end: datetime
+    # earliest archived print; later than ``start`` means the window is truncated
+    tape_start: datetime | None = None
 
 
 class FlowStrikePoint(BaseModel):

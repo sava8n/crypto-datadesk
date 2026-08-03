@@ -80,7 +80,8 @@ def get_oi_strike_change(
     ``baseline_as_of`` reports the baseline actually used; ``None`` with empty points
     means nothing that old is archived yet.
     """
-    baseline = series.baseline_snapshot(ccy, state.as_of - series.WINDOWS[window])
+    target = state.as_of - series.WINDOWS[window]
+    baseline = series.baseline_snapshot(ccy, target)
     if baseline is None:
         return OIChangeResponse(
             **envelope(ccy, state),
@@ -102,6 +103,7 @@ def get_oi_strike_change(
         **envelope(ccy, state),
         window=window,
         baseline_as_of=baseline_as_of,
+        baseline_stale=series.baseline_stale(baseline_as_of, target, series.WINDOWS[window]),
         expiries=state.oi_expiries,
         expiry=expiry,
         points=points(open_interest.strike_change(now, then), OIChangePoint),

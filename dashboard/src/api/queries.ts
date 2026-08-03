@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import { useRefreshMs } from '../settings/store';
-import type { ExposureGreek, OIChangeWindow, Resolution } from '../types';
+import type { ExposureGreek, GexConvention, OIChangeWindow, Resolution } from '../types';
 import * as client from './client';
 import type { EndpointName } from './endpoints';
 
@@ -38,11 +38,20 @@ export const useTermStructure = resourceHook('termStructure', client.fetchTermSt
 export const useSkew = resourceHook('skew', client.fetchSkew);
 export const useProbCurves = resourceHook('probCurves', client.fetchProbCurves);
 export const useGreeksChain = resourceHook('greeksChain', client.fetchGreeksChain);
-export const useGEXByStrike = resourceHook('gexByStrike', client.fetchGEXByStrike);
 export const useOIByExpiration = resourceHook('oiByExpiration', client.fetchOIByExpiration);
 export const useVolumeByStrike = resourceHook('volumeByStrike', client.fetchVolumeByStrike);
 export const useStats = resourceHook('stats', client.fetchStats);
 export const useSpotHistory = resourceHook('spotHistory', client.fetchSpotHistory);
+
+export function useGEXByStrike(currency: string, convention: GexConvention = 'assumption') {
+  return useQuery({
+    queryKey: ['gexByStrike', currency, convention],
+    queryFn: () => client.fetchGEXByStrike(currency, convention),
+    // keep the chart populated while switching convention
+    placeholderData: keepPreviousData,
+    ...polling(useRefreshMs()),
+  });
+}
 
 export function useOIByStrike(currency: string, expiry?: string | null) {
   return useQuery({
@@ -85,11 +94,15 @@ export function useTape(currency: string, minPremium: number) {
 }
 export const useMaxPain = resourceHook('maxPain', client.fetchMaxPain);
 
-export function useExposure(currency: string, greek: ExposureGreek) {
+export function useExposure(
+  currency: string,
+  greek: ExposureGreek,
+  convention: GexConvention = 'assumption',
+) {
   return useQuery({
-    queryKey: ['exposure', currency, greek],
-    queryFn: () => client.fetchExposure(currency, greek),
-    // keep the chart populated while switching greek
+    queryKey: ['exposure', currency, greek, convention],
+    queryFn: () => client.fetchExposure(currency, greek, convention),
+    // keep the chart populated while switching greek or convention
     placeholderData: keepPreviousData,
     ...polling(useRefreshMs()),
   });
