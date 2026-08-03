@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/prob", tags=["prob"])
 
 
-@router.get("/curves", response_model=ProbCurvesResponse)
+@router.get("/curves")
 def get_prob_curves(ccy: CurrencyDep, state: StateDep) -> ProbCurvesResponse:
     """Option-implied P(S_T > K): (strike, expiry) -> probability, one curve per expiry."""
     return market(
@@ -36,7 +36,7 @@ def get_prob_curves(ccy: CurrencyDep, state: StateDep) -> ProbCurvesResponse:
     )
 
 
-@router.get("/expiry-outcomes", response_model=ExpiryOutcomesResponse)
+@router.get("/expiry-outcomes")
 def get_expiry_outcomes(
     ccy: CurrencyDep,
     limit: int = Query(10, ge=1, le=50),

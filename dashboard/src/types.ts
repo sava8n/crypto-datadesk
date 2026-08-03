@@ -287,6 +287,7 @@ export interface VolHistoryPoint {
   iv7: number | null;
   iv30: number | null;
   term_slope: number | null;
+  rv7: number | null;
   rv30: number | null;
   dvol: number | null;
   rr25_7: number | null;

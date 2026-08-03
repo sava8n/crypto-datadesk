@@ -43,6 +43,7 @@ def vol_series(currency: str, start: datetime, resolution: Resolution) -> list[d
         c.iv7,
         c.iv30,
         (c.iv30 - c.iv7).label("term_slope"),
+        c.rv7,
         c.rv30,
         c.dvol,
         c.rr25_7,

@@ -35,6 +35,7 @@ snapshot = Table(
     Column("dvol_rank", Float),
     Column("gex_flip", Float),
     Column("iv7", Float),
+    Column("rv7", Float),
     Column("rr25_7", Float),
     Column("bf25_7", Float),
     Column("rr25_30", Float),

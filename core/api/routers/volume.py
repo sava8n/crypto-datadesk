@@ -11,7 +11,7 @@ from api.schemas.volume import VolumeByStrikePoint, VolumeByStrikeResponse
 router = APIRouter(prefix="/volume", tags=["volume"])
 
 
-@router.get("/strike", response_model=VolumeByStrikeResponse)
+@router.get("/strike")
 def get_volume_by_strike(ccy: CurrencyDep, state: StateDep) -> VolumeByStrikeResponse:
     """24h traded volume per strike, split into calls and puts."""
     return market(

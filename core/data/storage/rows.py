@@ -28,6 +28,8 @@ class Archivable(Protocol):
     @property
     def iv30(self) -> float | None: ...
     @property
+    def rv7(self) -> float | None: ...
+    @property
     def rv30(self) -> float | None: ...
     @property
     def dvol(self) -> float | None: ...
@@ -100,6 +102,7 @@ def snapshot_row(state: Archivable, currency: str) -> dict | None:
         # candle-derived, so the backfill cannot restore them from an archived book.
         # MarketState already returns these finite-or-None; finite() repeats the guard
         # because `state` is duck-typed and this is the last step before a typed column
+        "rv7": finite(state.rv7),
         "rv30": finite(state.rv30),
         "dvol": finite(state.dvol),
         "dvol_rank": finite(state.dvol_rank),

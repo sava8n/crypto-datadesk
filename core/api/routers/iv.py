@@ -26,7 +26,7 @@ from data.storage import read, series
 router = APIRouter(prefix="/iv", tags=["iv"])
 
 
-@router.get("/curves", response_model=IVCurvesResponse)
+@router.get("/curves")
 def get_iv_curves(ccy: CurrencyDep, state: StateDep) -> IVCurvesResponse:
     """Implied-volatility smile curves: (strike, expiry) -> IV, one curve per expiry."""
     return market(
@@ -37,7 +37,7 @@ def get_iv_curves(ccy: CurrencyDep, state: StateDep) -> IVCurvesResponse:
     )
 
 
-@router.get("/smile-history", response_model=SmileHistoryResponse)
+@router.get("/smile-history")
 def get_smile_history(
     ccy: CurrencyDep,
     state: StateDep,
@@ -70,13 +70,13 @@ def get_smile_history(
     )
 
 
-@router.get("/skew", response_model=SkewResponse)
+@router.get("/skew")
 def get_iv_skew(ccy: CurrencyDep, state: StateDep) -> SkewResponse:
     """25Δ skew term structure: risk reversal and butterfly per expiry."""
     return market(SkewResponse, ccy, state, points=points(state.skew, SkewPoint))
 
 
-@router.get("/term-structure", response_model=TermStructureResponse)
+@router.get("/term-structure")
 def get_iv_term_structure(ccy: CurrencyDep, state: StateDep) -> TermStructureResponse:
     """ATM implied-volatility term structure: one ATM IV per expiry."""
     return market(

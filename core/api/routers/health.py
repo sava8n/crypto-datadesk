@@ -10,6 +10,6 @@ from api.schemas.health import HealthResponse
 router = APIRouter(prefix="/health", tags=["health"])
 
 
-@router.get("", response_model=HealthResponse)
+@router.get("")
 def health(database: DatabaseStatusDep) -> HealthResponse:
     return HealthResponse(status="ok", database=database)

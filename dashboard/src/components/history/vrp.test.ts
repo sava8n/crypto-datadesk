@@ -12,6 +12,7 @@ const point = (day: number, iv30: number | null, rv30: number | null): VolHistor
   iv7: null,
   iv30,
   term_slope: null,
+  rv7: null,
   rv30,
   dvol: null,
   rr25_7: null,

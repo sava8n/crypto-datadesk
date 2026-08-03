@@ -7,10 +7,12 @@ import { pctWhole, volPct } from '../../utils/format';
 import { AMBER, DANGER, MUTED, PALETTE } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY } from '../../theme/options';
 
+// paired by tenor: each implied series sits next to the realized vol of the same horizon
 const SERIES: { key: keyof VolHistoryPoint; name: string; color: string }[] = [
   { key: 'iv30', name: 'IV30', color: AMBER },
-  { key: 'iv7', name: 'IV7', color: PALETTE[1] },
   { key: 'rv30', name: 'RV30', color: DANGER },
+  { key: 'iv7', name: 'IV7', color: PALETTE[1] },
+  { key: 'rv7', name: 'RV7', color: PALETTE[10] },
   { key: 'dvol', name: 'DVOL', color: MUTED },
 ];
 

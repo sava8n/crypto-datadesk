@@ -24,7 +24,7 @@ from data.storage.series import Resolution
 router = APIRouter(prefix="/history", tags=["history"])
 
 
-@router.get("/vol", response_model=VolHistoryResponse)
+@router.get("/vol")
 def get_vol_history(
     ccy: CurrencyDep,
     window: ArchiveWindow = Query("90d"),
@@ -42,7 +42,7 @@ def get_vol_history(
     )
 
 
-@router.get("/cm-bands", response_model=CMBandsResponse)
+@router.get("/cm-bands")
 def get_cm_bands(
     ccy: CurrencyDep,
     window: ArchiveWindow = Query("90d"),
@@ -59,7 +59,7 @@ def get_cm_bands(
     )
 
 
-@router.get("/positioning", response_model=PositioningHistoryResponse)
+@router.get("/positioning")
 def get_positioning_history(
     ccy: CurrencyDep,
     window: ArchiveWindow = Query("90d"),

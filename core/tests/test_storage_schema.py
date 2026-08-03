@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from data.market.chain import CONTRACT_COLUMNS
-from data.storage import schema
+from data.storage import rows, schema
 from data.storage.rows import CONTRACT_ROW_COLUMNS
 
 
@@ -23,10 +23,17 @@ def test_written_row_keys_match_the_table():
 
 
 def test_snapshot_holds_the_cached_scalars_inline():
-    """Folded in from the old 1:1 side table; a join for five nullable floats bought nothing."""
+    """Folded in from the old 1:1 side table; a join for nullable floats bought nothing."""
     assert "snapshot_summary" not in schema.metadata.tables
-    for column in ("iv30", "rv30", "dvol", "dvol_rank", "gex_flip"):
+    for column in ("iv30", "rv30", "iv7", "rv7", "dvol", "dvol_rank", "gex_flip"):
         assert column in schema.snapshot.c
+
+
+def test_snapshot_row_keys_match_the_table(market_state):
+    """Only the generated columns may be absent - anything else is a column nobody writes."""
+    written = set(rows.snapshot_row(market_state, "BTC"))
+    assert written <= set(schema.snapshot.c.keys())
+    assert set(schema.snapshot.c.keys()) - written == {"id", "recorded_at"}
 
 
 def _indexed(table) -> set[tuple[str, ...]]:

@@ -37,7 +37,7 @@ def _flow_chain(ccy: str, state: MarketState) -> tuple[pd.DataFrame, datetime | 
     return chain, inputs["tape_start"], fraction
 
 
-@router.get("/strike", response_model=ExposureByStrikeResponse)
+@router.get("/strike")
 def get_exposure_by_strike(
     ccy: CurrencyDep,
     state: StateDep,

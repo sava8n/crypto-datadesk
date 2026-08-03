@@ -29,7 +29,7 @@ router = APIRouter(prefix="/oi", tags=["oi"])
 BASELINE_COLUMNS = ["strike", "option_type", "open_interest"]
 
 
-@router.get("/expiry", response_model=OIByExpiryResponse)
+@router.get("/expiry")
 def get_oi_by_expiry(ccy: CurrencyDep, state: StateDep) -> OIByExpiryResponse:
     """Per-expiry open interest split into ITM/OTM calls and puts."""
     return market(
@@ -40,7 +40,7 @@ def get_oi_by_expiry(ccy: CurrencyDep, state: StateDep) -> OIByExpiryResponse:
     )
 
 
-@router.get("/strike", response_model=OIByStrikeResponse)
+@router.get("/strike")
 def get_oi_by_strike(
     ccy: CurrencyDep,
     state: StateDep,
@@ -63,7 +63,7 @@ def get_oi_by_strike(
     )
 
 
-@router.get("/max-pain", response_model=MaxPainResponse)
+@router.get("/max-pain")
 def get_max_pain_by_expiry(ccy: CurrencyDep, state: StateDep) -> MaxPainResponse:
     """Max-pain strike per expiry across the chain."""
     return market(
@@ -74,7 +74,7 @@ def get_max_pain_by_expiry(ccy: CurrencyDep, state: StateDep) -> MaxPainResponse
     )
 
 
-@router.get("/strike-change", response_model=OIChangeByStrikeResponse)
+@router.get("/strike-change")
 def get_oi_strike_change(
     ccy: CurrencyDep,
     state: StateDep,

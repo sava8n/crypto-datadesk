@@ -23,7 +23,7 @@ from data.storage import flow
 router = APIRouter(prefix="/flow", tags=["flow"])
 
 
-@router.get("/strike", response_model=FlowByStrikeResponse)
+@router.get("/strike")
 def get_flow_by_strike(
     ccy: CurrencyDep,
     window: RecentWindow = Query("24h"),
@@ -41,7 +41,7 @@ def get_flow_by_strike(
     )
 
 
-@router.get("/expiry", response_model=FlowByExpiryResponse)
+@router.get("/expiry")
 def get_flow_by_expiry(
     ccy: CurrencyDep,
     window: RecentWindow = Query("24h"),
@@ -59,7 +59,7 @@ def get_flow_by_expiry(
     )
 
 
-@router.get("/tape", response_model=TapeResponse)
+@router.get("/tape")
 def get_tape(
     ccy: CurrencyDep,
     limit: int = Query(50, ge=1, le=500),

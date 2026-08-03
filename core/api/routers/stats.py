@@ -12,7 +12,7 @@ from data.storage import series
 router = APIRouter(prefix="/stats", tags=["stats"])
 
 
-@router.get("", response_model=StatsResponse)
+@router.get("")
 def get_stats(ccy: CurrencyDep, state: StateDep) -> StatsResponse:
     """Spot, DVOL with its trailing-year rank, 7d and 30d ATM IV vs realized vol."""
     return market(

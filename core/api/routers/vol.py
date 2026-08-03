@@ -11,7 +11,7 @@ from api.schemas.vol import RVConePoint, RVConeResponse
 router = APIRouter(prefix="/vol", tags=["vol"])
 
 
-@router.get("/cone", response_model=RVConeResponse)
+@router.get("/cone")
 def get_rv_cone(ccy: CurrencyDep, state: StateDep) -> RVConeResponse:
     """Rolling realized-vol percentiles per window, from the trailing year of closes."""
     return market(

@@ -22,6 +22,7 @@ class VolHistoryPoint(BaseModel):
     iv7: float | None = None
     iv30: float | None = None
     term_slope: float | None = None  # iv30 - iv7
+    rv7: float | None = None
     rv30: float | None = None
     dvol: float | None = None
     rr25_7: float | None = None
