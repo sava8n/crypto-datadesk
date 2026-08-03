@@ -180,9 +180,14 @@ def test_exposure_serves_every_greek(client, market_state, greek):
     assert body["points"][0]["net_exposure"] == pytest.approx(frame["net_exposure"].iloc[0])
 
 
-def test_only_gamma_carries_the_flip(client):
+def test_only_gamma_carries_the_flip(client, market_state):
     """``gex_flip`` is a gamma property; the other greeks have no zero-crossing to report."""
-    assert client.get("/api/exposure/strike").json()["gex_flip"] is not None
+    # the fixture chain is net short gamma at every strike, so it has no flip of its own
+    market_state.gex_flip = 101_000.0
+
+    body = client.get("/api/exposure/strike").json()
+    assert body["gex_flip"] == pytest.approx(101_000.0)
+
     for greek in ("vanna", "charm"):
         body = client.get("/api/exposure/strike", params={"greek": greek}).json()
         assert body["gex_flip"] is None

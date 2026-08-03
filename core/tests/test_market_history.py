@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import data.market.history as history
+from analytics.conventions import DAY_MS
 from data.market.history import (
-    _DAY_MS,
     WINDOW_DAYS,
     dvol_last_tick,
     refresh_days,
@@ -21,9 +21,9 @@ def test_refresh_days_none_is_full_window():
 def test_refresh_days_from_elapsed(monkeypatch):
     now_ms = 2_000_000_000_000
     monkeypatch.setattr(history.time, "time", lambda: now_ms / 1000.0)
-    assert refresh_days(now_ms - 5 * _DAY_MS) == 6  # ceil(5) + 1
-    assert refresh_days(now_ms - 400 * _DAY_MS) == WINDOW_DAYS  # capped at the window
-    assert refresh_days(int(now_ms - 0.5 * _DAY_MS)) == 2  # floored at 2
+    assert refresh_days(now_ms - 5 * DAY_MS) == 6  # ceil(5) + 1
+    assert refresh_days(now_ms - 400 * DAY_MS) == WINDOW_DAYS  # capped at the window
+    assert refresh_days(int(now_ms - 0.5 * DAY_MS)) == 2  # floored at 2
 
 
 def test_spot_last_tick():

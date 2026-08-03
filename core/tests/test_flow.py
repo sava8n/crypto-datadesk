@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 import pytest
 
 from data.cache import TTLCache
-from data.storage import flow
+from data.storage import db, flow
 
 
 @pytest.fixture
@@ -41,7 +41,7 @@ def test_dealer_inputs_returns_per_contract_rows_and_the_tape_start(monkeypatch)
     row = {"expiry": datetime(2026, 8, 7, 8, tzinfo=UTC), "strike": 64_000.0,
            "option_type": "C", "net_taker": 5.0}
     results = iter([[row], [{"ts": ts}]])
-    monkeypatch.setattr(flow, "_rows", lambda stmt: next(results))
+    monkeypatch.setattr(db, "rows", lambda stmt, what: next(results))
 
     out = flow._dealer_inputs("BTC")
 
@@ -66,5 +66,5 @@ def test_dealer_flow_hits_storage_once_per_ttl(fresh_cache, monkeypatch):
 
 
 def test_tape_start_is_none_on_an_empty_tape(fresh_cache, monkeypatch):
-    monkeypatch.setattr(flow, "_rows", lambda stmt: [{"ts": None}])
+    monkeypatch.setattr(db, "rows", lambda stmt, what: [{"ts": None}])
     assert flow.tape_start("BTC") is None
