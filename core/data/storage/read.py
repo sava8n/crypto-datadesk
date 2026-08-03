@@ -5,7 +5,8 @@ from __future__ import annotations
 import pandas as pd
 from sqlalchemy import select
 
-from data.market.chain import CONTRACT_COLUMNS, as_declared_dtypes, empty_contracts
+from analytics.frames import as_declared_dtypes
+from data.market.chain import CONTRACT_COLUMNS, empty_contracts
 from data.storage import db, schema
 
 

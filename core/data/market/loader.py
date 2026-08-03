@@ -13,10 +13,10 @@ import time
 from datetime import UTC, datetime
 
 from config import settings
+from data.cache import TTLCache
 from data.clients import deribit
 from data.clients.deribit import DeribitError
 from data.market import history
-from data.market.cache import TTLCache
 from data.market.chain import prepare_contracts
 from data.market.errors import UpstreamError
 from data.market.state import MarketState

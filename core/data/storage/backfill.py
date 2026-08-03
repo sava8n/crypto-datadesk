@@ -12,6 +12,7 @@ from datetime import datetime
 from sqlalchemy import exists, or_, select, update
 
 from config import settings
+from data.market.state import MarketState
 from data.storage import db, read, schema
 from data.storage.rows import cm_rows, derived_row
 
@@ -38,8 +39,6 @@ def pending_snapshots(currency: str) -> list[tuple[int, datetime, float]]:
 
 def backfill_currency(currency: str) -> int:
     """Restore each pending snapshot's book and write its derived data back."""
-    from data.market.state import MarketState
-
     done = 0
     for snapshot_id, as_of, spot in pending_snapshots(currency):
         # stored tte_years is capture-time tte, so the restored state reproduces the

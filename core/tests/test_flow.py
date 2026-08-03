@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from data.market.cache import TTLCache
+from data.cache import TTLCache
 from data.storage import flow
 
 

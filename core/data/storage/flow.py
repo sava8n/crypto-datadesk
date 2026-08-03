@@ -12,7 +12,7 @@ from datetime import UTC, datetime
 from sqlalchemy import Select, case, func, select
 
 from config import settings
-from data.market.cache import TTLCache
+from data.cache import TTLCache
 from data.storage import db, schema
 
 _OPTION_SIDES = {"C": "call", "P": "put"}

@@ -11,8 +11,8 @@ import time
 
 import pytest
 
-import data.market.cache as cache_mod
-from data.market.cache import TTLCache
+import data.cache as cache_mod
+from data.cache import TTLCache
 
 
 def test_miss_then_hit_then_expiry(monkeypatch):
