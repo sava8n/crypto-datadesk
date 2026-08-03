@@ -58,9 +58,14 @@ class Archivable(Protocol):
 
 
 # scalars derived from (contracts, spot) alone - no candle history involved, so the
-# backfill can restore them for any archived book
+# backfill can restore them for any archived book.
+#
+# gex_flip and gex_net_total are recorded under the assumption convention so the archived
+# series keeps one meaning as the tape deepens; flow-signed figures are served live only.
+# That is a convention choice, not a candle dependency - both still backfill.
 DERIVED_SCALARS = (
     "iv7",
+    "iv30",
     "rr25_7",
     "bf25_7",
     "rr25_30",
@@ -68,6 +73,7 @@ DERIVED_SCALARS = (
     "oi_total_calls",
     "oi_total_puts",
     "max_pain_front",
+    "gex_flip",
     "gex_net_total",
 )
 
@@ -91,15 +97,12 @@ def snapshot_row(state: Archivable, currency: str) -> dict | None:
         "currency": currency,
         "as_of": state.as_of,
         "spot": spot,
+        # candle-derived, so the backfill cannot restore them from an archived book.
         # MarketState already returns these finite-or-None; finite() repeats the guard
         # because `state` is duck-typed and this is the last step before a typed column
-        "iv30": finite(state.iv30),
         "rv30": finite(state.rv30),
         "dvol": finite(state.dvol),
         "dvol_rank": finite(state.dvol_rank),
-        # gex_flip and gex_net_total stay assumption-convention so the archived series
-        # keeps one meaning as the tape deepens; flow-signed figures are served live only
-        "gex_flip": finite(state.gex_flip),
         **derived_row(state),
     }
 

@@ -138,10 +138,9 @@ export function useOIChangeByStrike(
   });
 }
 
-// both history hooks: resolution follows the window (see useLookback), so it is not part of the key
 export function useVolHistory(currency: string, window: ArchiveWindow, resolution: Resolution) {
   return useQuery({
-    queryKey: ['historyVol', currency, window],
+    queryKey: ['historyVol', currency, window, resolution],
     queryFn: () => client.fetchVolHistory(currency, window, resolution),
     placeholderData: keepPreviousData,
     ...polling(useRefreshMs()),
@@ -154,7 +153,7 @@ export function usePositioningHistory(
   resolution: Resolution,
 ) {
   return useQuery({
-    queryKey: ['historyPositioning', currency, window],
+    queryKey: ['historyPositioning', currency, window, resolution],
     queryFn: () => client.fetchPositioningHistory(currency, window, resolution),
     placeholderData: keepPreviousData,
     ...polling(useRefreshMs()),

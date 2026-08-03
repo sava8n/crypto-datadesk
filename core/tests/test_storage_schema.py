@@ -29,10 +29,19 @@ def test_snapshot_holds_the_cached_scalars_inline():
         assert column in schema.snapshot.c
 
 
+def _indexed(table) -> set[tuple[str, ...]]:
+    return {tuple(index.columns.keys()) for index in table.indexes}
+
+
 def test_retention_predicates_are_indexed():
-    """The sweep deletes snapshots on as_of and contracts on snapshot_id."""
-    snapshot_indexed = {tuple(i.columns.keys()) for i in schema.snapshot.indexes}
-    assert ("as_of",) in snapshot_indexed
+    """All four sweep predicates, each of which scans a whole table without an index.
+
+    A composite key led by another column cannot serve a scan on the delete predicate
+    alone, so ``snapshot`` and ``expiry_outcome`` each need a standalone index.
+    """
+    assert ("as_of",) in _indexed(schema.snapshot)
+    assert ("ts",) in _indexed(schema.trade)
+    assert ("expiry",) in _indexed(schema.expiry_outcome)
     # contracts are deleted by snapshot_id, which leads the primary key
     assert list(schema.contract.primary_key.columns.keys())[0] == "snapshot_id"
 

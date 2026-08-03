@@ -139,6 +139,10 @@ expiry_outcome = Table(
     PrimaryKeyConstraint("currency", "expiry"),
 )
 
+# same reason as ix_snapshot_as_of: the sweep deletes on expiry alone, and the primary
+# key leads with currency so it cannot serve that
+Index("ix_expiry_outcome_expiry", expiry_outcome.c.expiry)
+
 # constant-maturity tenor grid per capture; tenors a snapshot's chain did not span are
 # absent rather than clamped, so percentiles over this table stay honest
 cm_metric = Table(
