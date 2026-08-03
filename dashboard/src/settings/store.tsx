@@ -10,7 +10,7 @@ import {
 
 import { DEFAULT_SETTINGS, refreshMs, type Settings } from '../config';
 
-const KEY = 'datadesk.settings.v1';
+const KEY = 'datadesk.settings.v2';
 
 // stored overrides spread over the defaults, so a field added to config.ts later
 // still shows up for a browser holding an older blob
@@ -19,11 +19,7 @@ function load(): Settings {
     const raw = localStorage.getItem(KEY);
     if (!raw) return DEFAULT_SETTINGS;
     const saved = JSON.parse(raw) as Partial<Settings>;
-    return {
-      ...DEFAULT_SETTINGS,
-      ...saved,
-      levels: { ...DEFAULT_SETTINGS.levels, ...saved.levels },
-    };
+    return { ...DEFAULT_SETTINGS, ...saved };
   } catch {
     return DEFAULT_SETTINGS; // unparseable blob or storage blocked
   }

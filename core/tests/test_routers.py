@@ -89,9 +89,9 @@ def test_prob_curves_are_bounded_probabilities(client):
     assert row["p16"] <= row["p50"] <= row["p84"]
 
 
-def test_stats_reports_all_four_scalars(client, market_state):
+def test_stats_reports_every_scalar(client, market_state):
     body = client.get("/api/stats").json()
-    for key in ("dvol", "dvol_rank", "iv30", "rv30"):
+    for key in ("dvol", "dvol_rank", "iv7", "rv7", "iv30", "rv30"):
         assert body[key] == pytest.approx(getattr(market_state, key))
 
 

@@ -1,20 +1,18 @@
-import { useState } from 'react';
-
 import { useOIChange } from '../../api/queries';
-import type { OIChangeWindow } from '../../types';
 import ExpirySelect from '../controls/ExpirySelect';
 import WindowSelect from '../controls/WindowSelect';
+import { useSeeded } from '../controls/useSeeded';
 import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
-import { useCurrency } from '../../settings/store';
+import { useCurrency, useSettings } from '../../settings/store';
 import { useExpiryPicker } from '../controls/useExpiryPicker';
 import { expiryLabel, timeLabel } from '../../utils/format';
 import OIChangeChart from './OIChangeChart';
 
 export default function OIChangeSection() {
   const currency = useCurrency();
-  const [window, setWindow] = useState<OIChangeWindow>('24h');
+  const [window, setWindow] = useSeeded(useSettings().flowWindow);
 
   const query = useOIChange(currency, window);
   const { selected, select } = useExpiryPicker(query.data?.expiries ?? [], { allowAll: true });

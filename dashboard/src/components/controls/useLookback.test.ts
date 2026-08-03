@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
-import { LOOKBACKS, resolutionFor } from './useLookback';
+import { LOOKBACKS } from '../../config';
+import { resolutionFor } from './useLookback';
 
 describe('resolutionFor', () => {
   it('reads hourly captures for short lookbacks', () => {

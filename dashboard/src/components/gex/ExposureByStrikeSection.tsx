@@ -1,12 +1,13 @@
 import { useState } from 'react';
 
 import { useExposure } from '../../api/queries';
-import type { ExposureGreek, GexConvention } from '../../types';
+import type { ExposureGreek } from '../../types';
 import ConventionSelect from '../controls/ConventionSelect';
+import { useSeeded } from '../controls/useSeeded';
 import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
-import { useCurrency } from '../../settings/store';
+import { useCurrency, useSettings } from '../../settings/store';
 import { conventionSubtitle } from './convention';
 import ExposureByStrikeChart from './ExposureByStrikeChart';
 
@@ -42,7 +43,7 @@ function GreekSelect({
 
 export default function ExposureByStrikeSection() {
   const [greek, setGreek] = useState<ExposureGreek>('vanna');
-  const [convention, setConvention] = useState<GexConvention>('assumption');
+  const [convention, setConvention] = useSeeded(useSettings().gexConvention);
   const query = useExposure(useCurrency(), greek, convention);
   const state = panelState(query, query.data, query.data?.points.length ?? 0, MIN_POINTS.bars);
 

@@ -48,6 +48,12 @@ export const NET_GEX = VIOLET;
 // distribution tail buckets
 export const TAIL = PUT_DEEP;
 
+// expected-move cone over the spot chart
+export const CONE_FILL = 'rgba(200, 208, 208, 0.10)';
+export const CONE_EDGE = 'rgba(200, 208, 208, 0.5)';
+export const CONE_MID = 'rgba(200, 208, 208, 0.7)';
+export const CONE_LABEL = 'rgba(200, 208, 208, 0.9)';
+
 // per-greek series colors;
 export const GREEK_COLORS = {
   delta: '#4aa3ff',

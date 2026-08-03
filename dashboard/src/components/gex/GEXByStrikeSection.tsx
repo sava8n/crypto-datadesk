@@ -1,17 +1,15 @@
-import { useState } from 'react';
-
 import { useGEXByStrike } from '../../api/queries';
-import type { GexConvention } from '../../types';
 import ConventionSelect from '../controls/ConventionSelect';
+import { useSeeded } from '../controls/useSeeded';
 import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
-import { useCurrency } from '../../settings/store';
+import { useCurrency, useSettings } from '../../settings/store';
 import { conventionSubtitle } from './convention';
 import GEXByStrikeChart from './GEXByStrikeChart';
 
 export default function GEXByStrikeSection() {
-  const [convention, setConvention] = useState<GexConvention>('assumption');
+  const [convention, setConvention] = useSeeded(useSettings().gexConvention);
   const query = useGEXByStrike(useCurrency(), convention);
   const state = panelState(query, query.data, query.data?.points.length ?? 0, MIN_POINTS.bars);
 

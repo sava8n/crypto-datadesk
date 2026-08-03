@@ -1,6 +1,6 @@
 import type { OIChangeWindow } from '../../types';
 
-const WINDOWS: { value: OIChangeWindow; label: string }[] = [
+export const WINDOWS: { value: OIChangeWindow; label: string }[] = [
   { value: '24h', label: '24H' },
   { value: '7d', label: '7D' },
 ];

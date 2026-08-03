@@ -1,4 +1,4 @@
-import { LOOKBACKS, type LookbackDays } from './useLookback';
+import { LOOKBACKS, type LookbackDays } from '../../config';
 
 const label = (days: number) => (days === 365 ? '1Y' : `${days}D`);
 

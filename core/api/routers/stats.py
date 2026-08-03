@@ -1,4 +1,4 @@
-"""Market stats route: spot, DVOL (+rank) and 30-day implied vs realized vol."""
+"""Market stats route: spot, DVOL (+rank) and 7/30-day implied vs realized vol."""
 
 from __future__ import annotations
 
@@ -14,11 +14,13 @@ router = APIRouter(tags=["stats"])
 
 @router.get("/stats", response_model=StatsResponse)
 def get_stats(ccy: CurrencyDep, state: StateDep) -> StatsResponse:
-    """Spot, DVOL with its trailing-year rank, 30d ATM IV vs realized vol."""
+    """Spot, DVOL with its trailing-year rank, 7d and 30d ATM IV vs realized vol."""
     return StatsResponse(
         **envelope(ccy, state),
         dvol=state.dvol,
         dvol_rank=state.dvol_rank,
+        iv7=state.iv7,
+        rv7=state.rv7,
         iv30=state.iv30,
         rv30=state.rv30,
         iv30_percentile=series.iv30_percentile(ccy, state.iv30),

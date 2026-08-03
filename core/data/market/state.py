@@ -217,8 +217,13 @@ class MarketState:
         return self._dvol_stats[1]
 
     @cached_property
+    def _closes(self) -> list[float]:
+        return self.spot_history["close"].tolist()
+
+    @cached_property
     def rv30(self) -> float | None:
-        closes = self.spot_history["close"]
-        if closes.empty:
-            return None
-        return finite(realized_vol(closes.tolist()))
+        return finite(realized_vol(self._closes)) if self._closes else None
+
+    @cached_property
+    def rv7(self) -> float | None:
+        return finite(realized_vol(self._closes, days=7)) if self._closes else None

@@ -103,6 +103,10 @@ export interface StatsResponse extends MarketEnvelope {
   dvol: number | null;
   // last close's position in the trailing-year range, [0, 1]
   dvol_rank: number | null;
+  // 7d constant-maturity ATM IV
+  iv7: number | null;
+  // 7d close-to-close realized vol, annualized
+  rv7: number | null;
   // 30d constant-maturity ATM IV
   iv30: number | null;
   // 30d close-to-close realized vol, annualized

@@ -1,6 +1,6 @@
 import { useStats } from '../api/queries';
 import { dvolFmt, pctWhole, priceWhole } from '../utils/format';
-import { useCurrency } from '../settings/store';
+import { useCurrency, useSettings } from '../settings/store';
 
 function Field({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
@@ -13,7 +13,13 @@ function Field({ label, value, highlight }: { label: string; value: string; high
 
 export default function Header({ onOpenSettings }: { onOpenSettings: () => void }) {
   const currency = useCurrency();
+  const { frontExpiry } = useSettings();
   const { data } = useStats(currency);
+
+  // the headline vol pair tracks the tenor the rest of the dashboard is anchored to
+  const weekly = frontExpiry === 'weekly';
+  const iv = weekly ? data?.iv7 : data?.iv30;
+  const rv = weekly ? data?.rv7 : data?.rv30;
 
   return (
     <header className="header">
@@ -38,12 +44,8 @@ export default function Header({ onOpenSettings }: { onOpenSettings: () => void 
           }
         />
         <Field
-          label="IV30/RV30"
-          value={
-            data?.iv30 != null && data?.rv30 != null
-              ? `${pctWhole(data.iv30)}/${pctWhole(data.rv30)}`
-              : '-'
-          }
+          label={weekly ? 'IV7/RV7' : 'IV30/RV30'}
+          value={iv != null && rv != null ? `${pctWhole(iv)}/${pctWhole(rv)}` : '-'}
         />
         <Field label="SRC" value="DERIBIT" />
       </div>

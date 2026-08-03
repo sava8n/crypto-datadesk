@@ -1,17 +1,15 @@
-import { useState } from 'react';
-
 import { useFlowByStrike } from '../../api/queries';
-import type { OIChangeWindow } from '../../types';
 import WindowSelect from '../controls/WindowSelect';
+import { useSeeded } from '../controls/useSeeded';
 import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
-import { useCurrency } from '../../settings/store';
+import { useCurrency, useSettings } from '../../settings/store';
 import { coverageSuffix } from './coverage';
 import FlowByStrikeChart from './FlowByStrikeChart';
 
 export default function FlowByStrikeSection() {
-  const [window, setWindow] = useState<OIChangeWindow>('24h');
+  const [window, setWindow] = useSeeded(useSettings().flowWindow);
   const query = useFlowByStrike(useCurrency(), window);
   const state = panelState(query, query.data, query.data?.points.length ?? 0, MIN_POINTS.bars);
 

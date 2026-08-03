@@ -5,7 +5,7 @@ import { renderHook, act } from '@testing-library/react';
 import { SettingsProvider, useRefreshMs, useSettings, useSettingsControl } from './store';
 import { DEFAULT_SETTINGS, MIN_REFRESH_SECONDS } from '../config';
 
-const KEY = 'datadesk.settings.v1';
+const KEY = 'datadesk.settings.v2';
 
 const wrapper = ({ children }: { children: ReactNode }) => (
   <SettingsProvider>{children}</SettingsProvider>
@@ -19,17 +19,19 @@ describe('load (via SettingsProvider)', () => {
     expect(result.current).toEqual(DEFAULT_SETTINGS);
   });
 
-  it('spreads stored overrides over the defaults and deep-merges nested groups', () => {
-    localStorage.setItem(
-      KEY,
-      JSON.stringify({ currency: 'ETH', minDte: 5, levels: { range: 0.5 } }),
-    );
+  it('spreads stored overrides over the defaults', () => {
+    localStorage.setItem(KEY, JSON.stringify({ currency: 'ETH', minDte: 5 }));
     const { result } = renderHook(() => useSettings(), { wrapper });
 
     expect(result.current.currency).toBe('ETH');
     expect(result.current.minDte).toBe(5);
     expect(result.current.maxDte).toBe(DEFAULT_SETTINGS.maxDte); // untouched
-    expect(result.current.levels).toEqual({ ...DEFAULT_SETTINGS.levels, range: 0.5 }); // deep-merged
+  });
+
+  it('ignores a v1 blob rather than carrying its dropped fields forward', () => {
+    localStorage.setItem('datadesk.settings.v1', JSON.stringify({ currency: 'ETH' }));
+    const { result } = renderHook(() => useSettings(), { wrapper });
+    expect(result.current).toEqual(DEFAULT_SETTINGS);
   });
 
   it('falls back to the defaults on an unparseable blob', () => {

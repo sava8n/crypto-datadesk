@@ -1,6 +1,6 @@
 import type { GexConvention } from '../../types';
 
-const CONVENTIONS: { value: GexConvention; label: string }[] = [
+export const CONVENTIONS: { value: GexConvention; label: string }[] = [
   { value: 'assumption', label: 'ASSUMED' },
   { value: 'flow', label: 'FLOW' },
 ];

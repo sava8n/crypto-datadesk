@@ -11,6 +11,8 @@ import VrpChart from './VrpChart';
 import { pairForwardRealized } from './vrp';
 
 export default function VrpSection() {
+  // pinned past the shared default: a pair needs rv30 archived 30d after its iv30,
+  // so anything shorter than a year shows almost nothing
   const { days, setDays, resolution } = useLookback(365);
   const query = useVolHistory(useCurrency(), days, resolution);
   // every pair needs iv30(t) and rv30(t+30d) both archived, so the series starts

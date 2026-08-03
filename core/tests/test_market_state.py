@@ -21,9 +21,11 @@ def test_derived_products_build(market_state):
 
 def test_scalar_stats(market_state):
     assert market_state.iv30 is not None and market_state.iv30 > 0
+    assert market_state.iv7 is not None and market_state.iv7 > 0
     assert market_state.dvol is not None
     assert market_state.dvol_rank is not None
     assert market_state.rv30 is not None
+    assert market_state.rv7 is not None
 
 
 def test_derived_scalars_match_their_frames(market_state):
