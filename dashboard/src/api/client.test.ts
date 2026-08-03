@@ -39,17 +39,18 @@ describe('fetchJson (via fetchStats)', () => {
   });
 });
 
-// every route, so a mistyped path cannot ship silently
+// every single-argument route, so a mistyped path cannot ship silently
 const ROUTES: [keyof typeof client, string][] = [
-  ['fetchIVSurface', 'iv/surface'],
   ['fetchIVCurves', 'iv/curves'],
   ['fetchTermStructure', 'iv/term-structure'],
   ['fetchSkew', 'iv/skew'],
   ['fetchProbCurves', 'prob/curves'],
-  ['fetchGreeksChain', 'greeks/chain'],
-  ['fetchOIByExpiration', 'oi/expiration'],
+  ['fetchOIByExpiry', 'oi/expiry'],
   ['fetchOIByStrike', 'oi/strike'],
   ['fetchVolumeByStrike', 'volume/strike'],
+  ['fetchRVCone', 'vol/cone'],
+  ['fetchMaxPain', 'oi/max-pain'],
+  ['fetchExpiryOutcomes', 'prob/expiry-outcomes'],
   ['fetchStats', 'stats'],
   ['fetchSpotHistory', 'spot/history'],
 ];
@@ -63,21 +64,28 @@ describe('URL building', () => {
   });
 
   it('encodes the currency query param', async () => {
-    await client.fetchIVSurface('ET H');
-    expect(fetchMock).toHaveBeenCalledWith('/api/iv/surface?currency=ET+H');
+    await client.fetchIVCurves('ET H');
+    expect(fetchMock).toHaveBeenCalledWith('/api/iv/curves?currency=ET+H');
   });
 
-  it('carries the sign convention on the GEX routes', async () => {
-    await client.fetchGEXByStrike('BTC');
-    expect(fetchMock).toHaveBeenCalledWith('/api/gex/strike?currency=BTC&convention=assumption');
-
-    await client.fetchGEXByStrike('BTC', 'flow');
-    expect(fetchMock).toHaveBeenCalledWith('/api/gex/strike?currency=BTC&convention=flow');
-
-    await client.fetchExposure('BTC', 'vanna', 'flow');
+  it('carries the greek and sign convention on the exposure route', async () => {
+    await client.fetchExposureByStrike('BTC', 'gamma');
     expect(fetchMock).toHaveBeenCalledWith(
-      '/api/gex/exposure?currency=BTC&greek=vanna&convention=flow',
+      '/api/exposure/strike?currency=BTC&greek=gamma&convention=assumption',
     );
+
+    await client.fetchExposureByStrike('BTC', 'vanna', 'flow');
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/exposure/strike?currency=BTC&greek=vanna&convention=flow',
+    );
+  });
+
+  it('sends the archive window as a duration token, not a day count', async () => {
+    await client.fetchVolHistory('BTC', '90d', '1d');
+    expect(fetchMock).toHaveBeenCalledWith('/api/history/vol?currency=BTC&window=90d&resolution=1d');
+
+    await client.fetchCMBands('BTC', '1y');
+    expect(fetchMock).toHaveBeenCalledWith('/api/history/cm-bands?currency=BTC&window=1y');
   });
 
   it('appends the expiry only when provided', async () => {

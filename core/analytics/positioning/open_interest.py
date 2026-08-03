@@ -41,7 +41,7 @@ def by_expiry(chain: pd.DataFrame) -> pd.DataFrame:
 
     tte = bucketed.groupby("expiry")["tte_years"].first()
     result = pivot.join(tte).reset_index().sort_values("tte_years").reset_index(drop=True)
-    logger.info("open interest by expiration built for %d expiries", len(result))
+    logger.info("open interest by expiry built for %d expiries", len(result))
     return as_declared_dtypes(result[BY_EXPIRY_COLUMNS])
 
 
@@ -135,7 +135,6 @@ def intrinsic_values(chain: pd.DataFrame) -> pd.DataFrame:
 
 
 def max_pain(intrinsic: pd.DataFrame) -> float | None:
-    """The strike with the least total intrinsic value, or ``None`` for an empty frame."""
     if intrinsic.empty:
         return None
     return float(intrinsic.loc[intrinsic["intrinsic_value"].idxmin(), "strike"])

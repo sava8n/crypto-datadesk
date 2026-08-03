@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { useSettings } from '../../settings/store';
 import { filterByDte } from '../../utils/dte';
+import { useSeeded } from './useSeeded';
 
 export interface DTEWindow {
   min: number;
@@ -11,16 +12,9 @@ export interface DTEWindow {
 // section-local DTE window, re-seeded from the settings default whenever that default moves
 export function useDteWindow() {
   const { minDte, maxDte } = useSettings();
-  const [dte, setDte] = useState<DTEWindow>({ min: minDte, max: maxDte });
-  const [seed, setSeed] = useState({ minDte, maxDte });
-
-  // the default moved, so drop the section-local override
-  if (seed.minDte !== minDte || seed.maxDte !== maxDte) {
-    setSeed({ minDte, maxDte });
-    setDte({ min: minDte, max: maxDte });
-  }
-
-  return [dte, setDte] as const;
+  // useSeeded reseeds on identity, so the pair has to be one stable reference
+  const seed = useMemo(() => ({ min: minDte, max: maxDte }), [minDte, maxDte]);
+  return useSeeded<DTEWindow>(seed);
 }
 
 /**

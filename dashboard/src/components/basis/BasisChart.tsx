@@ -3,12 +3,11 @@ import type { EChartsOption } from 'echarts';
 
 import EChart from '../chart/EChart';
 import type { TermStructureResponse } from '../../types';
-import { dteLabel, expiryLabel, pctOne, usdFull } from '../../utils/format';
+import { dteLabel, dateLabel, usdFull, volPct } from '../../utils/format';
 import { AMBER, MUTED } from '../../theme/charts';
 import { axisTooltip, grid, valueAxisX, valueAxisY } from '../../theme/options';
 import { buildBasisRows } from './basis';
 
-const volPct = (v: number) => `${pctOne(v)}%`;
 
 export function buildBasisOption(data: TermStructureResponse): EChartsOption {
   const rows = buildBasisRows(data);
@@ -19,7 +18,7 @@ export function buildBasisOption(data: TermStructureResponse): EChartsOption {
       render: (p) => {
         const r = rows[p.dataIndex ?? -1];
         if (!r) return '';
-        return `${expiryLabel(r.expiry)}<br/>DTE ${dteLabel(r.dte)} · FWD ${usdFull(r.forward)}<br/>BASIS ${volPct(r.basis)} · ANN ${volPct(r.basisAnn)}`;
+        return `${dateLabel(r.expiry)}<br/>DTE ${dteLabel(r.dte)} · FWD ${usdFull(r.forward)}<br/>BASIS ${volPct(r.basis)} · ANN ${volPct(r.basisAnn)}`;
       },
     }),
     grid: grid('series'),

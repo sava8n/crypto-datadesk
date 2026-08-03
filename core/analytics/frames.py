@@ -67,8 +67,7 @@ def moneyness_bucket(chain: pd.DataFrame) -> np.ndarray:
     """One of ``BUCKETS`` per row of ``chain``.
 
     Classified on strike against the per-contract forward, so no IV is needed: a call is
-    ITM when ``strike < forward``, a put when ``strike > forward``. At-the-money falls to
-    OTM. The three predicates plus the default cover every case exactly once.
+    ITM when ``strike < forward``, a put when ``strike > forward``. At-the-money falls to OTM.
     """
     is_call = (chain["option_type"] == "C").to_numpy()
     strike = chain["strike"].to_numpy(dtype=float)
@@ -88,11 +87,10 @@ def sum_by(
     value: str,
     labels: Sequence[str],
 ) -> pd.DataFrame:
-    """Sum ``value`` over (``index``, ``label``), spreading labels into columns.
+    """Sum ``value`` over (``index``, ``label``), spreading ``labels`` into columns.
 
-    ``pivot_table`` only emits columns for labels actually present, so the absent ones
-    are added as zeros - callers project a fixed column list and would otherwise raise
-    on a chain that happens to hold no puts.
+    Labels absent from the frame are added as zeros, so a caller projecting a fixed
+    column list does not raise on a chain that happens to hold no puts.
     """
     pivot = frame.pivot_table(
         index=index,

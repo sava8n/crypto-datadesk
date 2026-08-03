@@ -3,7 +3,7 @@ import type { EChartsOption } from 'echarts';
 
 import EChart from '../chart/EChart';
 import type { ProbCurvePoint } from '../../types';
-import { pctOne, pctWhole } from '../../utils/format';
+import { pctWhole, volPct } from '../../utils/format';
 import { AMBER, MONO, MUTED, TAIL } from '../../theme/charts';
 import { axisTooltip, categoryAxisX, grid, valueAxisY } from '../../theme/options';
 import { buildBuckets } from './buckets';
@@ -19,7 +19,7 @@ export function buildProbDistributionOption(points: ProbCurvePoint[], spot: numb
 
   return {
     backgroundColor: 'transparent',
-    tooltip: axisTooltip({ shadow: true, value: (v) => `${pctOne(v)}%` }),
+    tooltip: axisTooltip({ shadow: true, value: volPct }),
     grid: grid('noLegend'),
     xAxis: categoryAxisX(buckets.map((b) => b.label)),
     yAxis: valueAxisY({ name: 'P(BUCKET)', min: 0, format: pctWhole }),

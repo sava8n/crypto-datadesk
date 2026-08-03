@@ -5,7 +5,8 @@ from __future__ import annotations
 import pandas as pd
 from sqlalchemy import select
 
-from data.market.chain import CONTRACT_COLUMNS, as_declared_dtypes, empty_contracts
+from analytics.frames import as_declared_dtypes
+from data.market.chain import CONTRACT_COLUMNS, empty_contracts
 from data.storage import db, schema
 
 
@@ -27,6 +28,5 @@ def load_contracts(snapshot_id: int) -> pd.DataFrame:
         .where(schema.contract.c.snapshot_id == snapshot_id)
         .order_by(schema.contract.c.expiry, schema.contract.c.strike, schema.contract.c.option_type)
     )
-    with db.connection() as conn:
-        result = conn.execute(stmt).fetchall()
-    return _typed(pd.DataFrame(result, columns=CONTRACT_COLUMNS))
+    rows = db.rows(stmt, "archived book")
+    return _typed(pd.DataFrame(rows, columns=CONTRACT_COLUMNS))

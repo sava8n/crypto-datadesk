@@ -3,8 +3,8 @@ import type { EChartsOption } from 'echarts';
 
 import EChart from '../chart/EChart';
 import type { CMBandPoint, TermStructureResponse } from '../../types';
-import { DAYS_PER_YEAR } from '../../utils/constants';
-import { dteLabel, expiryLabel, pctOne, pctWhole } from '../../utils/format';
+import { dteOf } from '../../utils/dte';
+import { dteLabel, dateLabel, pctOne, pctWhole } from '../../utils/format';
 import { AMBER } from '../../theme/charts';
 import { grid, itemTooltip, valueAxisX, valueAxisY } from '../../theme/options';
 import { bandRows, bandSeries } from './bands';
@@ -15,7 +15,7 @@ export function buildTermStructureOption(
 ): EChartsOption {
   // one ATM IV per expiry, plotted time-proportionally by days-to-expiry
   const rows = data.points
-    .map((p) => ({ dte: p.tte_years * DAYS_PER_YEAR, iv: p.atm_iv, expiry: p.expiry }))
+    .map((p) => ({ dte: dteOf(p), iv: p.atm_iv, expiry: p.expiry }))
     .sort((a, b) => a.dte - b.dte);
   const maxDte = rows[rows.length - 1]?.dte ?? 0;
 
@@ -24,7 +24,7 @@ export function buildTermStructureOption(
     tooltip: itemTooltip((p) => {
       const r = rows[p.dataIndex ?? -1];
       if (!r) return '';
-      return `${expiryLabel(r.expiry)}<br/>DTE ${dteLabel(r.dte)}<br/>IV ${pctOne(r.iv)}%`;
+      return `${dateLabel(r.expiry)}<br/>DTE ${dteLabel(r.dte)}<br/>IV ${pctOne(r.iv)}%`;
     }),
     grid: grid('series'),
     xAxis: valueAxisX({ name: 'DTE', scale: true, min: 0, format: dteLabel }),

@@ -1,8 +1,12 @@
+import type { ArchiveWindow, ExposureConvention, RecentWindow } from './types';
 import type { FrontExpiry } from './utils/expiry';
 
 export const CURRENCIES = ['BTC'] as const;
 
 export type Currency = (typeof CURRENCIES)[number];
+
+// selectable spans for the history panels, in duration-token order
+export const ARCHIVE_WINDOWS: readonly ArchiveWindow[] = ['7d', '30d', '90d', '1y'];
 
 // the service caches one market state per currency for this long
 // so a shorter poll period only re-serves the same snapshot
@@ -32,13 +36,20 @@ export interface Settings {
   // spot chart initial visible window, days of daily candles
   spotLookbackDays: number;
 
-  // spot chart levels
-  levels: {
-    range: number; // levels beyond ±this of spot are off-chart noise
-    tolerance: number; // coincident levels within this distance collapse, in units
-    gexClusterMinWeight: number; // a neighbor counts as stacked at >= this fraction of the max weight
-    gexClusterMaxGap: number; // max stacked-neighbor gap, in units of the median grid step
-  };
+  // panel defaults; each section seeds its own control from these and keeps
+  // the override until the default moves again
+
+  // history panels' archive window
+  historyWindow: ArchiveWindow;
+
+  // how dealer inventory is signed on the exposure panels
+  exposureConvention: ExposureConvention;
+
+  // archived baseline the flow and OI-change panels diff against
+  flowWindow: RecentWindow;
+
+  // tape cutoff, in USD premium; 0 shows every print
+  tapeMinPremium: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -46,12 +57,10 @@ export const DEFAULT_SETTINGS: Settings = {
   refreshSeconds: 60,
   minDte: 0,
   maxDte: 30,
-  frontExpiry: 'weekly',
+  frontExpiry: 'monthly',
   spotLookbackDays: 180,
-  levels: {
-    range: 0.3,
-    tolerance: 100,
-    gexClusterMinWeight: 0.5,
-    gexClusterMaxGap: 1.5,
-  },
+  historyWindow: '30d',
+  exposureConvention: 'assumption',
+  flowWindow: '7d',
+  tapeMinPremium: 0,
 };

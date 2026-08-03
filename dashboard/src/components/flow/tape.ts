@@ -1,11 +1,11 @@
 // Tape presentation helpers, kept pure for testing.
 
-import { expiryLabel, strikeFmt } from '../../utils/format';
+import { dateLabel, strikeFmt } from '../../utils/format';
 import type { TapePrint } from '../../types';
 
 // "07AUG26 64k C"
 export function instrumentLabel(print: TapePrint): string {
-  return `${expiryLabel(print.expiry)} ${strikeFmt(print.strike)} ${print.option_type}`;
+  return `${dateLabel(print.expiry)} ${strikeFmt(print.strike)} ${print.option_type}`;
 }
 
 export function tags(print: TapePrint): string {

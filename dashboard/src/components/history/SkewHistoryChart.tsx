@@ -3,15 +3,14 @@ import type { EChartsOption, LineSeriesOption } from 'echarts';
 
 import EChart from '../chart/EChart';
 import type { VolHistoryPoint, VolHistoryResponse } from '../../types';
-import { pctOne } from '../../utils/format';
-import { AMBER, CALL, MUTED } from '../../theme/charts';
+import { volPct } from '../../utils/format';
+import { AMBER, CALL, MUTED, PALETTE } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY } from '../../theme/options';
 
-const volPct = (v: number) => `${pctOne(v)}%`;
 
 const SERIES: { key: keyof VolHistoryPoint; name: string; color: string }[] = [
   { key: 'rr25_7', name: 'RR 25Δ 7D', color: AMBER },
-  { key: 'rr25_30', name: 'RR 25Δ 30D', color: '#4aa3ff' },
+  { key: 'rr25_30', name: 'RR 25Δ 30D', color: PALETTE[1] },
   { key: 'bf25_30', name: 'BF 25Δ 30D', color: CALL },
 ];
 

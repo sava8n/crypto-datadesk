@@ -14,7 +14,7 @@ import numpy as np
 import pandas as pd
 
 from analytics.black76 import black76_delta
-from analytics.conventions import YEAR_DAYS
+from analytics.conventions import EXPIRY_DATE_FORMAT, SETTLEMENT_HOUR_UTC, YEAR_DAYS
 from analytics.frames import as_declared_dtypes, empty_frame
 
 logger = logging.getLogger(__name__)
@@ -49,11 +49,13 @@ def empty_contracts() -> pd.DataFrame:
 def _parse_instrument_fields(book: pd.DataFrame) -> pd.DataFrame:
     """Add ``expiry``, ``strike``, ``option_type`` and ``tte_years`` columns.
 
-    Parses Deribit's ``<CURRENCY>-<DDMMMYY>-<STRIKE>-<C|P>`` ``instrument_name`` (expiries
-    settle at 08:00 UTC). Unparseable strikes become ``NaN`` for the caller to drop.
+    Parses Deribit's ``<CURRENCY>-<DDMMMYY>-<STRIKE>-<C|P>`` ``instrument_name``.
+    Unparseable strikes become ``NaN`` for the caller to drop.
     """
     parts = book["instrument_name"].str.split("-", expand=True)
-    book["expiry"] = pd.to_datetime(parts[1], format="%d%b%y", utc=True) + pd.Timedelta(hours=8)
+    book["expiry"] = pd.to_datetime(
+        parts[1], format=EXPIRY_DATE_FORMAT, utc=True
+    ) + pd.Timedelta(hours=SETTLEMENT_HOUR_UTC)
     book["strike"] = pd.to_numeric(parts[2], errors="coerce")
     book["option_type"] = parts[3]
 

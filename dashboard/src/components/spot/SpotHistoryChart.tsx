@@ -2,40 +2,37 @@ import { useEffect, useMemo, useRef } from 'react';
 import {
   CandlestickSeries,
   ColorType,
-  LineStyle,
   createChart,
   type IChartApi,
-  type IPriceLine,
   type ISeriesApi,
 } from 'lightweight-charts';
 
 import type { SpotCandle } from '../../types';
-import type { PriceLevel, QuantileBand } from './levels';
-import { QuantileBandPrimitive } from './QuantileBandPrimitive';
-import { AMBER, AXIS_LINE, GRID, MONO } from '../../theme/charts';
+import type { Cone } from './ExpectedMoveConePrimitive';
+import { ExpectedMoveConePrimitive } from './ExpectedMoveConePrimitive';
+import { AMBER, AXIS_LINE, DOWN, GRID, MONO, UP } from '../../theme/charts';
 import { useSettings } from '../../settings/store';
 import { priceWhole } from '../../utils/format';
 
-const UP = '#33ff66';
-const DOWN = '#ff3b30';
+
+// blank space kept past the cone, as a fraction of the visible window
+const LABEL_ROOM = 0.09;
 
 interface Props {
   candles: SpotCandle[];
-  levels: PriceLevel[];
-  band?: QuantileBand;
+  cone?: Cone;
 }
 
-export default function SpotHistoryChart({ candles, levels, band }: Props) {
+export default function SpotHistoryChart({ candles, cone }: Props) {
   const { spotLookbackDays } = useSettings();
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
-  const bandRef = useRef<QuantileBandPrimitive | null>(null);
-  const priceLinesRef = useRef<IPriceLine[]>([]);
+  const coneRef = useRef<ExpectedMoveConePrimitive | null>(null);
   // the lookback the visible range was last set from; null until the first paint
   const windowedRef = useRef<number | null>(null);
 
-  const rows = useMemo(
+  const bars = useMemo(
     () =>
       candles.map((c) => ({
         time: c.ts.slice(0, 10), // daily candles: 'YYYY-MM-DD'
@@ -46,6 +43,11 @@ export default function SpotHistoryChart({ candles, levels, band }: Props) {
       })),
     [candles],
   );
+
+  const rows = useMemo(() => {
+    const future = cone?.points.filter((p) => p.time > (bars[bars.length - 1]?.time ?? '')) ?? [];
+    return [...bars, ...future.map((p) => ({ time: p.time }))];
+  }, [bars, cone]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -85,18 +87,17 @@ export default function SpotHistoryChart({ candles, levels, band }: Props) {
       borderVisible: false,
     });
 
-    const bandPrimitive = new QuantileBandPrimitive();
-    series.attachPrimitive(bandPrimitive);
+    const conePrimitive = new ExpectedMoveConePrimitive();
+    series.attachPrimitive(conePrimitive);
 
     chartRef.current = chart;
     seriesRef.current = series;
-    bandRef.current = bandPrimitive;
+    coneRef.current = conePrimitive;
     return () => {
       chart.remove();
       chartRef.current = null;
       seriesRef.current = null;
-      bandRef.current = null;
-      priceLinesRef.current = [];
+      coneRef.current = null;
       windowedRef.current = null;
     };
   }, []);
@@ -109,39 +110,19 @@ export default function SpotHistoryChart({ candles, levels, band }: Props) {
     // default view on first load and whenever the lookback setting changes;
     // later refetches keep the user's zoom/pan
     if (windowedRef.current !== spotLookbackDays) {
+      const from = Math.max(0, bars.length - spotLookbackDays);
       chart.timeScale().setVisibleLogicalRange({
-        from: Math.max(0, rows.length - spotLookbackDays),
-        to: rows.length,
+        from,
+        to: rows.length + (rows.length - from) * LABEL_ROOM,
       });
       windowedRef.current = spotLookbackDays;
     }
-  }, [rows, spotLookbackDays]);
+  }, [rows, bars.length, spotLookbackDays]);
 
-  // keying the array on its contents to keep the labels still between real moves.
-  const levelKey = levels.map((lvl) => `${lvl.price}|${lvl.color}|${lvl.title}`).join(',');
-  const stableLevels = useMemo(() => levels, [levelKey]);
-
-  // options-derived levels as horizontal price lines, resynced when they move
+  // the expected-move cone, drawn forward from the last candle
   useEffect(() => {
-    const series = seriesRef.current;
-    if (!series) return;
-    priceLinesRef.current.forEach((line) => series.removePriceLine(line));
-    priceLinesRef.current = stableLevels.map((lvl) =>
-      series.createPriceLine({
-        price: lvl.price,
-        color: lvl.color,
-        lineWidth: 1,
-        lineStyle: LineStyle.Dashed,
-        axisLabelVisible: true,
-        title: lvl.title,
-      }),
-    );
-  }, [stableLevels]);
-
-  // implied quantile band as a background rectangle behind the candles
-  useEffect(() => {
-    bandRef.current?.setBand(band ?? null);
-  }, [band]);
+    coneRef.current?.setCone(cone ?? null);
+  }, [cone]);
 
   return <div ref={containerRef} />;
 }

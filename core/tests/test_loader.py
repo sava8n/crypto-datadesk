@@ -9,7 +9,7 @@ import pytest
 from config import settings
 from data.clients.deribit import DeribitError
 from data.market import loader
-from data.market.cache import TTLCache
+from data.cache import TTLCache
 from data.market.errors import UpstreamError
 
 

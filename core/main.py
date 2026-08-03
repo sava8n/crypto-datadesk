@@ -9,9 +9,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api import errors
+from api.routers.exposure import router as exposure_router
 from api.routers.flow import router as flow_router
-from api.routers.gex import router as gex_router
-from api.routers.greeks import router as greeks_router
 from api.routers.health import router as health_router
 from api.routers.history import router as history_router
 from api.routers.iv import router as iv_router
@@ -46,6 +45,7 @@ server = FastAPI(
     lifespan=lifespan,
 )
 
+# before the middleware, so exception-handler responses still get CORS headers
 errors.register(server)
 
 server.add_middleware(
@@ -56,15 +56,18 @@ server.add_middleware(
     allow_headers=["*"],
 )
 
-server.include_router(health_router, prefix="/api")
-server.include_router(iv_router, prefix="/api")
-server.include_router(greeks_router, prefix="/api")
-server.include_router(gex_router, prefix="/api")
-server.include_router(oi_router, prefix="/api")
-server.include_router(prob_router, prefix="/api")
-server.include_router(volume_router, prefix="/api")
-server.include_router(spot_router, prefix="/api")
-server.include_router(stats_router, prefix="/api")
-server.include_router(vol_router, prefix="/api")
-server.include_router(history_router, prefix="/api")
-server.include_router(flow_router, prefix="/api")
+# registration order drives the tag order in /docs, so it follows the import order
+for router in (
+    exposure_router,
+    flow_router,
+    health_router,
+    history_router,
+    iv_router,
+    oi_router,
+    prob_router,
+    spot_router,
+    stats_router,
+    vol_router,
+    volume_router,
+):
+    server.include_router(router, prefix="/api")

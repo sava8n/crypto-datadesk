@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from functools import cache
 
 import pandas as pd
 from pydantic import BaseModel, TypeAdapter
 
+from api.schemas.base import MarketEnvelope, SpanEnvelope
 from data.market.state import MarketState
 
 
@@ -19,9 +21,8 @@ def _adapter(model: type[BaseModel]) -> TypeAdapter:
 def points[M: BaseModel](frame: pd.DataFrame, model: type[M]) -> list[M]:
     """Validate every row of ``frame`` into ``model``.
 
-    The model performs the projection: pydantic ignores columns it does not declare, so
-    a frame carrying extras needs no pre-slicing. Values need no casting either -
-    ``np.float64`` subclasses ``float`` and ``pd.Timestamp`` subclasses ``datetime``.
+    The model performs the projection: pydantic ignores columns it does not declare, so a
+    frame carrying extras needs no pre-slicing.
     """
     return _adapter(model).validate_python(frame.to_dict("records"))
 
@@ -31,6 +32,13 @@ def records[M: BaseModel](rows: list[dict], model: type[M]) -> list[M]:
     return _adapter(model).validate_python(rows)
 
 
-def envelope(ccy: str, state: MarketState) -> dict:
-    """The ``MarketEnvelope`` fields, ready to splat into a response model."""
-    return {"currency": ccy, "spot": state.spot, "as_of": state.as_of}
+def market[M: MarketEnvelope](model: type[M], ccy: str, state: MarketState, **fields) -> M:
+    """Build ``model``, filling the ``MarketEnvelope`` fields from ``state``."""
+    return model(currency=ccy, spot=state.spot, as_of=state.as_of, **fields)
+
+
+def spanned[M: SpanEnvelope](
+    model: type[M], ccy: str, start: datetime, end: datetime, **fields
+) -> M:
+    """Build ``model``, filling the ``SpanEnvelope`` fields from the queried interval."""
+    return model(currency=ccy, start=start, end=end, **fields)

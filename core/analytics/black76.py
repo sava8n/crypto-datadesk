@@ -14,12 +14,10 @@ _erf = np.vectorize(erf, otypes=[float])
 
 
 def norm_cdf(x: np.ndarray) -> np.ndarray:
-    """Standard normal CDF."""
     return 0.5 * (1.0 + _erf(x / _SQRT2))
 
 
 def norm_pdf(x: np.ndarray) -> np.ndarray:
-    """Standard normal PDF."""
     return np.exp(-0.5 * x * x) / _SQRT_2PI
 
 
@@ -61,11 +59,7 @@ def d2(
 
 
 def delta_from_d1(d1_values: np.ndarray, is_call: np.ndarray) -> np.ndarray:
-    """Forward delta from a precomputed ``d1``: ``N(d1)`` for calls, ``N(d1) - 1`` for puts.
-
-    Split out so the greeks chain, which already has ``d1`` in hand, shares this one
-    definition rather than restating it.
-    """
+    """Forward delta from a precomputed ``d1``: ``N(d1)`` for calls, ``N(d1) - 1`` for puts."""
     cdf = norm_cdf(d1_values)
     return np.where(is_call, cdf, cdf - 1.0)
 

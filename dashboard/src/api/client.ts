@@ -1,22 +1,20 @@
 import type {
+  ArchiveWindow,
   CMBandsResponse,
   ExpiryOutcomesResponse,
+  ExposureByStrikeResponse,
+  ExposureConvention,
   ExposureGreek,
-  ExposureResponse,
-  FlowByExpirationResponse,
+  FlowByExpiryResponse,
   FlowByStrikeResponse,
-  GexConvention,
-  GEXByStrikeResponse,
-  GreeksChainResponse,
   IVCurvesResponse,
-  IVSurfaceResponse,
   MaxPainResponse,
-  OIByExpirationResponse,
+  OIByExpiryResponse,
   OIByStrikeResponse,
-  OIChangeResponse,
-  OIChangeWindow,
+  OIChangeByStrikeResponse,
   PositioningHistoryResponse,
   ProbCurvesResponse,
+  RecentWindow,
   Resolution,
   RVConeResponse,
   SkewResponse,
@@ -29,8 +27,6 @@ import type {
   VolumeByStrikeResponse,
 } from '../types';
 import { ENDPOINTS, type EndpointName } from './endpoints';
-
-export type GreekName = 'delta' | 'gamma' | 'theta' | 'vega';
 
 function url(name: EndpointName, params: Record<string, string>): string {
   return `/api/${ENDPOINTS[name]}?${new URLSearchParams(params).toString()}`;
@@ -52,9 +48,6 @@ async function fetchJson<T>(url: string): Promise<T> {
   return (await resp.json()) as T;
 }
 
-export const fetchIVSurface = (currency: string): Promise<IVSurfaceResponse> =>
-  fetchJson(url('ivSurface', { currency }));
-
 export const fetchIVCurves = (currency: string): Promise<IVCurvesResponse> =>
   fetchJson(url('ivCurves', { currency }));
 
@@ -67,16 +60,8 @@ export const fetchSkew = (currency: string): Promise<SkewResponse> =>
 export const fetchProbCurves = (currency: string): Promise<ProbCurvesResponse> =>
   fetchJson(url('probCurves', { currency }));
 
-export const fetchGreeksChain = (currency: string): Promise<GreeksChainResponse> =>
-  fetchJson(url('greeksChain', { currency }));
-
-export const fetchGEXByStrike = (
-  currency: string,
-  convention: GexConvention = 'assumption',
-): Promise<GEXByStrikeResponse> => fetchJson(url('gexByStrike', { currency, convention }));
-
-export const fetchOIByExpiration = (currency: string): Promise<OIByExpirationResponse> =>
-  fetchJson(url('oiByExpiration', { currency }));
+export const fetchOIByExpiry = (currency: string): Promise<OIByExpiryResponse> =>
+  fetchJson(url('oiByExpiry', { currency }));
 
 export const fetchOIByStrike = (
   currency: string,
@@ -87,12 +72,12 @@ export const fetchOIByStrike = (
 export const fetchVolumeByStrike = (currency: string): Promise<VolumeByStrikeResponse> =>
   fetchJson(url('volumeByStrike', { currency }));
 
-export const fetchOIChange = (
+export const fetchOIChangeByStrike = (
   currency: string,
-  window: OIChangeWindow,
+  window: RecentWindow,
   expiry?: string,
-): Promise<OIChangeResponse> =>
-  fetchJson(url('oiChange', expiry ? { currency, window, expiry } : { currency, window }));
+): Promise<OIChangeByStrikeResponse> =>
+  fetchJson(url('oiChangeByStrike', expiry ? { currency, window, expiry } : { currency, window }));
 
 export const fetchRVCone = (currency: string): Promise<RVConeResponse> =>
   fetchJson(url('rvCone', { currency }));
@@ -102,13 +87,13 @@ export const fetchMaxPain = (currency: string): Promise<MaxPainResponse> =>
 
 export const fetchFlowByStrike = (
   currency: string,
-  window: OIChangeWindow,
-): Promise<FlowByStrikeResponse> => fetchJson(url('flowStrike', { currency, window }));
+  window: RecentWindow,
+): Promise<FlowByStrikeResponse> => fetchJson(url('flowByStrike', { currency, window }));
 
-export const fetchFlowByExpiration = (
+export const fetchFlowByExpiry = (
   currency: string,
-  window: OIChangeWindow,
-): Promise<FlowByExpirationResponse> => fetchJson(url('flowExpiration', { currency, window }));
+  window: RecentWindow,
+): Promise<FlowByExpiryResponse> => fetchJson(url('flowByExpiry', { currency, window }));
 
 export const fetchTape = (currency: string, minPremium: number): Promise<TapeResponse> =>
   fetchJson(url('flowTape', { currency, min_premium: String(minPremium) }));
@@ -116,40 +101,38 @@ export const fetchTape = (currency: string, minPremium: number): Promise<TapeRes
 export const fetchExpiryOutcomes = (currency: string): Promise<ExpiryOutcomesResponse> =>
   fetchJson(url('expiryOutcomes', { currency }));
 
-export const fetchExposure = (
+export const fetchExposureByStrike = (
   currency: string,
   greek: ExposureGreek,
-  convention: GexConvention = 'assumption',
-): Promise<ExposureResponse> => fetchJson(url('exposure', { currency, greek, convention }));
+  convention: ExposureConvention = 'assumption',
+): Promise<ExposureByStrikeResponse> =>
+  fetchJson(url('exposureByStrike', { currency, greek, convention }));
 
 export const fetchSmileHistory = (
   currency: string,
   expiry: string,
-  window: OIChangeWindow,
+  window: RecentWindow,
 ): Promise<SmileHistoryResponse> =>
   fetchJson(url('smileHistory', { currency, expiry, window }));
 
 export const fetchCMBands = (
   currency: string,
-  lookbackDays: number,
-): Promise<CMBandsResponse> =>
-  fetchJson(url('cmBands', { currency, lookback_days: String(lookbackDays) }));
+  window: ArchiveWindow,
+): Promise<CMBandsResponse> => fetchJson(url('cmBands', { currency, window }));
 
 export const fetchVolHistory = (
   currency: string,
-  lookbackDays: number,
+  window: ArchiveWindow,
   resolution: Resolution,
 ): Promise<VolHistoryResponse> =>
-  fetchJson(url('historyVol', { currency, lookback_days: String(lookbackDays), resolution }));
+  fetchJson(url('historyVol', { currency, window, resolution }));
 
 export const fetchPositioningHistory = (
   currency: string,
-  lookbackDays: number,
+  window: ArchiveWindow,
   resolution: Resolution,
 ): Promise<PositioningHistoryResponse> =>
-  fetchJson(
-    url('historyPositioning', { currency, lookback_days: String(lookbackDays), resolution }),
-  );
+  fetchJson(url('historyPositioning', { currency, window, resolution }));
 
 export const fetchStats = (currency: string): Promise<StatsResponse> =>
   fetchJson(url('stats', { currency }));

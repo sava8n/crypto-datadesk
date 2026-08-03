@@ -10,11 +10,10 @@ import certifi
 import requests
 from requests.adapters import HTTPAdapter, Retry
 
+from analytics.conventions import DAY_MS
 from config import settings
 
 logger = logging.getLogger(__name__)
-
-_DAY_MS = 86_400_000
 
 
 class DeribitError(RuntimeError):
@@ -67,7 +66,7 @@ def _get(path: str, params: dict, *, key: str | None = None) -> Any:
 def _window(days: int) -> tuple[int, int]:
     """``(start_ms, end_ms)`` spanning the trailing ``days``."""
     end_ms = int(time.time() * 1000)
-    return end_ms - days * _DAY_MS, end_ms
+    return end_ms - days * DAY_MS, end_ms
 
 
 def fetch_spot(currency: str = "BTC") -> float:

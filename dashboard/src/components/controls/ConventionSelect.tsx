@@ -1,13 +1,13 @@
-import type { GexConvention } from '../../types';
+import type { ExposureConvention } from '../../types';
 
-const CONVENTIONS: { value: GexConvention; label: string }[] = [
+export const CONVENTIONS: { value: ExposureConvention; label: string }[] = [
   { value: 'assumption', label: 'ASSUMED' },
   { value: 'flow', label: 'FLOW' },
 ];
 
 interface Props {
-  convention: GexConvention;
-  onSelect: (c: GexConvention) => void;
+  convention: ExposureConvention;
+  onSelect: (c: ExposureConvention) => void;
 }
 
 // how dealer inventory is signed: the classic assumption or cumulative taker flow
@@ -18,7 +18,7 @@ export default function ConventionSelect({ convention, onSelect }: Props) {
       <select
         className="expiry__select"
         value={convention}
-        onChange={(e) => onSelect(e.target.value as GexConvention)}
+        onChange={(e) => onSelect(e.target.value as ExposureConvention)}
       >
         {CONVENTIONS.map(({ value, label }) => (
           <option key={value} value={value}>

@@ -1,40 +1,47 @@
 import { useMemo } from 'react';
 
-import { useGEXByStrike, useOIByStrike, useProbCurves, useSpotHistory } from '../../api/queries';
+import { useProbCurves, useSpotHistory } from '../../api/queries';
 import { useCurrency, useSettings } from '../../settings/store';
-import { frontExpiry } from '../../utils/expiry';
+import { resolveFrontExpiry } from '../../utils/expiry';
+import { dateLabel } from '../../utils/format';
 import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
 import SpotHistoryChart from './SpotHistoryChart';
-import { buildLevels, buildQuantileBand } from './levels';
+import type { Cone } from './ExpectedMoveConePrimitive';
+import { buildCone, coneAnchor } from './cone';
 
 export default function SpotHistorySection() {
   const currency = useCurrency();
-  const { frontExpiry: frontPref, levels: levelCfg } = useSettings();
+  const { frontExpiry: frontPref } = useSettings();
 
   const query = useSpotHistory(currency);
-
-  // options-derived overlays; these queries share their cache entries with the
-  // positioning and probability tabs, so opening this panel costs no extra fetch
-  const gex = useGEXByStrike(currency);
-  const oiAll = useOIByStrike(currency);
-  const front = oiAll.data ? frontExpiry(oiAll.data.expiries, frontPref) : undefined;
-  const oiFront = useOIByStrike(currency, front);
-  const prob = useProbCurves(currency);
-
-  const levels = useMemo(
-    () => buildLevels(gex.data, oiAll.data, oiFront.data, levelCfg),
-    [gex.data, oiAll.data, oiFront.data, levelCfg],
-  );
-  const band = useMemo(() => buildQuantileBand(prob.data, front), [prob.data, front]);
-
   const candles = query.data?.candles;
+
+  // the implied distribution is already fetched by the probabilities tab, so the
+  // overlay shares that cache entry rather than costing a request of its own
+  const prob = useProbCurves(currency);
+  const expiry = prob.data
+    ? resolveFrontExpiry(
+        prob.data.quantiles.map((q) => q.expiry),
+        frontPref,
+      )
+    : undefined;
+
+  const cone = useMemo((): Cone | undefined => {
+    const anchor = coneAnchor(prob.data, expiry);
+    const last = candles?.[candles.length - 1];
+    if (!anchor || !last || prob.data == null) return undefined;
+    const points = buildCone(prob.data.spot, anchor, last.ts.slice(0, 10));
+    return points.length ? { expiry: anchor.expiry, points } : undefined;
+  }, [prob.data, expiry, candles]);
+
   const state = panelState(query, candles, candles?.length ?? 0, MIN_POINTS.line);
+  const tenor = cone ? ` · EM ${dateLabel(cone.expiry)}` : '';
 
   return (
-    <Panel title="MARKET" subtitle={`${currency}_USDC · 1D`} state={state} full>
-      {(data) => <SpotHistoryChart candles={data} levels={levels} band={band} />}
+    <Panel title="MARKET" subtitle={`${currency}_USDC · 1D${tenor}`} state={state} full>
+      {(data) => <SpotHistoryChart candles={data} cone={cone} />}
     </Panel>
   );
 }

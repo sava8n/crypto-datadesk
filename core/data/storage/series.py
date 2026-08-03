@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 from datetime import UTC, datetime, timedelta
 from typing import Literal
 
@@ -11,25 +10,11 @@ from sqlalchemy import Select, func, select
 from data.storage import db, schema
 from data.storage.errors import StorageUnavailable
 
-logger = logging.getLogger(__name__)
-
 Resolution = Literal["1h", "1d"]
-
-# change-window sizes shared by the baseline-diffing routes (OI change, smile history)
-WINDOWS = {"24h": timedelta(hours=24), "7d": timedelta(days=7)}
 
 # below this many daily observations a percentile says more about the window than the value
 MIN_PERCENTILE_POINTS = 30
 PERCENTILE_WINDOW_DAYS = 365
-
-
-def _rows(stmt: Select) -> list[dict]:
-    try:
-        with db.connection() as conn:
-            return [dict(row) for row in conn.execute(stmt).mappings()]
-    except Exception as exc:
-        logger.warning("archive read failed: %s", exc)
-        raise StorageUnavailable("archive unavailable") from exc
 
 
 def _series_stmt(columns: list, currency: str, start: datetime, resolution: Resolution) -> Select:
@@ -58,6 +43,7 @@ def vol_series(currency: str, start: datetime, resolution: Resolution) -> list[d
         c.iv7,
         c.iv30,
         (c.iv30 - c.iv7).label("term_slope"),
+        c.rv7,
         c.rv30,
         c.dvol,
         c.rr25_7,
@@ -65,7 +51,7 @@ def vol_series(currency: str, start: datetime, resolution: Resolution) -> list[d
         c.rr25_30,
         c.bf25_30,
     ]
-    return _rows(_series_stmt(columns, currency, start, resolution))
+    return db.rows(_series_stmt(columns, currency, start, resolution), "archive")
 
 
 def positioning_series(currency: str, start: datetime, resolution: Resolution) -> list[dict]:
@@ -80,7 +66,7 @@ def positioning_series(currency: str, start: datetime, resolution: Resolution) -
         c.gex_flip,
         c.max_pain_front,
     ]
-    return _rows(_series_stmt(columns, currency, start, resolution))
+    return db.rows(_series_stmt(columns, currency, start, resolution), "archive")
 
 
 def iv30_percentile(currency: str, current: float | None) -> float | None:
@@ -94,7 +80,7 @@ def iv30_percentile(currency: str, current: float | None) -> float | None:
     start = datetime.now(UTC) - timedelta(days=PERCENTILE_WINDOW_DAYS)
     c = schema.snapshot.c
     try:
-        rows = _rows(_series_stmt([c.as_of, c.iv30], currency, start, "1d"))
+        rows = db.rows(_series_stmt([c.as_of, c.iv30], currency, start, "1d"), "archive")
     except StorageUnavailable:
         return None
     values = [row["iv30"] for row in rows if row["iv30"] is not None]
@@ -137,7 +123,7 @@ def cm_bands(currency: str, start: datetime) -> list[dict]:
         .group_by(daily.c.tenor_days)
         .order_by(daily.c.tenor_days)
     )
-    return _rows(stmt)
+    return db.rows(stmt, "archive")
 
 
 # a baseline drifting further than this fraction of the window off its target is
@@ -159,7 +145,7 @@ def baseline_snapshot(currency: str, target: datetime) -> tuple[int, datetime, f
         .order_by(c.as_of.desc())
         .limit(1)
     )
-    rows = _rows(stmt)
+    rows = db.rows(stmt, "archive")
     if not rows:
         return None
     return int(rows[0]["id"]), rows[0]["as_of"], float(rows[0]["spot"])
@@ -181,4 +167,4 @@ def baseline_oi_by_strike(
     )
     if expiry is not None:
         stmt = stmt.where(c.expiry == expiry)
-    return _rows(stmt)
+    return db.rows(stmt, "archive")

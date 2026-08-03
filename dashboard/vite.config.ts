@@ -14,8 +14,7 @@ export default defineConfig({
     },
   },
   build: {
-    // echarts-gl's 3D engine and lightweight-charts
-    // are too large for default warning threshold
+    // echarts and lightweight-charts are too large for the default warning threshold
     chunkSizeWarningLimit: 2500,
   },
   test: {

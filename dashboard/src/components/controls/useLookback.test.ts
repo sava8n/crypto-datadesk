@@ -1,22 +1,22 @@
 import { describe, it, expect } from 'vitest';
 
-import { LOOKBACKS, resolutionFor } from './useLookback';
+import { ARCHIVE_WINDOWS } from '../../config';
+import { resolutionFor } from './useLookback';
 
 describe('resolutionFor', () => {
-  it('reads hourly captures for short lookbacks', () => {
-    expect(resolutionFor(7)).toBe('1h');
-    expect(resolutionFor(14)).toBe('1h');
+  it('reads hourly captures for the shortest window only', () => {
+    expect(resolutionFor('7d')).toBe('1h');
   });
 
-  it('drops to daily beyond two weeks', () => {
-    expect(resolutionFor(15)).toBe('1d');
-    expect(resolutionFor(90)).toBe('1d');
-    expect(resolutionFor(365)).toBe('1d');
+  it('drops to daily for everything wider', () => {
+    expect(resolutionFor('30d')).toBe('1d');
+    expect(resolutionFor('90d')).toBe('1d');
+    expect(resolutionFor('1y')).toBe('1d');
   });
 
-  it('covers every preset', () => {
-    for (const days of LOOKBACKS) {
-      expect(['1h', '1d']).toContain(resolutionFor(days));
+  it('covers every selectable window', () => {
+    for (const window of ARCHIVE_WINDOWS) {
+      expect(['1h', '1d']).toContain(resolutionFor(window));
     }
   });
 });

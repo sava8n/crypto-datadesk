@@ -9,6 +9,7 @@ const point = (asOf: string, iv30: number | null): VolHistoryPoint => ({
   iv7: 0.31,
   iv30,
   term_slope: 0.02,
+  rv7: 0.29,
   rv30: 0.27,
   dvol: 0.35,
   rr25_7: -0.04,
@@ -31,7 +32,7 @@ describe('buildVolHistoryOption', () => {
       resp([point('2026-07-30T00:00:00Z', 0.33), point('2026-07-31T00:00:00Z', 0.34)]),
     );
     const series = option.series as { name: string; data: [string, number | null][] }[];
-    expect(series.map((s) => s.name)).toEqual(['IV30', 'IV7', 'RV30', 'DVOL']);
+    expect(series.map((s) => s.name)).toEqual(['IV30', 'RV30', 'IV7', 'RV7', 'DVOL']);
     expect(series[0].data).toEqual([
       ['2026-07-30T00:00:00Z', 0.33],
       ['2026-07-31T00:00:00Z', 0.34],

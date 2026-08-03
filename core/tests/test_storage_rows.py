@@ -36,12 +36,17 @@ def test_snapshot_row_nulls_non_finite_scalars():
     row = rows.snapshot_row(
         _State(
             spot=100_000.0,
-            iv30=math.nan,
+            rv7=None,
             rv30=None,
             dvol=0.55,
             dvol_rank=math.inf,
-            gex_flip=np.float64(1.5),
-            **{**derived, "oi_total_calls": math.nan, "gex_net_total": np.float64(2.5)},
+            **{
+                **derived,
+                "iv30": math.nan,
+                "gex_flip": np.float64(1.5),
+                "oi_total_calls": math.nan,
+                "gex_net_total": np.float64(2.5),
+            },
         ),
         "BTC",
     )
@@ -57,7 +62,9 @@ def test_snapshot_row_nulls_non_finite_scalars():
 
 def test_snapshot_row_rejects_unusable_spot():
     """``snapshot.spot`` is NOT NULL, so a bad spot has to skip the whole capture."""
-    scalars = dict(iv30=None, rv30=None, dvol=None, dvol_rank=None, gex_flip=None)
+    scalars = dict(
+        rv7=None, rv30=None, dvol=None, dvol_rank=None, **dict.fromkeys(rows.DERIVED_SCALARS)
+    )
     assert rows.snapshot_row(_State(spot=math.nan, **scalars), "BTC") is None
     assert rows.snapshot_row(_State(spot=0.0, **scalars), "BTC") is None
     assert rows.snapshot_row(_State(spot=-1.0, **scalars), "BTC") is None

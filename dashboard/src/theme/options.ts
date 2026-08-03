@@ -143,7 +143,6 @@ export const legendScroll = (data: string[]): LegendComponentOption => ({
   pageIconInactiveColor: AXIS_LINE,
 });
 
-// -- tooltips -------------------------------------------------------------
 // echarts types formatter params as an item/axis union and values as unknown, both
 // wider than any chart needs; these adapters narrow once instead of per chart.
 

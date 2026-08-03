@@ -1,4 +1,4 @@
-"""Open interest: ITM/OTM bucketing by expiration and strike, intrinsic value and max pain."""
+"""Open interest: ITM/OTM bucketing by expiry and strike, intrinsic value and max pain."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ def _chain(rows):
     return pd.DataFrame(rows, columns=_CHAIN_COLUMNS)
 
 
-def test_by_expiration_bucketing():
+def test_by_expiry_bucketing():
     # forward 100: call K=90 is ITM, call K=110 is OTM; put K=110 is ITM, put K=90 is OTM
     chain = _chain(
         [
@@ -40,7 +40,7 @@ def test_by_expiration_bucketing():
     assert row["otm_puts"] == 7.0
 
 
-def test_by_expiration_empty_is_typed(assert_declared_dtypes):
+def test_by_expiry_empty_is_typed(assert_declared_dtypes):
     out = by_expiry(_chain([]))
     assert out.empty
     assert_declared_dtypes(out)

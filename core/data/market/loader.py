@@ -1,16 +1,9 @@
-"""Cached loading of the market state.
+"""Cached loading of the market state: one state per currency per TTL window.
 
-One state per currency: a single upstream round-trip (spot + option book) feeds
-every endpoint, so all views within a TTL window see the same market and
-concurrent misses collapse on one per-key lock. Candle history is carried across
-windows and spliced incrementally; its fetches are best-effort - a failure keeps
-the previous candles instead of failing the state.
-
-When the chain fetch itself fails, the previous state is served until it is
-``max_stale_seconds`` old, and only then does the load raise. The stale state keeps
-its original ``as_of``: that is what tells a client the data is not moving, and it is
-what makes the recorder's ``ON CONFLICT (currency, as_of)`` a no-op instead of writing
-one duplicate row per snapshot interval for the length of the outage.
+A failed chain fetch serves the previous state until it is ``max_stale_seconds`` old.
+The stale state keeps its original ``as_of`` - that is what tells a client the data is
+not moving, and what makes the recorder's ``ON CONFLICT (currency, as_of)`` a no-op
+rather than one duplicate row per interval for the length of the outage.
 """
 
 from __future__ import annotations
@@ -20,10 +13,10 @@ import time
 from datetime import UTC, datetime
 
 from config import settings
+from data.cache import TTLCache
 from data.clients import deribit
 from data.clients.deribit import DeribitError
 from data.market import history
-from data.market.cache import TTLCache
 from data.market.chain import prepare_contracts
 from data.market.errors import UpstreamError
 from data.market.state import MarketState

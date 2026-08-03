@@ -6,9 +6,11 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-DatabaseStatus = Literal["ok", "down"]
+from api.schemas.base import DatabaseStatus
 
 
 class HealthResponse(BaseModel):
-    status: str
+    """Not currency-scoped: the only response outside ``CurrencyEnvelope``."""
+
+    status: Literal["ok"]
     database: DatabaseStatus

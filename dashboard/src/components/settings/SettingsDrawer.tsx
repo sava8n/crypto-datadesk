@@ -1,7 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
-import { CURRENCIES, MIN_REFRESH_SECONDS, type Currency, type Settings } from '../../config';
+import {
+  ARCHIVE_WINDOWS,
+  CURRENCIES,
+  MIN_REFRESH_SECONDS,
+  type Currency,
+  type Settings,
+} from '../../config';
+import type { ArchiveWindow } from '../../types';
 import { useSettingsControl } from '../../settings/store';
+import { CONVENTIONS } from '../controls/ConventionSelect';
+import { WINDOWS } from '../controls/WindowSelect';
+import { MIN_PREMIUMS } from '../flow/tape';
 
 interface FieldProps {
   label: string;
@@ -36,6 +46,52 @@ function NumberField({ label, hint, value, step, min, onCommit }: FieldProps) {
   );
 }
 
+interface SelectProps<T extends string | number> {
+  label: string;
+  hint?: string;
+  value: T;
+  options: readonly { value: T; label: ReactNode }[];
+  onCommit: (v: T) => void;
+}
+
+// the option lists come from the inline controls themselves, so the drawer default
+// and the panel dropdown can never offer different choices
+function SelectField<T extends string | number>({
+  label,
+  hint,
+  value,
+  options,
+  onCommit,
+}: SelectProps<T>) {
+  return (
+    <label className="settings__row">
+      <span className="settings__k">{label}</span>
+      <select
+        className="settings__select"
+        value={value}
+        onChange={(e) => {
+          const picked = options.find((o) => String(o.value) === e.target.value);
+          if (picked) onCommit(picked.value);
+        }}
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      {hint && <span className="settings__hint">{hint}</span>}
+    </label>
+  );
+}
+
+const CURRENCY_OPTIONS = CURRENCIES.map((c) => ({ value: c, label: c }));
+const FRONT_EXPIRY_OPTIONS = [
+  { value: 'weekly' as const, label: 'WEEKLY' },
+  { value: 'monthly' as const, label: 'MONTHLY' },
+];
+const LOOKBACK_OPTIONS = ARCHIVE_WINDOWS.map((w) => ({ value: w, label: w.toUpperCase() }));
+
 export default function SettingsDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { settings, update, reset } = useSettingsControl();
   // NumberField holds its own text state, so a reset only reaches the boxes by remounting them
@@ -49,9 +105,6 @@ export default function SettingsDrawer({ open, onClose }: { open: boolean; onClo
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
-
-  const setLevel = (patch: Partial<Settings['levels']>) =>
-    update({ levels: { ...settings.levels, ...patch } });
 
   return (
     <>
@@ -68,36 +121,34 @@ export default function SettingsDrawer({ open, onClose }: { open: boolean; onClo
         <div className="settings__body" key={resetCount}>
           <div className="settings__group">
             <div className="settings__group-title">BOOK</div>
-            <label className="settings__row">
-              <span className="settings__k">CURRENCY</span>
-              <select
-                className="settings__select"
-                value={settings.currency}
-                onChange={(e) => update({ currency: e.target.value as Currency })}
-              >
-                {CURRENCIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <div className="settings__group">
-            <div className="settings__group-title">DATA</div>
-            <NumberField
-              label="REFRESH"
-              value={settings.refreshSeconds}
-              step={5}
-              min={MIN_REFRESH_SECONDS}
-              hint="seconds between polls; 10s is the service cache floor"
-              onCommit={(v) => update({ refreshSeconds: v })}
+            <SelectField
+              label="CURRENCY"
+              value={settings.currency}
+              options={CURRENCY_OPTIONS}
+              onCommit={(v) => update({ currency: v as Currency })}
             />
           </div>
 
           <div className="settings__group">
-            <div className="settings__group-title">DTE WINDOW</div>
+            <div className="settings__group-title">MARKET CHART</div>
+            <NumberField
+              label="LOOKBACK"
+              value={settings.spotLookbackDays}
+              min={1}
+              hint="initial visible window, days of daily candles"
+              onCommit={(v) => update({ spotLookbackDays: v })}
+            />
+          </div>
+
+          <div className="settings__group">
+            <div className="settings__group-title">EXPIRY &amp; DTE</div>
+            <SelectField
+              label="FRONT EXPIRY"
+              value={settings.frontExpiry}
+              options={FRONT_EXPIRY_OPTIONS}
+              hint="anchors the expected-move cone and the header's IV/RV pair"
+              onCommit={(v) => update({ frontExpiry: v as Settings['frontExpiry'] })}
+            />
             <NumberField
               label="MIN DTE"
               value={settings.minDte}
@@ -114,66 +165,43 @@ export default function SettingsDrawer({ open, onClose }: { open: boolean; onClo
           </div>
 
           <div className="settings__group">
-            <div className="settings__group-title">EXPIRY</div>
-            <label className="settings__row">
-              <span className="settings__k">FRONT EXPIRY</span>
-              <select
-                className="settings__select"
-                value={settings.frontExpiry}
-                onChange={(e) =>
-                  update({ frontExpiry: e.target.value as Settings['frontExpiry'] })
-                }
-              >
-                <option value="weekly">WEEKLY</option>
-                <option value="monthly">MONTHLY</option>
-              </select>
-            </label>
-          </div>
-
-          <div className="settings__group">
-            <div className="settings__group-title">SPOT CHART</div>
-            <NumberField
-              label="LOOKBACK"
-              value={settings.spotLookbackDays}
-              min={1}
-              hint="initial visible window, days of daily candles"
-              onCommit={(v) => update({ spotLookbackDays: v })}
+            <div className="settings__group-title">CHART DEFAULTS</div>
+            <SelectField
+              label="HISTORY LOOKBACK"
+              value={settings.historyWindow}
+              options={LOOKBACK_OPTIONS}
+              onCommit={(v) => update({ historyWindow: v as ArchiveWindow })}
+            />
+            <SelectField
+              label="GEX SIGN"
+              value={settings.exposureConvention}
+              options={CONVENTIONS}
+              onCommit={(v) => update({ exposureConvention: v })}
+            />
+            <SelectField
+              label="FLOW WINDOW"
+              value={settings.flowWindow}
+              options={WINDOWS}
+              onCommit={(v) => update({ flowWindow: v })}
+            />
+            <SelectField
+              label="TAPE MIN PREM"
+              value={settings.tapeMinPremium}
+              options={MIN_PREMIUMS}
+              hint="each panel keeps its own override until one of these moves"
+              onCommit={(v) => update({ tapeMinPremium: v })}
             />
           </div>
 
           <div className="settings__group">
-            <div className="settings__group-title">CHART LEVELS</div>
+            <div className="settings__group-title">DATA</div>
             <NumberField
-              label="RANGE"
-              value={settings.levels.range}
-              step={0.05}
-              min={0}
-              hint="levels beyond ±this of spot will not be drawn"
-              onCommit={(v) => setLevel({ range: v })}
-            />
-            <NumberField
-              label="TOLERANCE"
-              value={settings.levels.tolerance}
-              step={10}
-              min={0}
-              hint="coincident levels within this distance collapse, in units"
-              onCommit={(v) => setLevel({ tolerance: v })}
-            />
-            <NumberField
-              label="GEX MIN WEIGHT"
-              value={settings.levels.gexClusterMinWeight}
-              step={0.05}
-              min={0}
-              hint="cluster neighbor counts as stacked at >= this fraction of the max weight"
-              onCommit={(v) => setLevel({ gexClusterMinWeight: v })}
-            />
-            <NumberField
-              label="GEX MAX GAP"
-              value={settings.levels.gexClusterMaxGap}
-              step={0.1}
-              min={0}
-              hint="cluster max stacked-neighbor gap, in units of the median grid step"
-              onCommit={(v) => setLevel({ gexClusterMaxGap: v })}
+              label="REFRESH"
+              value={settings.refreshSeconds}
+              step={5}
+              min={MIN_REFRESH_SECONDS}
+              hint="seconds between polls; 10s is the service cache floor"
+              onCommit={(v) => update({ refreshSeconds: v })}
             />
           </div>
         </div>

@@ -6,7 +6,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from api.schemas.base import MarketEnvelope, OptionType
+from api.schemas.base import CurrencyEnvelope, MarketEnvelope, OptionType
 
 
 class ProbCurvePoint(BaseModel):
@@ -41,6 +41,7 @@ class ExpiryOutcomePoint(BaseModel):
     realized_move: float
 
 
-class ExpiryOutcomesResponse(BaseModel):
-    currency: str
+class ExpiryOutcomesResponse(CurrencyEnvelope):
+    """Bounded by ``limit`` over settled expiries, not by a span or a live book."""
+
     points: list[ExpiryOutcomePoint]

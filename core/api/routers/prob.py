@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from fastapi import APIRouter, Query
 
 from api.deps import CurrencyDep, StateDep
-from api.responses import envelope, points, records
+from api.responses import market, points, records
 from api.schemas.prob import (
     ExpiryOutcomePoint,
     ExpiryOutcomesResponse,
@@ -21,20 +21,22 @@ from data.storage import outcomes
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/prob", tags=["probabilities"])
+router = APIRouter(prefix="/prob", tags=["prob"])
 
 
-@router.get("/curves", response_model=ProbCurvesResponse)
+@router.get("/curves")
 def get_prob_curves(ccy: CurrencyDep, state: StateDep) -> ProbCurvesResponse:
     """Option-implied P(S_T > K): (strike, expiry) -> probability, one curve per expiry."""
-    return ProbCurvesResponse(
-        **envelope(ccy, state),
+    return market(
+        ProbCurvesResponse,
+        ccy,
+        state,
         points=points(state.prob_curves, ProbCurvePoint),
         quantiles=points(state.prob_quantiles, ProbQuantilePoint),
     )
 
 
-@router.get("/expiry-outcomes", response_model=ExpiryOutcomesResponse)
+@router.get("/expiry-outcomes")
 def get_expiry_outcomes(
     ccy: CurrencyDep,
     limit: int = Query(10, ge=1, le=50),

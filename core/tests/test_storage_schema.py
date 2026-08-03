@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from data.market.chain import CONTRACT_COLUMNS
-from data.storage import schema
+from data.storage import rows, schema
 from data.storage.rows import CONTRACT_ROW_COLUMNS
 
 
@@ -23,16 +23,32 @@ def test_written_row_keys_match_the_table():
 
 
 def test_snapshot_holds_the_cached_scalars_inline():
-    """Folded in from the old 1:1 side table; a join for five nullable floats bought nothing."""
+    """Folded in from the old 1:1 side table; a join for nullable floats bought nothing."""
     assert "snapshot_summary" not in schema.metadata.tables
-    for column in ("iv30", "rv30", "dvol", "dvol_rank", "gex_flip"):
+    for column in ("iv30", "rv30", "iv7", "rv7", "dvol", "dvol_rank", "gex_flip"):
         assert column in schema.snapshot.c
 
 
+def test_snapshot_row_keys_match_the_table(market_state):
+    """Only the generated columns may be absent - anything else is a column nobody writes."""
+    written = set(rows.snapshot_row(market_state, "BTC"))
+    assert written <= set(schema.snapshot.c.keys())
+    assert set(schema.snapshot.c.keys()) - written == {"id", "recorded_at"}
+
+
+def _indexed(table) -> set[tuple[str, ...]]:
+    return {tuple(index.columns.keys()) for index in table.indexes}
+
+
 def test_retention_predicates_are_indexed():
-    """The sweep deletes snapshots on as_of and contracts on snapshot_id."""
-    snapshot_indexed = {tuple(i.columns.keys()) for i in schema.snapshot.indexes}
-    assert ("as_of",) in snapshot_indexed
+    """All four sweep predicates, each of which scans a whole table without an index.
+
+    A composite key led by another column cannot serve a scan on the delete predicate
+    alone, so ``snapshot`` and ``expiry_outcome`` each need a standalone index.
+    """
+    assert ("as_of",) in _indexed(schema.snapshot)
+    assert ("ts",) in _indexed(schema.trade)
+    assert ("expiry",) in _indexed(schema.expiry_outcome)
     # contracts are deleted by snapshot_id, which leads the primary key
     assert list(schema.contract.primary_key.columns.keys())[0] == "snapshot_id"
 

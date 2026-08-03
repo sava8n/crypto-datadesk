@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.3.1] - 2026-08-04
+
+### Added
+
+- **Expected-move cone** - the implied p16/p50/p84 of the front expiry projected forward from the last candle, drift compounding linearly in time and dispersion as the square root, so the near end collapses to spot and the far end reproduces the chain's own quantiles
+- **7-day implied vs realized vol** - `iv7` and `rv7` on the stats route
+
+### Changed
+
+- **Panel defaults in settings** - history lookback, dealer-inventory sign, flow window and tape minimum premium are now configurable
+
+### Removed
+
+- **3D IV surface and per-strike greeks** - unmounted since 0.2.0, now deleted
+- **Market chart levels** - GEX flip, max pain, call/put OI walls and the clustered GEX support/resistance lines removed
+
+
 ## [0.3.0] - 2026-08-03
 
 ### Added

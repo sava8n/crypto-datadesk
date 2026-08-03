@@ -1,43 +1,46 @@
-"""Open-interest routes: open interest by expiration, by strike, and its change."""
+"""Open-interest routes: open interest by expiry, by strike, and its change."""
 
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal
 
 import pandas as pd
 from fastapi import APIRouter, Query
 
 from analytics.positioning import open_interest
+from api import windows
 from api.deps import CurrencyDep, StateDep
-from api.responses import envelope, points
+from api.responses import market, points
 from api.schemas.oi import (
     MaxPainPoint,
     MaxPainResponse,
-    OIByExpirationPoint,
-    OIByExpirationResponse,
+    OIByExpiryPoint,
+    OIByExpiryResponse,
     OIByStrikePoint,
     OIByStrikeResponse,
-    OIChangePoint,
-    OIChangeResponse,
+    OIChangeByStrikePoint,
+    OIChangeByStrikeResponse,
 )
+from api.windows import RecentWindow
 from data.storage import series
 
-router = APIRouter(prefix="/oi", tags=["open-interest"])
+router = APIRouter(prefix="/oi", tags=["oi"])
 
 BASELINE_COLUMNS = ["strike", "option_type", "open_interest"]
 
 
-@router.get("/expiration", response_model=OIByExpirationResponse)
-def get_oi_by_expiration(ccy: CurrencyDep, state: StateDep) -> OIByExpirationResponse:
+@router.get("/expiry")
+def get_oi_by_expiry(ccy: CurrencyDep, state: StateDep) -> OIByExpiryResponse:
     """Per-expiry open interest split into ITM/OTM calls and puts."""
-    return OIByExpirationResponse(
-        **envelope(ccy, state),
-        points=points(state.oi_by_expiration, OIByExpirationPoint),
+    return market(
+        OIByExpiryResponse,
+        ccy,
+        state,
+        points=points(state.oi_by_expiry, OIByExpiryPoint),
     )
 
 
-@router.get("/strike", response_model=OIByStrikeResponse)
+@router.get("/strike")
 def get_oi_by_strike(
     ccy: CurrencyDep,
     state: StateDep,
@@ -49,8 +52,10 @@ def get_oi_by_strike(
     sliced to it and each point also carries its intrinsic value, alongside max pain.
     """
     grid, max_pain = state.oi_by_strike(expiry)
-    return OIByStrikeResponse(
-        **envelope(ccy, state),
+    return market(
+        OIByStrikeResponse,
+        ccy,
+        state,
         expiries=state.oi_expiries,
         expiry=expiry,
         max_pain=max_pain,
@@ -58,33 +63,37 @@ def get_oi_by_strike(
     )
 
 
-@router.get("/max-pain", response_model=MaxPainResponse)
+@router.get("/max-pain")
 def get_max_pain_by_expiry(ccy: CurrencyDep, state: StateDep) -> MaxPainResponse:
     """Max-pain strike per expiry across the chain."""
-    return MaxPainResponse(
-        **envelope(ccy, state),
+    return market(
+        MaxPainResponse,
+        ccy,
+        state,
         points=points(state.max_pain_by_expiry, MaxPainPoint),
     )
 
 
-@router.get("/strike-change", response_model=OIChangeResponse)
+@router.get("/strike-change")
 def get_oi_strike_change(
     ccy: CurrencyDep,
     state: StateDep,
-    window: Literal["24h", "7d"] = Query("24h"),
+    window: RecentWindow = Query("24h"),
     expiry: datetime | None = Query(None),
-) -> OIChangeResponse:
+) -> OIChangeByStrikeResponse:
     """Per-strike open-interest change against the latest archived book at or before
     ``as_of - window``.
 
     ``baseline_as_of`` reports the baseline actually used; ``None`` with empty points
     means nothing that old is archived yet.
     """
-    target = state.as_of - series.WINDOWS[window]
+    target = state.as_of - windows.duration(window)
     baseline = series.baseline_snapshot(ccy, target)
     if baseline is None:
-        return OIChangeResponse(
-            **envelope(ccy, state),
+        return market(
+            OIChangeByStrikeResponse,
+            ccy,
+            state,
             window=window,
             expiries=state.oi_expiries,
             expiry=expiry,
@@ -99,12 +108,14 @@ def get_oi_strike_change(
     now = state.oi_chain
     if expiry is not None:
         now = now[now["expiry"] == pd.Timestamp(expiry)]
-    return OIChangeResponse(
-        **envelope(ccy, state),
+    return market(
+        OIChangeByStrikeResponse,
+        ccy,
+        state,
         window=window,
         baseline_as_of=baseline_as_of,
-        baseline_stale=series.baseline_stale(baseline_as_of, target, series.WINDOWS[window]),
+        baseline_stale=series.baseline_stale(baseline_as_of, target, windows.duration(window)),
         expiries=state.oi_expiries,
         expiry=expiry,
-        points=points(open_interest.strike_change(now, then), OIChangePoint),
+        points=points(open_interest.strike_change(now, then), OIChangeByStrikePoint),
     )

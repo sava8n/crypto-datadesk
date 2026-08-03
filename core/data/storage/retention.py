@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import UTC, datetime
+from datetime import UTC, datetime, time, timedelta
+from typing import NamedTuple
 
 from sqlalchemy import select, text
 
 from config import settings
 from data.storage import db, schema
-from data.storage.window import cutoff, seconds_until
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +20,27 @@ LOCK_TIMEOUT_SECONDS = 5
 SNAPSHOTS_PER_CHUNK = 200
 # ~5 days of BTC prints per transaction at ~10k/day
 TRADES_PER_CHUNK = 50_000
+
+
+def seconds_until(now: datetime, at: time) -> float:
+    """Seconds from ``now`` to the next ``at`` UTC.
+
+    Always strictly in the future - landing exactly on it returns a full day, so a
+    caller looping on this cannot spin.
+    """
+    target = now.replace(hour=at.hour, minute=at.minute, second=at.second, microsecond=0)
+    if target <= now:
+        target += timedelta(days=1)
+    return (target - now).total_seconds()
+
+
+def cutoff(now: datetime, days: int) -> datetime:
+    """Start of the UTC day ``days`` before ``now``.
+
+    Rounded down to midnight, so a sweep at any time of day deletes only rows that are
+    at least ``days`` old - the window is never shorter than configured.
+    """
+    return now.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=days)
 
 
 def _aged_snapshot_ids(horizon: datetime, limit: int) -> list[int]:
@@ -76,13 +97,24 @@ def _delete_aged_trades(horizon: datetime) -> int:
 def _delete_aged_outcomes(horizon: datetime) -> int:
     """One small delete - a year holds only a few hundred outcome rows."""
     with db.connection() as conn:
+        conn.execute(
+            text("select set_config('lock_timeout', :timeout, true)"),
+            {"timeout": f"{LOCK_TIMEOUT_SECONDS}s"},
+        )
         return conn.execute(
             schema.expiry_outcome.delete().where(schema.expiry_outcome.c.expiry < horizon)
         ).rowcount
 
 
-def prune() -> tuple[int, int]:
-    """Delete everything older than the window; returns ``(contracts, snapshots)``."""
+class Pruned(NamedTuple):
+    contracts: int
+    snapshots: int
+    trades: int
+    outcomes: int
+
+
+def prune() -> Pruned:
+    """Delete everything older than the window; returns what each table lost."""
     horizon = cutoff(datetime.now(UTC), settings.retention_days)
     total_contracts = total_snapshots = 0
 
@@ -91,19 +123,19 @@ def prune() -> tuple[int, int]:
         total_contracts += contracts
         total_snapshots += snapshots
 
-    trades = _delete_aged_trades(horizon)
-    outcomes = _delete_aged_outcomes(horizon)
-
+    pruned = Pruned(
+        contracts=total_contracts,
+        snapshots=total_snapshots,
+        trades=_delete_aged_trades(horizon),
+        outcomes=_delete_aged_outcomes(horizon),
+    )
     logger.info(
         "retention sweep removed %d contracts, %d snapshots, %d prints and %d outcomes "
         "older than %s",
-        total_contracts,
-        total_snapshots,
-        trades,
-        outcomes,
+        *pruned,
         horizon.isoformat(),
     )
-    return total_contracts, total_snapshots
+    return pruned
 
 
 async def run() -> None:

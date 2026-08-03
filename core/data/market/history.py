@@ -12,10 +12,11 @@ import time
 
 import pandas as pd
 
+from analytics.conventions import DAY_MS
 from analytics.frames import as_declared_dtypes, empty_frame
 
 WINDOW_DAYS = 365
-_DAY_MS = 86_400_000
+
 
 _TV_ARRAYS = ("ticks", "open", "high", "low", "close", "volume")
 _OHLCV = ("open", "high", "low", "close", "volume")
@@ -27,7 +28,7 @@ def refresh_days(last_tick_ms: int | None) -> int:
     """Fetch window covering everything since the last stored candle (min 2 days)."""
     if last_tick_ms is None:
         return WINDOW_DAYS
-    elapsed = (time.time() * 1000 - last_tick_ms) / _DAY_MS
+    elapsed = (time.time() * 1000 - last_tick_ms) / DAY_MS
     return min(WINDOW_DAYS, max(2, math.ceil(elapsed) + 1))
 
 

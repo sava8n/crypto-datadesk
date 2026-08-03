@@ -12,6 +12,7 @@ const point = (day: number, iv30: number | null, rv30: number | null): VolHistor
   iv7: null,
   iv30,
   term_slope: null,
+  rv7: null,
   rv30,
   dvol: null,
   rr25_7: null,
@@ -27,8 +28,8 @@ describe('pairForwardRealized', () => {
     // days 0..30 have an exact +30d partner; later days run past the series end
     expect(rows).toHaveLength(31);
     expect(rows[0].iv30).toBeCloseTo(0.3);
-    expect(rows[0].rv30_fwd).toBeCloseTo(0.2 + 30 / 1000);
-    expect(rows[0].vrp).toBeCloseTo(rows[0].iv30 - rows[0].rv30_fwd);
+    expect(rows[0].rv30Fwd).toBeCloseTo(0.2 + 30 / 1000);
+    expect(rows[0].vrp).toBeCloseTo(rows[0].iv30 - rows[0].rv30Fwd);
   });
 
   it('skips pairs whose partner is outside the tolerance', () => {
@@ -46,7 +47,7 @@ describe('pairForwardRealized', () => {
     ];
     const rows = pairForwardRealized(points);
     expect(rows).toHaveLength(1);
-    expect(rows[0].as_of).toBe(points[2].as_of);
-    expect(rows[0].rv30_fwd).toBeCloseTo(0.25);
+    expect(rows[0].asOf).toBe(points[2].as_of);
+    expect(rows[0].rv30Fwd).toBeCloseTo(0.25);
   });
 });

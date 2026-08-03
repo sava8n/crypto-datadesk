@@ -2,8 +2,6 @@
 
 export const MONO = 'monospace';
 
-// -- palette --------------------------------------------------------------
-
 export const AMBER = '#ffb000';
 export const GRID = '#243133';
 export const AXIS_LINE = '#3a4a4d';
@@ -35,7 +33,6 @@ export const PALETTE = [
   '#d4b483',
 ];
 
-// -- semantic aliases -----------------------------------------------------
 
 // gamma-flip (zero-gamma) level
 export const FLIP = DANGER;
@@ -43,20 +40,17 @@ export const FLIP = DANGER;
 export const MAX_PAIN = VIOLET;
 // intrinsic-value overlay axis on the OI chain
 export const INTRINSIC = DANGER;
-// net GEX line
-export const NET_GEX = VIOLET;
+// net dealer-exposure line
+export const NET_EXPOSURE = VIOLET;
 // distribution tail buckets
 export const TAIL = PUT_DEEP;
 
-// per-greek series colors;
-export const GREEK_COLORS = {
-  delta: '#4aa3ff',
-  gamma: '#33ff66',
-  theta: '#ff6b6b',
-  vega: '#ffb000',
-} as const;
+// expected-move cone over the spot chart
+export const CONE_FILL = 'rgba(200, 208, 208, 0.10)';
+export const CONE_EDGE = 'rgba(200, 208, 208, 0.5)';
+export const CONE_MID = 'rgba(200, 208, 208, 0.7)';
+export const CONE_LABEL = 'rgba(200, 208, 208, 0.9)';
 
-// -- text styles ----------------------------------------------------------
 
 export const axisLabelStyle = { color: AMBER, fontFamily: MONO, fontSize: 11 };
 export const axisNameStyle = { color: AMBER, fontFamily: MONO, fontSize: 13 };
