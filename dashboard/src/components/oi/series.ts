@@ -1,5 +1,5 @@
 import { CALL, CALL_DEEP, PUT, PUT_DEEP } from '../../theme/charts';
-import type { OIByExpirationPoint, OIByStrikePoint } from '../../types';
+import type { OIByExpiryPoint, OIByStrikePoint } from '../../types';
 
 // four moneyness buckets, stacked calls-vs-puts
 export const OI_SERIES = [
@@ -8,7 +8,7 @@ export const OI_SERIES = [
   { key: 'itm_puts', name: 'ITM Puts', color: PUT, stack: 'puts' },
   { key: 'otm_puts', name: 'OTM Puts', color: PUT_DEEP, stack: 'puts' },
 ] as const satisfies readonly {
-  key: keyof OIByStrikePoint & keyof OIByExpirationPoint;
+  key: keyof OIByStrikePoint & keyof OIByExpiryPoint;
   name: string;
   color: string;
   stack: string;

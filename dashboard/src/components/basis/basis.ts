@@ -1,5 +1,5 @@
 import type { TermStructureResponse } from '../../types';
-import { DAYS_PER_YEAR } from '../../utils/constants';
+import { dteOf } from '../../utils/dte';
 
 export interface BasisRow {
   dte: number;
@@ -19,7 +19,7 @@ export function buildBasisRows(data: TermStructureResponse): BasisRow[] {
     .map((p) => {
       const basis = p.forward / data.spot - 1;
       return {
-        dte: p.tte_years * DAYS_PER_YEAR,
+        dte: dteOf(p),
         forward: p.forward,
         basis,
         basisAnn: basis / p.tte_years,

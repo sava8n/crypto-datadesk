@@ -5,18 +5,20 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from api.deps import CurrencyDep, StateDep
-from api.responses import envelope
+from api.responses import market
 from api.schemas.stats import StatsResponse
 from data.storage import series
 
-router = APIRouter(tags=["stats"])
+router = APIRouter(prefix="/stats", tags=["stats"])
 
 
-@router.get("/stats", response_model=StatsResponse)
+@router.get("", response_model=StatsResponse)
 def get_stats(ccy: CurrencyDep, state: StateDep) -> StatsResponse:
     """Spot, DVOL with its trailing-year rank, 7d and 30d ATM IV vs realized vol."""
-    return StatsResponse(
-        **envelope(ccy, state),
+    return market(
+        StatsResponse,
+        ccy,
+        state,
         dvol=state.dvol,
         dvol_rank=state.dvol_rank,
         iv7=state.iv7,

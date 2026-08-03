@@ -1,4 +1,4 @@
-import { useOIChange } from '../../api/queries';
+import { useOIChangeByStrike } from '../../api/queries';
 import ExpirySelect from '../controls/ExpirySelect';
 import WindowSelect from '../controls/WindowSelect';
 import { useSeeded } from '../controls/useSeeded';
@@ -7,16 +7,16 @@ import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
 import { useCurrency, useSettings } from '../../settings/store';
 import { useExpiryPicker } from '../controls/useExpiryPicker';
-import { expiryLabel, timeLabel } from '../../utils/format';
-import OIChangeChart from './OIChangeChart';
+import { dateLabel, timeLabel } from '../../utils/format';
+import OIChangeByStrikeChart from './OIChangeByStrikeChart';
 
-export default function OIChangeSection() {
+export default function OIChangeByStrikeSection() {
   const currency = useCurrency();
   const [window, setWindow] = useSeeded(useSettings().flowWindow);
 
-  const query = useOIChange(currency, window);
+  const query = useOIChangeByStrike(currency, window);
   const { selected, select } = useExpiryPicker(query.data?.expiries ?? [], { allowAll: true });
-  const sliced = useOIChange(currency, window, selected || null);
+  const sliced = useOIChangeByStrike(currency, window, selected || null);
   const state = panelState(sliced, sliced.data, sliced.data?.points.length ?? 0, MIN_POINTS.bars);
 
   return (
@@ -31,7 +31,7 @@ export default function OIChangeSection() {
             expiries={query.data?.expiries ?? []}
             selected={selected}
             onSelect={select}
-            allLabel="ALL EXPIRATIONS"
+            allLabel="ALL EXPIRIES"
           />
         </>
       }
@@ -41,7 +41,7 @@ export default function OIChangeSection() {
             <div className="oi-stat oi-stat--notional">
               <span className="oi-stat__label">Δ SINCE</span>
               <span className="oi-stat__value">
-                {expiryLabel(data.baseline_as_of)} {timeLabel(data.baseline_as_of)}
+                {dateLabel(data.baseline_as_of)} {timeLabel(data.baseline_as_of)}
                 {data.baseline_stale && ' · STALE'}
               </span>
             </div>
@@ -49,7 +49,7 @@ export default function OIChangeSection() {
         )
       }
     >
-      {(data) => <OIChangeChart data={data} />}
+      {(data) => <OIChangeByStrikeChart data={data} />}
     </Panel>
   );
 }

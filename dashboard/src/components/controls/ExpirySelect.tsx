@@ -1,10 +1,10 @@
-import { expiryLabel } from '../../utils/format';
+import { dateLabel } from '../../utils/format';
 
 interface Props {
   expiries: string[];
   selected: string | null;
   onSelect: (expiry: string) => void;
-  // when set, an extra option selecting every expiration at once
+  // when set, an extra option selecting every expiry at once
   allLabel?: string;
 }
 
@@ -24,7 +24,7 @@ export default function ExpirySelect({ expiries, selected, onSelect, allLabel }:
         {empty && allLabel === undefined && <option value="">-</option>}
         {expiries.map((iso) => (
           <option key={iso} value={iso}>
-            {expiryLabel(iso)}
+            {dateLabel(iso)}
           </option>
         ))}
       </select>

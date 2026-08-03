@@ -3,13 +3,13 @@ import type { EChartsOption, LineSeriesOption } from 'echarts';
 
 import EChart from '../chart/EChart';
 import type { VolHistoryPoint, VolHistoryResponse } from '../../types';
-import { pctOne, pctWhole } from '../../utils/format';
-import { AMBER, DANGER, MUTED } from '../../theme/charts';
+import { pctWhole, volPct } from '../../utils/format';
+import { AMBER, DANGER, MUTED, PALETTE } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY } from '../../theme/options';
 
 const SERIES: { key: keyof VolHistoryPoint; name: string; color: string }[] = [
   { key: 'iv30', name: 'IV30', color: AMBER },
-  { key: 'iv7', name: 'IV7', color: '#4aa3ff' },
+  { key: 'iv7', name: 'IV7', color: PALETTE[1] },
   { key: 'rv30', name: 'RV30', color: DANGER },
   { key: 'dvol', name: 'DVOL', color: MUTED },
 ];
@@ -29,7 +29,7 @@ export function buildVolHistoryOption(data: VolHistoryResponse): EChartsOption {
   return {
     backgroundColor: 'transparent',
     legend: legendBar(SERIES.map((s) => s.name)),
-    tooltip: axisTooltip({ value: (v) => `${pctOne(v)}%` }),
+    tooltip: axisTooltip({ value: volPct }),
     grid: grid('series'),
     xAxis: timeAxisX(),
     yAxis: valueAxisY({ name: 'VOL', scale: true, format: pctWhole }),

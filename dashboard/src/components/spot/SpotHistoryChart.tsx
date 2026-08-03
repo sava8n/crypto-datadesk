@@ -10,12 +10,10 @@ import {
 import type { SpotCandle } from '../../types';
 import type { Cone } from './ExpectedMoveConePrimitive';
 import { ExpectedMoveConePrimitive } from './ExpectedMoveConePrimitive';
-import { AMBER, AXIS_LINE, GRID, MONO } from '../../theme/charts';
+import { AMBER, AXIS_LINE, DOWN, GRID, MONO, UP } from '../../theme/charts';
 import { useSettings } from '../../settings/store';
 import { priceWhole } from '../../utils/format';
 
-const UP = '#33ff66';
-const DOWN = '#ff3b30';
 
 // blank space kept past the cone, as a fraction of the visible window
 const LABEL_ROOM = 0.09;

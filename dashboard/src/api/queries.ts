@@ -1,13 +1,19 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import { useRefreshMs } from '../settings/store';
-import type { ExposureGreek, GexConvention, OIChangeWindow, Resolution } from '../types';
+import type {
+  ArchiveWindow,
+  ExposureConvention,
+  ExposureGreek,
+  RecentWindow,
+  Resolution,
+} from '../types';
 import * as client from './client';
 import type { EndpointName } from './endpoints';
 
 // one fixed window for the percentile band overlays; a per-panel control would couple
 // the bands to a lookback the underlying live charts do not have
-export const BAND_LOOKBACK_DAYS = 90;
+export const BAND_WINDOW: ArchiveWindow = '90d';
 
 /**
  * Poll options shared by every resource.
@@ -32,26 +38,14 @@ function resourceHook<T>(name: EndpointName, fetch: (currency: string) => Promis
     });
 }
 
-export const useIVSurface = resourceHook('ivSurface', client.fetchIVSurface);
 export const useIVCurves = resourceHook('ivCurves', client.fetchIVCurves);
 export const useTermStructure = resourceHook('termStructure', client.fetchTermStructure);
 export const useSkew = resourceHook('skew', client.fetchSkew);
 export const useProbCurves = resourceHook('probCurves', client.fetchProbCurves);
-export const useGreeksChain = resourceHook('greeksChain', client.fetchGreeksChain);
-export const useOIByExpiration = resourceHook('oiByExpiration', client.fetchOIByExpiration);
+export const useOIByExpiry = resourceHook('oiByExpiry', client.fetchOIByExpiry);
 export const useVolumeByStrike = resourceHook('volumeByStrike', client.fetchVolumeByStrike);
 export const useStats = resourceHook('stats', client.fetchStats);
 export const useSpotHistory = resourceHook('spotHistory', client.fetchSpotHistory);
-
-export function useGEXByStrike(currency: string, convention: GexConvention = 'assumption') {
-  return useQuery({
-    queryKey: ['gexByStrike', currency, convention],
-    queryFn: () => client.fetchGEXByStrike(currency, convention),
-    // keep the chart populated while switching convention
-    placeholderData: keepPreviousData,
-    ...polling(useRefreshMs()),
-  });
-}
 
 export function useOIByStrike(currency: string, expiry?: string | null) {
   return useQuery({
@@ -66,19 +60,19 @@ export function useOIByStrike(currency: string, expiry?: string | null) {
 export const useRVCone = resourceHook('rvCone', client.fetchRVCone);
 export const useExpiryOutcomes = resourceHook('expiryOutcomes', client.fetchExpiryOutcomes);
 
-export function useFlowByStrike(currency: string, window: OIChangeWindow) {
+export function useFlowByStrike(currency: string, window: RecentWindow) {
   return useQuery({
-    queryKey: ['flowStrike', currency, window],
+    queryKey: ['flowByStrike', currency, window],
     queryFn: () => client.fetchFlowByStrike(currency, window),
     placeholderData: keepPreviousData,
     ...polling(useRefreshMs()),
   });
 }
 
-export function useFlowByExpiration(currency: string, window: OIChangeWindow) {
+export function useFlowByExpiry(currency: string, window: RecentWindow) {
   return useQuery({
-    queryKey: ['flowExpiration', currency, window],
-    queryFn: () => client.fetchFlowByExpiration(currency, window),
+    queryKey: ['flowByExpiry', currency, window],
+    queryFn: () => client.fetchFlowByExpiry(currency, window),
     placeholderData: keepPreviousData,
     ...polling(useRefreshMs()),
   });
@@ -94,14 +88,14 @@ export function useTape(currency: string, minPremium: number) {
 }
 export const useMaxPain = resourceHook('maxPain', client.fetchMaxPain);
 
-export function useExposure(
+export function useExposureByStrike(
   currency: string,
   greek: ExposureGreek,
-  convention: GexConvention = 'assumption',
+  convention: ExposureConvention = 'assumption',
 ) {
   return useQuery({
-    queryKey: ['exposure', currency, greek, convention],
-    queryFn: () => client.fetchExposure(currency, greek, convention),
+    queryKey: ['exposureByStrike', currency, greek, convention],
+    queryFn: () => client.fetchExposureByStrike(currency, greek, convention),
     // keep the chart populated while switching greek or convention
     placeholderData: keepPreviousData,
     ...polling(useRefreshMs()),
@@ -111,7 +105,7 @@ export function useExposure(
 export function useSmileHistory(
   currency: string,
   expiry: string | null,
-  window: OIChangeWindow,
+  window: RecentWindow,
 ) {
   return useQuery({
     queryKey: ['smileHistory', currency, expiry, window],
@@ -125,35 +119,43 @@ export function useSmileHistory(
 export function useCMBands(currency: string) {
   return useQuery({
     queryKey: ['cmBands', currency],
-    queryFn: () => client.fetchCMBands(currency, BAND_LOOKBACK_DAYS),
+    queryFn: () => client.fetchCMBands(currency, BAND_WINDOW),
     ...polling(useRefreshMs()),
   });
 }
 
-export function useOIChange(currency: string, window: OIChangeWindow, expiry?: string | null) {
+export function useOIChangeByStrike(
+  currency: string,
+  window: RecentWindow,
+  expiry?: string | null,
+) {
   return useQuery({
-    queryKey: ['oiChange', currency, window, expiry ?? 'all'],
-    queryFn: () => client.fetchOIChange(currency, window, expiry ?? undefined),
+    queryKey: ['oiChangeByStrike', currency, window, expiry ?? 'all'],
+    queryFn: () => client.fetchOIChangeByStrike(currency, window, expiry ?? undefined),
     // keep the chart populated while switching window or expiry
     placeholderData: keepPreviousData,
     ...polling(useRefreshMs()),
   });
 }
 
-// resolution follows the lookback (see useLookback), so it is not part of the key
-export function useVolHistory(currency: string, days: number, resolution: Resolution) {
+// both history hooks: resolution follows the window (see useLookback), so it is not part of the key
+export function useVolHistory(currency: string, window: ArchiveWindow, resolution: Resolution) {
   return useQuery({
-    queryKey: ['historyVol', currency, days],
-    queryFn: () => client.fetchVolHistory(currency, days, resolution),
+    queryKey: ['historyVol', currency, window],
+    queryFn: () => client.fetchVolHistory(currency, window, resolution),
     placeholderData: keepPreviousData,
     ...polling(useRefreshMs()),
   });
 }
 
-export function usePositioningHistory(currency: string, days: number, resolution: Resolution) {
+export function usePositioningHistory(
+  currency: string,
+  window: ArchiveWindow,
+  resolution: Resolution,
+) {
   return useQuery({
-    queryKey: ['historyPositioning', currency, days],
-    queryFn: () => client.fetchPositioningHistory(currency, days, resolution),
+    queryKey: ['historyPositioning', currency, window],
+    queryFn: () => client.fetchPositioningHistory(currency, window, resolution),
     placeholderData: keepPreviousData,
     ...polling(useRefreshMs()),
   });

@@ -9,7 +9,7 @@ import pytest
 
 from analytics.conventions import TRADING_DAYS_PER_YEAR
 from analytics.stats import realized_vol
-from analytics.vol.cone import CONE_COLUMNS, WINDOWS, build
+from analytics.vol.cone import CONE_COLUMNS, CONE_WINDOWS, build
 
 
 def _alternating_closes(n: int, step: float = 0.01) -> list[float]:
@@ -24,7 +24,7 @@ def test_current_matches_realized_vol_convention():
     """The cone's trailing window must equal ``stats.realized_vol`` for the same span."""
     closes = list(100.0 * np.exp(np.cumsum(np.sin(np.arange(400)) * 0.01)))
     out = build(closes).set_index("days")
-    for window in WINDOWS:
+    for window in CONE_WINDOWS:
         assert out.loc[window, "current"] == pytest.approx(realized_vol(closes, days=window))
 
 
@@ -43,7 +43,7 @@ def test_percentiles_are_ordered():
     closes = list(100.0 * np.exp(np.cumsum(rng.normal(0, 0.02, 380))))
     out = build(closes)
     assert list(out.columns) == CONE_COLUMNS
-    assert set(out["days"]) == set(WINDOWS)
+    assert set(out["days"]) == set(CONE_WINDOWS)
     for _, row in out.iterrows():
         assert row["p10"] <= row["p25"] <= row["p50"] <= row["p75"] <= row["p90"]
 

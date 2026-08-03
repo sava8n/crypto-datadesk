@@ -39,12 +39,7 @@ def stored(currency: str, limit: int) -> list[dict]:
         .order_by(c.expiry.desc())
         .limit(limit)
     )
-    try:
-        with db.connection() as conn:
-            return [dict(row) for row in conn.execute(stmt).mappings()]
-    except Exception as exc:
-        logger.warning("outcome read failed: %s", exc)
-        raise StorageUnavailable("archive unavailable") from exc
+    return db.rows(stmt, "outcome")
 
 
 def _settled_candidates(currency: str, now: datetime, limit: int) -> list[datetime]:
@@ -61,12 +56,7 @@ def _settled_candidates(currency: str, now: datetime, limit: int) -> list[dateti
         .order_by(c.expiry.desc())
         .limit(limit)
     )
-    try:
-        with db.connection() as conn:
-            return list(conn.scalars(stmt))
-    except Exception as exc:
-        logger.warning("candidate read failed: %s", exc)
-        raise StorageUnavailable("archive unavailable") from exc
+    return db.scalars(stmt, "outcome candidate")
 
 
 def _implied_em(snapshot_id: int, spot_ref: float, expiry: datetime) -> float | None:

@@ -1,14 +1,12 @@
-import type { GexConvention, OIChangeWindow } from './types';
+import type { ArchiveWindow, ExposureConvention, RecentWindow } from './types';
 import type { FrontExpiry } from './utils/expiry';
 
 export const CURRENCIES = ['BTC'] as const;
 
 export type Currency = (typeof CURRENCIES)[number];
 
-// preset lookback windows for the history panels
-export const LOOKBACKS = [7, 30, 90, 365] as const;
-
-export type LookbackDays = (typeof LOOKBACKS)[number];
+// selectable spans for the history panels, in duration-token order
+export const ARCHIVE_WINDOWS: readonly ArchiveWindow[] = ['7d', '30d', '90d', '1y'];
 
 // the service caches one market state per currency for this long
 // so a shorter poll period only re-serves the same snapshot
@@ -42,13 +40,13 @@ export interface Settings {
   // the override until the default moves again
 
   // history panels' archive window
-  historyLookbackDays: LookbackDays;
+  historyWindow: ArchiveWindow;
 
   // how dealer inventory is signed on the exposure panels
-  gexConvention: GexConvention;
+  exposureConvention: ExposureConvention;
 
   // archived baseline the flow and OI-change panels diff against
-  flowWindow: OIChangeWindow;
+  flowWindow: RecentWindow;
 
   // tape cutoff, in USD premium; 0 shows every print
   tapeMinPremium: number;
@@ -61,8 +59,8 @@ export const DEFAULT_SETTINGS: Settings = {
   maxDte: 30,
   frontExpiry: 'monthly',
   spotLookbackDays: 180,
-  historyLookbackDays: 30,
-  gexConvention: 'assumption',
+  historyWindow: '30d',
+  exposureConvention: 'assumption',
   flowWindow: '7d',
   tapeMinPremium: 0,
 };

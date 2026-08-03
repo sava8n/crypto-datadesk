@@ -1,25 +1,26 @@
-// Mirrors core/api/schemas/ field for field, so a response is used as it arrives.
+// Mirrors the response models in core/api/schemas/, so a response is used as it arrives.
+// Field-level meaning lives there; do not restate it here.
 
 export type OptionType = 'C' | 'P';
 
-// which book, at what price, as of when - carried by every market response
-export interface MarketEnvelope {
+export interface CurrencyEnvelope {
   currency: string;
+}
+
+export interface MarketEnvelope extends CurrencyEnvelope {
   spot: number;
-  // observation time, not response time: a frozen value means upstream is down
   as_of: string;
 }
 
-export interface IVSurfacePoint {
-  expiry: string;
-  tte_years: number;
-  delta: number;
-  mark_iv: number;
-  option_type: OptionType;
+export interface BaselineEnvelope extends MarketEnvelope {
+  window: RecentWindow;
+  baseline_as_of: string | null;
+  baseline_stale: boolean;
 }
 
-export interface IVSurfaceResponse extends MarketEnvelope {
-  points: IVSurfacePoint[];
+export interface SpanEnvelope extends CurrencyEnvelope {
+  start: string;
+  end: string;
 }
 
 export interface IVCurvePoint {
@@ -38,7 +39,6 @@ export interface ProbCurvePoint {
   expiry: string;
   tte_years: number;
   strike: number;
-  // P(S_T > K) under the forward measure, in [0, 1]
   prob_above: number;
   option_type: OptionType;
 }
@@ -46,7 +46,6 @@ export interface ProbCurvePoint {
 export interface ProbQuantilePoint {
   expiry: string;
   tte_years: number;
-  // K with P(S_T <= K) = 0.16; null when the curve does not span it
   p16: number | null;
   p50: number | null;
   p84: number | null;
@@ -60,9 +59,7 @@ export interface ProbCurvesResponse extends MarketEnvelope {
 export interface SkewPoint {
   expiry: string;
   tte_years: number;
-  // 25-delta risk reversal
   rr: number;
-  // 25-delta butterfly
   bf: number;
 }
 
@@ -81,42 +78,17 @@ export interface TermStructureResponse extends MarketEnvelope {
   points: TermStructurePoint[];
 }
 
-export interface GreeksChainPoint {
-  expiry: string;
-  tte_years: number;
-  strike: number;
-  option_type: OptionType;
-  delta: number;
-  gamma: number;
-  theta: number;
-  vega: number;
-}
-
-export interface GreeksChainResponse extends MarketEnvelope {
-  // selector list, near-dated first
-  expiries: string[];
-  points: GreeksChainPoint[];
-}
-
 export interface StatsResponse extends MarketEnvelope {
-  // 30d DVOL index as a decimal (0.38 = index 38)
   dvol: number | null;
-  // last close's position in the trailing-year range, [0, 1]
   dvol_rank: number | null;
-  // 7d constant-maturity ATM IV
   iv7: number | null;
-  // 7d close-to-close realized vol, annualized
   rv7: number | null;
-  // 30d constant-maturity ATM IV
   iv30: number | null;
-  // 30d close-to-close realized vol, annualized
   rv30: number | null;
-  // percentile of iv30 among the trailing year's archived daily observations
   iv30_percentile: number | null;
 }
 
 export interface SpotCandle {
-  // candle open time
   ts: string;
   open: number;
   high: number;
@@ -130,7 +102,7 @@ export interface SpotHistoryResponse extends MarketEnvelope {
   candles: SpotCandle[];
 }
 
-export interface OIByExpirationPoint {
+export interface OIByExpiryPoint {
   expiry: string;
   tte_years: number;
   itm_calls: number;
@@ -139,29 +111,17 @@ export interface OIByExpirationPoint {
   otm_puts: number;
 }
 
-export interface OIByExpirationResponse extends MarketEnvelope {
-  points: OIByExpirationPoint[];
-}
-
-export interface GEXByStrikePoint {
-  strike: number;
-  call_gex: number;
-  put_gex: number;
-  net_gex: number;
+export interface OIByExpiryResponse extends MarketEnvelope {
+  points: OIByExpiryPoint[];
 }
 
 // how dealer inventory is signed: the classic calls+/puts- assumption or cumulative taker flow
-export type GexConvention = 'assumption' | 'flow';
+export type ExposureConvention = 'assumption' | 'flow';
 
-export interface GEXByStrikeResponse extends MarketEnvelope {
-  // zero-gamma level: cumulative net-GEX crossing nearest spot
-  gex_flip: number | null;
-  convention: GexConvention;
-  // earliest archived print backing the flow signing; null under assumption or empty tape
+export interface ExposureEnvelope extends MarketEnvelope {
+  convention: ExposureConvention;
   tape_start: string | null;
-  // share of open interest whose sign the tape explains; null under assumption
   oi_explained_fraction: number | null;
-  points: GEXByStrikePoint[];
 }
 
 export interface VolumeByStrikePoint {
@@ -180,25 +140,23 @@ export interface OIByStrikePoint {
   otm_calls: number;
   itm_puts: number;
   otm_puts: number;
-  // single-expiry only
   intrinsic_value: number | null;
 }
 
 export interface OIByStrikeResponse extends MarketEnvelope {
   expiries: string[];
-  // selected expiry; null = all
   expiry: string | null;
-  // single-expiry only
   max_pain: number | null;
   points: OIByStrikePoint[];
 }
 
-export type OIChangeWindow = '24h' | '7d';
+// live tape / intraday archive spans; and the daily-series spans
+export type RecentWindow = '24h' | '7d';
+export type ArchiveWindow = '7d' | '30d' | '90d' | '1y';
 
 export interface MaxPainPoint {
   expiry: string;
   tte_years: number;
-  // null when the expiry's slice was uninvertible
   max_pain: number | null;
 }
 
@@ -206,52 +164,36 @@ export interface MaxPainResponse extends MarketEnvelope {
   points: MaxPainPoint[];
 }
 
-export type ExposureGreek = 'vanna' | 'charm';
+export type ExposureGreek = 'gamma' | 'vanna' | 'charm';
 
-export interface ExposurePoint {
+export interface ExposureByStrikePoint {
   strike: number;
   call_exposure: number;
   put_exposure: number;
   net_exposure: number;
 }
 
-export interface ExposureResponse extends MarketEnvelope {
-  // dollar delta per 1 vol-pt (vanna) or per calendar day (charm)
+export interface ExposureByStrikeResponse extends ExposureEnvelope {
   greek: ExposureGreek;
-  convention: GexConvention;
-  // earliest archived print backing the flow signing; null under assumption or empty tape
-  tape_start: string | null;
-  // share of open interest whose sign the tape explains; null under assumption
-  oi_explained_fraction: number | null;
-  points: ExposurePoint[];
+  gex_flip: number | null;
+  points: ExposureByStrikePoint[];
 }
 
-export interface SmileHistoryResponse extends MarketEnvelope {
+export interface SmileHistoryResponse extends BaselineEnvelope {
   expiry: string;
-  window: OIChangeWindow;
-  // the archived book actually served; null = nothing archived that far back
-  baseline_as_of: string | null;
-  // the baseline used is much younger than the window claims (short/gappy archive)
-  baseline_stale: boolean;
   points: IVCurvePoint[];
 }
 
-export interface OIChangePoint {
+export interface OIChangeByStrikePoint {
   strike: number;
   call_oi_change: number;
   put_oi_change: number;
 }
 
-export interface OIChangeResponse extends MarketEnvelope {
-  window: OIChangeWindow;
-  // the archived book actually diffed against; null = nothing archived that far back
-  baseline_as_of: string | null;
-  // the baseline used is much younger than the window claims (short/gappy archive)
-  baseline_stale: boolean;
+export interface OIChangeByStrikeResponse extends BaselineEnvelope {
   expiries: string[];
-  // selected expiry; null = all
   expiry: string | null;
-  points: OIChangePoint[];
+  points: OIChangeByStrikePoint[];
 }
 
 export interface RVConePoint {
@@ -261,7 +203,6 @@ export interface RVConePoint {
   p50: number;
   p75: number;
   p90: number;
-  // trailing-window RV; null when it failed to compute
   current: number | null;
 }
 
@@ -270,17 +211,13 @@ export interface RVConeResponse extends MarketEnvelope {
 }
 
 // tape-backed aggregates over a trailing window; no live-market dependency
-export interface FlowEnvelope {
-  currency: string;
-  window: OIChangeWindow;
-  start: string;
-  end: string;
-  // earliest archived print; later than `start` means the window is truncated
+export interface FlowEnvelope extends SpanEnvelope {
+  window: RecentWindow;
   tape_start: string | null;
 }
 
 // net taker flow: buys - sells, in contracts and USD premium
-export interface FlowStrikePoint {
+export interface FlowByStrikePoint {
   strike: number;
   call_contracts: number;
   put_contracts: number;
@@ -289,10 +226,10 @@ export interface FlowStrikePoint {
 }
 
 export interface FlowByStrikeResponse extends FlowEnvelope {
-  points: FlowStrikePoint[];
+  points: FlowByStrikePoint[];
 }
 
-export interface FlowExpirationPoint {
+export interface FlowByExpiryPoint {
   expiry: string;
   call_contracts: number;
   put_contracts: number;
@@ -300,8 +237,8 @@ export interface FlowExpirationPoint {
   put_premium: number;
 }
 
-export interface FlowByExpirationResponse extends FlowEnvelope {
-  points: FlowExpirationPoint[];
+export interface FlowByExpiryResponse extends FlowEnvelope {
+  points: FlowByExpiryPoint[];
 }
 
 export interface TapePrint {
@@ -311,46 +248,36 @@ export interface TapePrint {
   expiry: string;
   strike: number;
   option_type: OptionType;
-  // taker side
   direction: 'buy' | 'sell';
-  // premium in the base currency, per contract
   price: number;
   amount: number;
   iv: number | null;
-  // price * index_price * amount; null when the print carried no index price
   premium: number | null;
   block_trade_id: string | null;
   liquidation: string | null;
 }
 
-export interface TapeResponse {
-  currency: string;
+export interface TapeResponse extends CurrencyEnvelope {
   points: TapePrint[];
 }
 
 export interface ExpiryOutcomePoint {
   expiry: string;
-  // the archived snapshot the implied move was read from (nearest expiry - 1d)
   reference_as_of: string;
   spot_ref: number;
-  // implied +-1 sigma move in USD at the reference; null when the curve did not span it
   em_implied: number | null;
   settlement: number;
   realized_move: number;
 }
 
-export interface ExpiryOutcomesResponse {
-  currency: string;
+export interface ExpiryOutcomesResponse extends CurrencyEnvelope {
   points: ExpiryOutcomePoint[];
 }
 
 export type Resolution = '1h' | '1d';
 
 // archive-backed series: the queried window, no live spot, no upstream dependency
-export interface HistoryEnvelope {
-  currency: string;
-  start: string;
-  end: string;
+export interface HistoryEnvelope extends SpanEnvelope {
   resolution: Resolution;
 }
 
@@ -359,7 +286,6 @@ export interface VolHistoryPoint {
   spot: number;
   iv7: number | null;
   iv30: number | null;
-  // iv30 - iv7
   term_slope: number | null;
   rv30: number | null;
   dvol: number | null;
@@ -398,7 +324,6 @@ export interface CMBandPoint {
   bf25_p25: number | null;
   bf25_p50: number | null;
   bf25_p75: number | null;
-  // daily atm_iv observations behind the percentiles
   count: number;
 }
 

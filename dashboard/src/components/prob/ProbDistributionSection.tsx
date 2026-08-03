@@ -7,21 +7,14 @@ import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
 import { useCurrency } from '../../settings/store';
 import { useExpiryPicker } from '../controls/useExpiryPicker';
+import { expiriesOf } from '../../utils/expiry';
 import ProbDistributionChart from './ProbDistributionChart';
 
 export default function ProbDistributionSection() {
   // same query key as the curves section, so the response is fetched once per currency
   const query = useProbCurves(useCurrency());
 
-  // this response carries no expiry list of its own, unlike the greeks and OI chains
-  const expiries = useMemo(() => {
-    if (!query.data) return [];
-    const tteByExpiry = new Map<string, number>();
-    for (const p of query.data.points) {
-      if (!tteByExpiry.has(p.expiry)) tteByExpiry.set(p.expiry, p.tte_years);
-    }
-    return [...tteByExpiry.entries()].sort((a, b) => a[1] - b[1]).map(([iso]) => iso);
-  }, [query.data]);
+  const expiries = useMemo(() => expiriesOf(query.data?.points), [query.data]);
 
   const { selected, select } = useExpiryPicker(expiries);
 

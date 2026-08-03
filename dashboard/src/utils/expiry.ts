@@ -2,6 +2,14 @@ import { MS_PER_DAY } from './constants';
 
 export type FrontExpiry = 'weekly' | 'monthly';
 
+// selector list for a response that carries no expiry list of its own, near-dated first
+export function expiriesOf(points: { expiry: string; tte_years: number }[] | undefined): string[] {
+  if (!points) return [];
+  const tte = new Map<string, number>();
+  for (const p of points) if (!tte.has(p.expiry)) tte.set(p.expiry, p.tte_years);
+  return [...tte.keys()].sort((a, b) => (tte.get(a) ?? 0) - (tte.get(b) ?? 0));
+}
+
 // Deribit weeklies settle on a Friday, monthlies on the last Friday of a month
 function isWeekly(d: Date): boolean {
   return d.getUTCDay() === 5;
@@ -13,7 +21,7 @@ function isMonthly(d: Date): boolean {
 }
 
 // falls back to the nearest expiry when the chain lists no match
-export function frontExpiry(expiries: string[], mode: FrontExpiry): string | undefined {
+export function resolveFrontExpiry(expiries: string[], mode: FrontExpiry): string | undefined {
   const match = mode === 'monthly' ? isMonthly : isWeekly;
   return expiries.find((iso) => match(new Date(iso))) ?? expiries[0];
 }

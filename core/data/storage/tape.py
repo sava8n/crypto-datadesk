@@ -14,6 +14,7 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
+from analytics.conventions import EXPIRY_DATE_FORMAT, SETTLEMENT_HOUR_UTC
 from config import settings
 from data.clients import deribit
 from data.storage import db, schema
@@ -28,14 +29,16 @@ MAX_PAGES_PER_POLL = 100
 def parse_instrument(name: str) -> tuple[datetime, float, str] | None:
     """``(expiry, strike, option_type)`` from ``<CCY>-<DDMMMYY>-<STRIKE>-<C|P>``.
 
-    Expiries settle at 08:00 UTC, matching the chain parser. ``None`` for anything
-    unparseable - a print that cannot identify its contract is dropped.
+    The scalar twin of the chain's vectorised parser. ``None`` for anything unparseable -
+    a print that cannot identify its contract is dropped.
     """
     parts = name.split("-")
     if len(parts) != 4 or parts[3] not in ("C", "P"):
         return None
     try:
-        expiry = datetime.strptime(parts[1], "%d%b%y").replace(tzinfo=UTC) + timedelta(hours=8)
+        expiry = datetime.strptime(parts[1], EXPIRY_DATE_FORMAT).replace(tzinfo=UTC) + timedelta(
+            hours=SETTLEMENT_HOUR_UTC
+        )
         strike = float(parts[2])
     except ValueError:
         return None
@@ -81,9 +84,10 @@ def trade_rows(trades: list[dict], currency: str) -> list[dict]:
 
 
 def latest_ts(currency: str) -> datetime | None:
-    stmt = select(func.max(schema.trade.c.ts)).where(schema.trade.c.currency == currency)
-    with db.connection() as conn:
-        return conn.execute(stmt).scalar_one_or_none()
+    """The most recent print stored for ``currency``, or ``None`` on an empty tape."""
+    c = schema.trade.c
+    stmt = select(func.max(c.ts).label("ts")).where(c.currency == currency)
+    return db.rows(stmt, "tape cursor")[0]["ts"]
 
 
 def _insert(rows: list[dict]) -> int:

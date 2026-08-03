@@ -14,7 +14,7 @@ from analytics.frames import as_declared_dtypes, empty_frame
 logger = logging.getLogger(__name__)
 
 CONE_COLUMNS = ["days", "p10", "p25", "p50", "p75", "p90", "current"]
-WINDOWS = (7, 14, 30, 60, 90)
+CONE_WINDOWS = (7, 14, 30, 60, 90)
 PERCENTILES = (10, 25, 50, 75, 90)
 
 
@@ -30,7 +30,7 @@ def build(closes: list[float]) -> pd.DataFrame:
         rets = np.diff(np.log(np.asarray(closes, dtype=float)))
 
     rows = []
-    for window in WINDOWS:
+    for window in CONE_WINDOWS:
         if rets.size < window + 1:  # fewer than two rolling observations
             continue
         rv = sliding_window_view(rets, window).std(axis=1, ddof=1) * np.sqrt(

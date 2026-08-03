@@ -29,7 +29,7 @@ export default function OIByStrikeSection() {
           expiries={chain.data?.expiries ?? []}
           selected={selected}
           onSelect={select}
-          allLabel="ALL EXPIRATIONS"
+          allLabel="ALL EXPIRIES"
         />
       }
       footer={(data) => <OIStatTiles data={data} />}

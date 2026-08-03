@@ -2,7 +2,7 @@
 // distribution's quantiles, both already served per expiry, plus the archived
 // implied-vs-realized outcome for recently settled expiries.
 
-import { DAYS_PER_YEAR } from '../../utils/constants';
+import { dteOf } from '../../utils/dte';
 import type { ExpiryOutcomePoint, MaxPainResponse, ProbQuantilePoint } from '../../types';
 
 export interface ExpiryRow {
@@ -47,7 +47,7 @@ export function buildExpiryRows(
     const em = q && q.p16 != null && q.p84 != null ? (q.p84 - q.p16) / 2 : null;
     return {
       expiry: p.expiry,
-      dte: p.tte_years * DAYS_PER_YEAR,
+      dte: dteOf(p),
       maxPain: p.max_pain,
       maxPainPct: p.max_pain != null && spot > 0 ? p.max_pain / spot - 1 : null,
       em,

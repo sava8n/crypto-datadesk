@@ -4,10 +4,10 @@ import type { EChartsOption } from 'echarts';
 import EChart from '../chart/EChart';
 import type { PositioningHistoryResponse } from '../../types';
 import { priceWhole, usdShort } from '../../utils/format';
-import { AMBER, FLIP, MAX_PAIN, NET_GEX } from '../../theme/charts';
+import { AMBER, FLIP, MAX_PAIN, NET_EXPOSURE } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY, values } from '../../theme/options';
 
-export function buildGexLevelsHistoryOption(data: PositioningHistoryResponse): EChartsOption {
+export function buildGEXLevelsHistoryOption(data: PositioningHistoryResponse): EChartsOption {
   const level = (
     key: 'spot' | 'gex_flip' | 'max_pain_front',
     name: string,
@@ -34,7 +34,7 @@ export function buildGexLevelsHistoryOption(data: PositioningHistoryResponse): E
       valueAxisY({ name: 'PRICE', scale: true, format: priceWhole }),
       valueAxisY({
         name: 'NET GEX',
-        accent: NET_GEX,
+        accent: NET_EXPOSURE,
         position: 'right',
         splitLine: false,
         format: usdShort,
@@ -50,7 +50,7 @@ export function buildGexLevelsHistoryOption(data: PositioningHistoryResponse): E
         yAxisIndex: 1,
         barMaxWidth: 6,
         data: data.points.map((p) => [p.as_of, p.gex_net_total]),
-        itemStyle: { color: NET_GEX, opacity: 0.5 },
+        itemStyle: { color: NET_EXPOSURE, opacity: 0.5 },
         emphasis: { focus: 'series' },
         tooltip: { valueFormatter: values(usdShort) },
       },
@@ -58,6 +58,6 @@ export function buildGexLevelsHistoryOption(data: PositioningHistoryResponse): E
   };
 }
 
-export default function GexLevelsHistoryChart({ data }: { data: PositioningHistoryResponse }) {
-  return <EChart option={useMemo(() => buildGexLevelsHistoryOption(data), [data])} />;
+export default function GEXLevelsHistoryChart({ data }: { data: PositioningHistoryResponse }) {
+  return <EChart option={useMemo(() => buildGEXLevelsHistoryOption(data), [data])} />;
 }

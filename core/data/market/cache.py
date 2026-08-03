@@ -1,15 +1,9 @@
 """In-memory TTL cache with per-key locks to collapse concurrent misses.
 
-Fast lock-free freshness read, then a per-key lock around the (expensive)
-producer so that when several callers miss the same key at once only one computes
-it and the rest reuse the result - no thundering herd. Expired entries are kept
-and handed to the producer so it can refresh incrementally instead of rebuilding
-from scratch.
-
-Failures are cached for the same TTL. Without that the lock only serializes the herd
-rather than collapsing it: a raising producer stores nothing, so every waiter in turn
-acquires the lock and calls upstream again, and a rate-limited upstream stays
-rate-limited while every request for that key blocks behind the lock.
+Expired entries are kept and handed to the producer so it can refresh incrementally.
+Failures are cached for the same TTL: without that a raising producer stores nothing,
+so every waiter in turn acquires the lock and calls upstream again - the lock would
+serialize the herd rather than collapse it.
 """
 
 from __future__ import annotations

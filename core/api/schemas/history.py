@@ -3,18 +3,17 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal
 
 from pydantic import BaseModel
 
+from api.schemas.base import SpanEnvelope
+from data.storage.series import Resolution
 
-class HistoryEnvelope(BaseModel):
+
+class HistoryEnvelope(SpanEnvelope):
     """Archive-backed series: the queried window, no live spot, no upstream dependency."""
 
-    currency: str
-    start: datetime
-    end: datetime
-    resolution: Literal["1h", "1d"]
+    resolution: Resolution
 
 
 class VolHistoryPoint(BaseModel):

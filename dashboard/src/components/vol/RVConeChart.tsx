@@ -3,8 +3,8 @@ import type { EChartsOption, LineSeriesOption, ScatterSeriesOption } from 'echar
 
 import EChart from '../chart/EChart';
 import type { RVConePoint, RVConeResponse, TermStructurePoint } from '../../types';
-import { DAYS_PER_YEAR } from '../../utils/constants';
-import { dteLabel, pctOne, pctWhole } from '../../utils/format';
+import { dteOf } from '../../utils/dte';
+import { dteLabel, pctWhole, volPct } from '../../utils/format';
 import { AMBER, AXIS_LINE, CALL, MUTED, TEXT } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, valueAxisX, valueAxisY } from '../../theme/options';
 
@@ -14,7 +14,6 @@ export interface RVConeChartData {
   implied: TermStructurePoint[];
 }
 
-const volPct = (v: number) => `${pctOne(v)}%`;
 
 const PERCENTILE_SERIES: { key: keyof RVConePoint; name: string; color: string }[] = [
   { key: 'p90', name: 'P90', color: AXIS_LINE },
@@ -29,7 +28,7 @@ export function buildRVConeOption({ cone, implied }: RVConeChartData): EChartsOp
   const maxDays = rows[rows.length - 1]?.days ?? 0;
   // clip the implied curve to the cone's horizon so both share one x range
   const impliedRows = implied
-    .map((p) => ({ dte: p.tte_years * DAYS_PER_YEAR, iv: p.atm_iv }))
+    .map((p) => ({ dte: dteOf(p), iv: p.atm_iv }))
     .filter((p) => p.dte <= maxDays * 1.1)
     .sort((a, b) => a.dte - b.dte);
 

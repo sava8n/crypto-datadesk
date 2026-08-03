@@ -2,19 +2,18 @@ import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
 
 import EChart from '../chart/EChart';
-import { pctOne } from '../../utils/format';
+import { volPct } from '../../utils/format';
 import { AMBER, CALL, DANGER, MUTED } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY } from '../../theme/options';
-import type { VrpRow } from './vrp';
+import type { VRPRow } from './vrp';
 
-const volPct = (v: number) => `${pctOne(v)}%`;
 
-export function buildVrpOption(rows: VrpRow[]): EChartsOption {
-  const line = (name: string, pick: (r: VrpRow) => number, color: string, dashed = false) => ({
+export function buildVRPOption(rows: VRPRow[]): EChartsOption {
+  const line = (name: string, pick: (r: VRPRow) => number, color: string, dashed = false) => ({
     type: 'line' as const,
     name,
     showSymbol: false,
-    data: rows.map((r) => [r.as_of, pick(r)] as [string, number]),
+    data: rows.map((r) => [r.asOf, pick(r)] as [string, number]),
     itemStyle: { color },
     lineStyle: { width: 1.5, color, ...(dashed && { type: 'dashed' as const }) },
     emphasis: { focus: 'series' as const, lineStyle: { width: 3 } },
@@ -29,7 +28,7 @@ export function buildVrpOption(rows: VrpRow[]): EChartsOption {
     yAxis: valueAxisY({ name: 'VOL', scale: true, format: volPct }),
     series: [
       line('IV30', (r) => r.iv30, AMBER),
-      line('RV30 +30D', (r) => r.rv30_fwd, DANGER, true),
+      line('RV30 +30D', (r) => r.rv30Fwd, DANGER, true),
       {
         ...line('VRP', (r) => r.vrp, CALL),
         // zero line: above = implied paid more than was realized
@@ -45,6 +44,6 @@ export function buildVrpOption(rows: VrpRow[]): EChartsOption {
   };
 }
 
-export default function VrpChart({ rows }: { rows: VrpRow[] }) {
-  return <EChart option={useMemo(() => buildVrpOption(rows), [rows])} />;
+export default function VRPChart({ rows }: { rows: VRPRow[] }) {
+  return <EChart option={useMemo(() => buildVRPOption(rows), [rows])} />;
 }

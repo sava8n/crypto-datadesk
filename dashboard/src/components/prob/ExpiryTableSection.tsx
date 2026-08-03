@@ -5,7 +5,7 @@ import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
 import { useCurrency } from '../../settings/store';
-import { dteLabel, expiryLabel, priceWhole } from '../../utils/format';
+import { dteLabel, dateLabel, priceWhole } from '../../utils/format';
 import {
   buildExpiryRows,
   buildSettledRows,
@@ -23,7 +23,7 @@ interface TableData {
 function LiveRow({ row }: { row: ExpiryRow }) {
   return (
     <tr>
-      <td>{expiryLabel(row.expiry)}</td>
+      <td>{dateLabel(row.expiry)}</td>
       <td>{dteLabel(row.dte)}</td>
       <td>{row.maxPain != null ? priceWhole(row.maxPain) : '-'}</td>
       <td>{row.maxPainPct != null ? signedPct(row.maxPainPct) : '-'}</td>
@@ -37,7 +37,7 @@ function LiveRow({ row }: { row: ExpiryRow }) {
 function SettledTableRow({ row }: { row: SettledRow }) {
   return (
     <tr className="exp-table__settled">
-      <td>{expiryLabel(row.expiry)}</td>
+      <td>{dateLabel(row.expiry)}</td>
       <td>SETTLED</td>
       <td>-</td>
       <td>-</td>

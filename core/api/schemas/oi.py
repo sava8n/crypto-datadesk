@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal
 
 from pydantic import BaseModel
 
-from api.schemas.base import MarketEnvelope
+from api.schemas.base import BaselineEnvelope, MarketEnvelope
 
 
-class OIByExpirationPoint(BaseModel):
+class OIByExpiryPoint(BaseModel):
     expiry: datetime
     tte_years: float
     itm_calls: float
@@ -19,8 +18,8 @@ class OIByExpirationPoint(BaseModel):
     otm_puts: float
 
 
-class OIByExpirationResponse(MarketEnvelope):
-    points: list[OIByExpirationPoint]
+class OIByExpiryResponse(MarketEnvelope):
+    points: list[OIByExpiryPoint]
 
 
 class OIByStrikePoint(BaseModel):
@@ -49,17 +48,13 @@ class MaxPainResponse(MarketEnvelope):
     points: list[MaxPainPoint]
 
 
-class OIChangePoint(BaseModel):
+class OIChangeByStrikePoint(BaseModel):
     strike: float
     call_oi_change: float
     put_oi_change: float
 
 
-class OIChangeResponse(MarketEnvelope):
-    window: Literal["24h", "7d"]
-    baseline_as_of: datetime | None = None  # None = nothing archived that far back
-    # the baseline used is much younger than the window claims (short/gappy archive)
-    baseline_stale: bool = False
+class OIChangeByStrikeResponse(BaselineEnvelope):
     expiries: list[datetime]
     expiry: datetime | None = None  # echo of the selected expiry; None = all
-    points: list[OIChangePoint]
+    points: list[OIChangeByStrikePoint]

@@ -2,12 +2,12 @@ import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
 
 import EChart from '../chart/EChart';
-import type { FlowByExpirationResponse } from '../../types';
-import { countShort, expiryLabel, usdShort } from '../../utils/format';
+import type { FlowByExpiryResponse } from '../../types';
+import { countShort, dateLabel, usdShort } from '../../utils/format';
 import { CALL, MUTED, PUT } from '../../theme/charts';
 import { axisTooltip, categoryAxisX, grid, legendBar, valueAxisY } from '../../theme/options';
 
-export function buildFlowByExpirationOption(data: FlowByExpirationResponse): EChartsOption {
+export function buildFlowByExpiryOption(data: FlowByExpiryResponse): EChartsOption {
   // signed net taker flow per expiry, near-dated first; premium shown on hover
   const rows = [...data.points].sort(
     (a, b) => new Date(a.expiry).getTime() - new Date(b.expiry).getTime(),
@@ -22,14 +22,14 @@ export function buildFlowByExpirationOption(data: FlowByExpirationResponse): ECh
         const r = rows[p.dataIndex ?? -1];
         if (!r) return '';
         return (
-          `${expiryLabel(r.expiry)}<br/>` +
+          `${dateLabel(r.expiry)}<br/>` +
           `CALL ${countShort(r.call_contracts)} · ${usdShort(r.call_premium)}<br/>` +
           `PUT ${countShort(r.put_contracts)} · ${usdShort(r.put_premium)}`
         );
       },
     }),
     grid: grid('bars'),
-    xAxis: categoryAxisX(rows.map((p) => expiryLabel(p.expiry))),
+    xAxis: categoryAxisX(rows.map((p) => dateLabel(p.expiry))),
     yAxis: valueAxisY({ name: 'NET', format: countShort }),
     series: [
       {
@@ -59,6 +59,6 @@ export function buildFlowByExpirationOption(data: FlowByExpirationResponse): ECh
   };
 }
 
-export default function FlowByExpirationChart({ data }: { data: FlowByExpirationResponse }) {
-  return <EChart option={useMemo(() => buildFlowByExpirationOption(data), [data])} />;
+export default function FlowByExpiryChart({ data }: { data: FlowByExpiryResponse }) {
+  return <EChart option={useMemo(() => buildFlowByExpiryOption(data), [data])} />;
 }

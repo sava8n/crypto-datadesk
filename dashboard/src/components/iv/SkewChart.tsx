@@ -3,8 +3,8 @@ import type { EChartsOption } from 'echarts';
 
 import EChart from '../chart/EChart';
 import type { CMBandPoint, SkewResponse } from '../../types';
-import { DAYS_PER_YEAR } from '../../utils/constants';
-import { dteLabel, expiryLabel, pctOne } from '../../utils/format';
+import { dteOf } from '../../utils/dte';
+import { dteLabel, dateLabel, volPct } from '../../utils/format';
 import { AMBER, CALL, MUTED } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, valueAxisX, valueAxisY } from '../../theme/options';
 import { bandRows, bandSeries } from './bands';
@@ -12,12 +12,11 @@ import { bandRows, bandSeries } from './bands';
 const SERIES_NAMES = ['RR 25Δ', 'BF 25Δ'];
 
 // RR/BF live in single vol points, so one decimal: 0.042 -> "4.2%"
-const volPct = (v: number) => `${pctOne(v)}%`;
 
 export function buildSkewOption(data: SkewResponse, bands: CMBandPoint[] = []): EChartsOption {
   // one RR/BF pair per expiry, plotted time-proportionally by days-to-expiry
   const rows = data.points
-    .map((p) => ({ dte: p.tte_years * DAYS_PER_YEAR, rr: p.rr, bf: p.bf, expiry: p.expiry }))
+    .map((p) => ({ dte: dteOf(p), rr: p.rr, bf: p.bf, expiry: p.expiry }))
     .sort((a, b) => a.dte - b.dte);
   const maxDte = rows[rows.length - 1]?.dte ?? 0;
 
@@ -28,7 +27,7 @@ export function buildSkewOption(data: SkewResponse, bands: CMBandPoint[] = []): 
       render: (p) => {
         const r = rows[p.dataIndex ?? -1];
         if (!r) return '';
-        return `${expiryLabel(r.expiry)}<br/>DTE ${dteLabel(r.dte)}<br/>RR ${volPct(r.rr)} · BF ${volPct(r.bf)}`;
+        return `${dateLabel(r.expiry)}<br/>DTE ${dteLabel(r.dte)}<br/>RR ${volPct(r.rr)} · BF ${volPct(r.bf)}`;
       },
     }),
     grid: grid('series'),

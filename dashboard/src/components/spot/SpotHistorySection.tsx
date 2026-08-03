@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 
 import { useProbCurves, useSpotHistory } from '../../api/queries';
 import { useCurrency, useSettings } from '../../settings/store';
-import { frontExpiry } from '../../utils/expiry';
-import { expiryLabel } from '../../utils/format';
+import { resolveFrontExpiry } from '../../utils/expiry';
+import { dateLabel } from '../../utils/format';
 import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
@@ -22,7 +22,7 @@ export default function SpotHistorySection() {
   // overlay shares that cache entry rather than costing a request of its own
   const prob = useProbCurves(currency);
   const expiry = prob.data
-    ? frontExpiry(
+    ? resolveFrontExpiry(
         prob.data.quantiles.map((q) => q.expiry),
         frontPref,
       )
@@ -37,7 +37,7 @@ export default function SpotHistorySection() {
   }, [prob.data, expiry, candles]);
 
   const state = panelState(query, candles, candles?.length ?? 0, MIN_POINTS.line);
-  const tenor = cone ? ` · EM ${expiryLabel(cone.expiry)}` : '';
+  const tenor = cone ? ` · EM ${dateLabel(cone.expiry)}` : '';
 
   return (
     <Panel title="MARKET" subtitle={`${currency}_USDC · 1D${tenor}`} state={state} full>

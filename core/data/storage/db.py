@@ -11,10 +11,11 @@ import threading
 from contextlib import AbstractContextManager
 from pathlib import Path
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import Executable, create_engine, text
 from sqlalchemy.engine import Connection, Engine
 
 from config import settings
+from data.storage.errors import StorageUnavailable
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,26 @@ def connection() -> AbstractContextManager[Connection]:
     return engine().begin()
 
 
+def rows(stmt: Executable, what: str) -> list[dict]:
+    """Mapping rows for ``stmt``; a dead archive surfaces as ``StorageUnavailable`` (503)."""
+    try:
+        with connection() as conn:
+            return [dict(row) for row in conn.execute(stmt).mappings()]
+    except Exception as exc:
+        logger.warning("%s read failed: %s", what, exc)
+        raise StorageUnavailable("archive unavailable") from exc
+
+
+def scalars(stmt: Executable, what: str) -> list:
+    """First column of every row for ``stmt``, with the same failure contract as ``rows``."""
+    try:
+        with connection() as conn:
+            return list(conn.scalars(stmt))
+    except Exception as exc:
+        logger.warning("%s read failed: %s", what, exc)
+        raise StorageUnavailable("archive unavailable") from exc
+
+
 def init_schema() -> None:
     """Bring the archive up to the latest migration."""
     from alembic import command
@@ -49,11 +70,10 @@ def init_schema() -> None:
 
 
 def is_available() -> bool:
-    """True when the database answers a trivial query.
+    """True when the database answers a trivial query; never raises.
 
-    Catches everything: ``create_engine`` runs inside the try, and a bad DSN or a
-    missing driver raises ``ArgumentError``/``ModuleNotFoundError`` rather than a
-    ``SQLAlchemyError``. The health route promises it never fails.
+    Catches everything, not just ``SQLAlchemyError``: ``create_engine`` runs inside the
+    try, and a bad DSN or a missing driver raises ``ArgumentError``/``ModuleNotFoundError``.
     """
     try:
         with engine().connect() as conn:

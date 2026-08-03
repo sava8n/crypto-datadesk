@@ -2,8 +2,8 @@
 
 import { DATE_LOCALE, NUM_LOCALE } from './constants';
 
-// Deribit expiries are at 08:00 UTC; format like "04JUL26" (day + upper month + 2-digit year)
-export function expiryLabel(iso: string): string {
+// UTC date of an ISO instant: "04JUL26" (day + upper month + 2-digit year)
+export function dateLabel(iso: string): string {
   const d = new Date(iso);
   const day = String(d.getUTCDate()).padStart(2, '0');
   const mon = d.toLocaleString(NUM_LOCALE, { month: 'short', timeZone: 'UTC' }).toUpperCase();
@@ -52,6 +52,9 @@ export const pctWhole = (v: number) => `${Math.round(v * 100)}%`;
 
 // fraction as a one-decimal percent, unsuffixed: 0.4237 -> "42.4"
 export const pctOne = (v: number) => (v * 100).toFixed(1);
+
+// the same, suffixed - the vol/skew/basis axes and tooltips: 0.4237 -> "42.4%"
+export const volPct = (v: number) => `${pctOne(v)}%`;
 
 // DVOL index level: 0.382 -> "38.2"
 export const dvolFmt = (v: number) => (v * 100).toFixed(1);

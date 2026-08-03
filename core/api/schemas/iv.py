@@ -3,23 +3,10 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal
 
 from pydantic import BaseModel
 
-from api.schemas.base import MarketEnvelope, OptionType
-
-
-class IVSurfacePoint(BaseModel):
-    expiry: datetime
-    tte_years: float
-    delta: float
-    mark_iv: float
-    option_type: OptionType
-
-
-class IVSurfaceResponse(MarketEnvelope):
-    points: list[IVSurfacePoint]
+from api.schemas.base import BaselineEnvelope, MarketEnvelope, OptionType
 
 
 class IVCurvePoint(BaseModel):
@@ -34,13 +21,8 @@ class IVCurvesResponse(MarketEnvelope):
     points: list[IVCurvePoint]
 
 
-class SmileHistoryResponse(MarketEnvelope):
+class SmileHistoryResponse(BaselineEnvelope):
     expiry: datetime
-    window: Literal["24h", "7d"]
-    # the archived book actually served; None = nothing archived that far back
-    baseline_as_of: datetime | None = None
-    # the baseline used is much younger than the window claims (short/gappy archive)
-    baseline_stale: bool = False
     points: list[IVCurvePoint]
 
 

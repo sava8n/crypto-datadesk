@@ -2,12 +2,12 @@ import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
 
 import EChart from '../chart/EChart';
-import type { OIByExpirationResponse } from '../../types';
-import { countShort, expiryLabel } from '../../utils/format';
+import type { OIByExpiryResponse } from '../../types';
+import { countShort, dateLabel } from '../../utils/format';
 import { axisTooltip, categoryAxisX, grid, legendBar, valueAxisY } from '../../theme/options';
 import { OI_SERIES, OI_SERIES_NAMES } from './series';
 
-export function buildOIByExpirationOption(data: OIByExpirationResponse): EChartsOption {
+export function buildOIByExpiryOption(data: OIByExpiryResponse): EChartsOption {
   // one stacked bar per expiry, near-dated first
   const rows = [...data.points].sort((a, b) => a.tte_years - b.tte_years);
 
@@ -17,7 +17,7 @@ export function buildOIByExpirationOption(data: OIByExpirationResponse): ECharts
     tooltip: axisTooltip({ shadow: true, value: countShort }),
     grid: grid('bars'),
     // interval 0: every expiry gets a label, the axis is short enough
-    xAxis: categoryAxisX(rows.map((p) => expiryLabel(p.expiry)), { interval: 0 }),
+    xAxis: categoryAxisX(rows.map((p) => dateLabel(p.expiry)), { interval: 0 }),
     yAxis: valueAxisY({ name: 'OI', format: countShort }),
     series: OI_SERIES.map((s) => ({
       type: 'bar',
@@ -31,6 +31,6 @@ export function buildOIByExpirationOption(data: OIByExpirationResponse): ECharts
   };
 }
 
-export default function OIByExpirationChart({ data }: { data: OIByExpirationResponse }) {
-  return <EChart option={useMemo(() => buildOIByExpirationOption(data), [data])} />;
+export default function OIByExpiryChart({ data }: { data: OIByExpiryResponse }) {
+  return <EChart option={useMemo(() => buildOIByExpiryOption(data), [data])} />;
 }

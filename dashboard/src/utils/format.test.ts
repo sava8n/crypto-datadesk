@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  expiryLabel,
+  dateLabel,
   strikeFmt,
   strikeFull,
   countShort,
@@ -14,15 +14,15 @@ import {
   dteLabel,
 } from './format';
 
-describe('expiryLabel', () => {
+describe('dateLabel', () => {
   it('formats an ISO expiry as DDMONYY in UTC', () => {
-    expect(expiryLabel('2026-07-04T08:00:00Z')).toBe('04JUL26');
-    expect(expiryLabel('2026-01-09T08:00:00Z')).toBe('09JAN26');
+    expect(dateLabel('2026-07-04T08:00:00Z')).toBe('04JUL26');
+    expect(dateLabel('2026-01-09T08:00:00Z')).toBe('09JAN26');
   });
 
   it('uses the UTC day regardless of the local timezone', () => {
     // 23:00Z is still the 4th in UTC even where local time has rolled to the 5th
-    expect(expiryLabel('2026-07-04T23:00:00Z')).toBe('04JUL26');
+    expect(dateLabel('2026-07-04T23:00:00Z')).toBe('04JUL26');
   });
 });
 

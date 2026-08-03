@@ -59,6 +59,6 @@ def record(state: rows.Archivable, currency: str) -> int | None:
 
 def latest_as_of(currency: str) -> datetime | None:
     """The most recent ``as_of`` stored for ``currency``, or ``None`` if there is none."""
-    stmt = select(func.max(schema.snapshot.c.as_of)).where(schema.snapshot.c.currency == currency)
-    with db.connection() as conn:
-        return conn.execute(stmt).scalar_one_or_none()
+    c = schema.snapshot.c
+    stmt = select(func.max(c.as_of).label("as_of")).where(c.currency == currency)
+    return db.rows(stmt, "snapshot cursor")[0]["as_of"]

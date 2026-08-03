@@ -7,7 +7,6 @@ contract sums but not the premium sums.
 
 from __future__ import annotations
 
-import logging
 from datetime import UTC, datetime
 
 from sqlalchemy import Select, case, func, select
@@ -15,24 +14,12 @@ from sqlalchemy import Select, case, func, select
 from config import settings
 from data.market.cache import TTLCache
 from data.storage import db, schema
-from data.storage.errors import StorageUnavailable
 
-logger = logging.getLogger(__name__)
-
-_SIDES = {"C": "call", "P": "put"}
+_OPTION_SIDES = {"C": "call", "P": "put"}
 
 # new prints land once per tape poll, so a fresher read buys nothing; failures are
 # cached for the TTL too, so a down archive is probed once per interval, not per request
 _cache = TTLCache(settings.tape_poll_seconds)
-
-
-def _rows(stmt: Select) -> list[dict]:
-    try:
-        with db.connection() as conn:
-            return [dict(row) for row in conn.execute(stmt).mappings()]
-    except Exception as exc:
-        logger.warning("tape read failed: %s", exc)
-        raise StorageUnavailable("archive unavailable") from exc
 
 
 def _signed_sums(currency: str, start: datetime, now: datetime, group) -> Select:
@@ -67,7 +54,7 @@ def _pivot(rows: list[dict], key: str) -> list[dict]:
                 "put_premium": 0.0,
             },
         )
-        side = _SIDES.get(row["option_type"])
+        side = _OPTION_SIDES.get(row["option_type"])
         if side is None:
             continue
         entry[f"{side}_contracts"] = float(row["contracts"] or 0.0)
@@ -78,13 +65,13 @@ def _pivot(rows: list[dict], key: str) -> list[dict]:
 def net_flow_by_strike(currency: str, start: datetime, now: datetime) -> list[dict]:
     """Net taker flow per strike over the window, ascending by strike."""
     stmt = _signed_sums(currency, start, now, schema.trade.c.strike)
-    return _pivot(_rows(stmt), "strike")
+    return _pivot(db.rows(stmt, "tape"), "strike")
 
 
 def net_flow_by_expiry(currency: str, start: datetime, now: datetime) -> list[dict]:
     """Net taker flow per expiry over the window, near-dated first."""
     stmt = _signed_sums(currency, start, now, schema.trade.c.expiry)
-    return _pivot(_rows(stmt), "expiry")
+    return _pivot(db.rows(stmt, "expiry flow"), "expiry")
 
 
 def _dealer_inputs(currency: str) -> dict:
@@ -96,13 +83,13 @@ def _dealer_inputs(currency: str) -> dict:
         .where(c.currency == currency, c.expiry > datetime.now(UTC))
         .group_by(c.expiry, c.strike, c.option_type)
     )
-    return {"rows": _rows(stmt), "tape_start": _earliest_ts(currency)}
+    return {"rows": db.rows(stmt, "dealer flow"), "tape_start": _earliest_ts(currency)}
 
 
 def _earliest_ts(currency: str) -> datetime | None:
     c = schema.trade.c
     stmt = select(func.min(c.ts).label("ts")).where(c.currency == currency)
-    return _rows(stmt)[0]["ts"]
+    return db.rows(stmt, "tape start")[0]["ts"]
 
 
 def dealer_flow(currency: str) -> dict:
@@ -147,4 +134,4 @@ def recent_prints(currency: str, limit: int, min_premium: float) -> list[dict]:
     )
     if min_premium > 0:
         stmt = stmt.where(c.price * c.index_price * c.amount >= min_premium)
-    return _rows(stmt)
+    return db.rows(stmt, "tape")

@@ -10,6 +10,10 @@
 ### Changed
 
 - **Panel defaults in settings** - history lookback, dealer-inventory sign, flow window and tape minimum premium are now configurable
+
+### Removed
+
+- **3D IV surface and per-strike greeks** - unmounted since 0.2.0, now deleted
 - **Market chart levels** - GEX flip, max pain, call/put OI walls and the clustered GEX support/resistance lines removed
 
 

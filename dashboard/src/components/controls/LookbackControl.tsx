@@ -1,24 +1,23 @@
-import { LOOKBACKS, type LookbackDays } from '../../config';
-
-const label = (days: number) => (days === 365 ? '1Y' : `${days}D`);
+import { ARCHIVE_WINDOWS } from '../../config';
+import type { ArchiveWindow } from '../../types';
 
 interface Props {
-  days: LookbackDays;
-  onChange: (days: LookbackDays) => void;
+  window: ArchiveWindow;
+  onChange: (window: ArchiveWindow) => void;
 }
 
-export default function LookbackControl({ days, onChange }: Props) {
+export default function LookbackControl({ window, onChange }: Props) {
   return (
     <label className="expiry">
       <span className="expiry__label">LOOKBACK</span>
       <select
         className="expiry__select"
-        value={days}
-        onChange={(e) => onChange(Number(e.target.value) as LookbackDays)}
+        value={window}
+        onChange={(e) => onChange(e.target.value as ArchiveWindow)}
       >
-        {LOOKBACKS.map((d) => (
-          <option key={d} value={d}>
-            {label(d)}
+        {ARCHIVE_WINDOWS.map((w) => (
+          <option key={w} value={w}>
+            {w.toUpperCase()}
           </option>
         ))}
       </select>

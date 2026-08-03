@@ -4,7 +4,7 @@ import type { EChartsOption } from 'echarts';
 import EChart from '../chart/EChart';
 import type { ProbCurvesResponse } from '../../types';
 import { groupByExpiry } from '../../utils/curves';
-import { expiryLabel, pctOne, pctWhole, strikeFmt, strikeFull } from '../../utils/format';
+import { dateLabel, pctOne, pctWhole, strikeFmt, strikeFull } from '../../utils/format';
 import { MONO, MUTED, PALETTE } from '../../theme/charts';
 import {
   grid,
@@ -19,7 +19,7 @@ export function buildProbCurvesOption(data: ProbCurvesResponse): EChartsOption {
   // near-dated first, so legend and z-order are chronological
   const curves = groupByExpiry(data.points, (p) => p.prob_above).map((c) => ({
     ...c,
-    label: expiryLabel(c.expiry),
+    label: dateLabel(c.expiry),
   }));
 
   return {

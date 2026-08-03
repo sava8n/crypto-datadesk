@@ -18,7 +18,7 @@ from analytics.frames import finite
 from analytics.vol import cone
 from analytics.iv import term
 from analytics.iv.skew import build as build_skew
-from analytics.positioning import exposure, gamma_exposure, open_interest, traded_volume
+from analytics.positioning import exposure, open_interest, traded_volume
 from analytics.prob import distribution, quantiles
 from analytics.stats import atm_iv_at, cm_grid, dvol_stats, realized_vol, skew_at
 from data.market import history
@@ -37,10 +37,9 @@ class MarketState:
         self.as_of = as_of
         self.spot = spot
         self.contracts = contracts  # the book as sent; shared across requests, read-only
-        self.spot_candles = spot_candles  # TradingView arrays, trailing year
-        self.dvol_candles = dvol_candles  # [[ts_ms, o, h, l, c], …], trailing year
-
-    # ---- chain projections ----
+        self.spot_candles = spot_candles
+        self.dvol_candles = dvol_candles
+        self._exposure: dict[str, pd.DataFrame] = {}
 
     @cached_property
     def otm_quotes(self) -> pd.DataFrame:
@@ -50,8 +49,6 @@ class MarketState:
     def oi_chain(self) -> pd.DataFrame:
         return prepare_oi_chain(self.contracts, self.spot)
 
-    # ---- shared intermediates ----
-
     @cached_property
     def greeks_chain(self) -> pd.DataFrame:
         return greeks.build(self.otm_quotes)
@@ -59,11 +56,6 @@ class MarketState:
     @cached_property
     def term_structure(self) -> pd.DataFrame:
         return term.build(self.otm_quotes)
-
-    # ---- per-view products ----
-    #
-    # the IV surface and smile curves are not here: they are otm_quotes keyed by delta and
-    # by strike, and the response models already declare which columns that means
 
     @cached_property
     def skew(self) -> pd.DataFrame:
@@ -77,29 +69,23 @@ class MarketState:
     def prob_quantiles(self) -> pd.DataFrame:
         return quantiles.build(self.prob_curves)
 
-    @cached_property
-    def gex_by_strike(self) -> pd.DataFrame:
-        return gamma_exposure.build(self.greeks_chain, self.oi_chain)
+    def exposure(self, greek: str) -> pd.DataFrame:
+        """Per-strike dollar exposure to ``greek``; memoized per greek, like the properties."""
+        if greek not in self._exposure:
+            self._exposure[greek] = exposure.build(self.greeks_chain, self.oi_chain, greek)
+        return self._exposure[greek]
 
     @cached_property
     def gex_flip(self) -> float | None:
-        return finite(gamma_exposure.flip_level(self.gex_by_strike, self.spot))
+        return finite(exposure.flip_level(self.exposure("gamma"), self.spot))
 
     @cached_property
-    def oi_by_expiration(self) -> pd.DataFrame:
+    def oi_by_expiry(self) -> pd.DataFrame:
         return open_interest.by_expiry(self.oi_chain)
 
     @cached_property
     def max_pain_by_expiry(self) -> pd.DataFrame:
         return open_interest.max_pain_by_expiry(self.oi_chain)
-
-    @cached_property
-    def vanna_exposure(self) -> pd.DataFrame:
-        return exposure.build(self.greeks_chain, self.oi_chain, "vanna")
-
-    @cached_property
-    def charm_exposure(self) -> pd.DataFrame:
-        return exposure.build(self.greeks_chain, self.oi_chain, "charm")
 
     def oi_by_strike(self, expiry: datetime | None = None) -> tuple[pd.DataFrame, float | None]:
         """Open interest per strike, and the max-pain strike.
@@ -126,8 +112,6 @@ class MarketState:
     def rv_cone(self) -> pd.DataFrame:
         return cone.build(self.spot_history["close"].tolist())
 
-    # ---- expiry lists for selectors (near-dated first) ----
-
     @cached_property
     def otm_expiries(self) -> list:
         return [pd.Timestamp(e).to_pydatetime() for e in sorted(self.otm_quotes["expiry"].unique())]
@@ -136,10 +120,8 @@ class MarketState:
     def oi_expiries(self) -> list:
         return [pd.Timestamp(e).to_pydatetime() for e in sorted(self.oi_chain["expiry"].unique())]
 
-    # ---- scalar stats ----
-    #
-    # every one goes through finite(): the builders compute with numpy, which returns NaN
-    # instead of raising, and "could not be computed" has to reach the caller as None
+    # the scalars below go through finite(): numpy returns NaN instead of raising, and
+    # "could not be computed" has to reach the caller as None
 
     @cached_property
     def iv30(self) -> float | None:
@@ -194,10 +176,10 @@ class MarketState:
 
     @cached_property
     def gex_net_total(self) -> float | None:
-        gex = self.gex_by_strike
+        gex = self.exposure("gamma")
         if gex.empty:
             return None
-        return finite(gex["net_gex"].sum())
+        return finite(gex["net_exposure"].sum())
 
     @cached_property
     def cm_grid(self) -> pd.DataFrame:

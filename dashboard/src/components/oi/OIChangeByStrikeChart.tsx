@@ -2,14 +2,14 @@ import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
 
 import EChart from '../chart/EChart';
-import type { OIChangeResponse } from '../../types';
+import type { OIChangeByStrikeResponse } from '../../types';
 import { countShort, strikeFmt } from '../../utils/format';
 import { CALL, MUTED, PUT } from '../../theme/charts';
 import { axisTooltip, categoryAxisX, grid, legendBar, valueAxisY } from '../../theme/options';
 
 const SERIES_NAMES = ['Call ΔOI', 'Put ΔOI'];
 
-export function buildOIChangeOption(data: OIChangeResponse): EChartsOption {
+export function buildOIChangeByStrikeOption(data: OIChangeByStrikeResponse): EChartsOption {
   // one call/put delta pair per strike, low strikes first; deltas are signed
   const rows = [...data.points].sort((a, b) => a.strike - b.strike);
 
@@ -48,6 +48,6 @@ export function buildOIChangeOption(data: OIChangeResponse): EChartsOption {
   };
 }
 
-export default function OIChangeChart({ data }: { data: OIChangeResponse }) {
-  return <EChart option={useMemo(() => buildOIChangeOption(data), [data])} />;
+export default function OIChangeByStrikeChart({ data }: { data: OIChangeByStrikeResponse }) {
+  return <EChart option={useMemo(() => buildOIChangeByStrikeOption(data), [data])} />;
 }

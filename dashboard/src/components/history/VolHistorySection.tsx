@@ -8,8 +8,8 @@ import { useLookback } from '../controls/useLookback';
 import VolHistoryChart from './VolHistoryChart';
 
 export default function VolHistorySection() {
-  const { days, setDays, resolution } = useLookback();
-  const query = useVolHistory(useCurrency(), days, resolution);
+  const { window, setWindow, resolution } = useLookback();
+  const query = useVolHistory(useCurrency(), window, resolution);
   const state = panelState(query, query.data, query.data?.points.length ?? 0, MIN_POINTS.line);
 
   return (
@@ -17,7 +17,7 @@ export default function VolHistorySection() {
       title="VOL HISTORY"
       subtitle="CM ATM IV / RV / DVOL × TIME"
       state={state}
-      controls={<LookbackControl days={days} onChange={setDays} />}
+      controls={<LookbackControl window={window} onChange={setWindow} />}
     >
       {(data) => <VolHistoryChart data={data} />}
     </Panel>

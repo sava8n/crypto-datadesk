@@ -50,7 +50,7 @@ describe('useExpiryPicker', () => {
   });
 
   describe('with allowAll', () => {
-    it('accepts the empty string as "every expiration"', () => {
+    it('accepts the empty string as "every expiry"', () => {
       const { result } = renderHook(() => useExpiryPicker([WEEK1], { allowAll: true }), {
         wrapper,
       });

@@ -4,11 +4,11 @@
 import { MS_PER_DAY } from '../../utils/constants';
 import type { VolHistoryPoint } from '../../types';
 
-export interface VrpRow {
-  as_of: string;
+export interface VRPRow {
+  asOf: string;
   iv30: number;
-  // rv30 observed one horizon after as_of
-  rv30_fwd: number;
+  // rv30 observed one horizon after asOf
+  rv30Fwd: number;
   vrp: number;
 }
 
@@ -16,9 +16,9 @@ export function pairForwardRealized(
   points: VolHistoryPoint[],
   horizonDays = 30,
   toleranceDays = 2,
-): VrpRow[] {
+): VRPRow[] {
   const times = points.map((p) => new Date(p.as_of).getTime());
-  const rows: VrpRow[] = [];
+  const rows: VRPRow[] = [];
   let j = 0;
   for (let i = 0; i < points.length; i++) {
     const point = points[i];
@@ -32,7 +32,7 @@ export function pairForwardRealized(
     if (Math.abs(times[best] - target) > toleranceDays * MS_PER_DAY) continue;
     const rv = points[best].rv30;
     if (rv == null) continue;
-    rows.push({ as_of: point.as_of, iv30: point.iv30, rv30_fwd: rv, vrp: point.iv30 - rv });
+    rows.push({ asOf: point.as_of, iv30: point.iv30, rv30Fwd: rv, vrp: point.iv30 - rv });
   }
   return rows;
 }

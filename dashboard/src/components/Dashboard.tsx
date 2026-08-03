@@ -10,24 +10,24 @@ import SkewSection from './iv/SkewSection';
 import BasisSection from './basis/BasisSection';
 import ProbCurvesSection from './prob/ProbCurvesSection';
 import ProbDistributionSection from './prob/ProbDistributionSection';
-import ExposureByStrikeSection from './gex/ExposureByStrikeSection';
-import GEXByStrikeSection from './gex/GEXByStrikeSection';
+import ExposureByStrikeSection from './exposure/ExposureByStrikeSection';
+import GEXByStrikeSection from './exposure/GEXByStrikeSection';
 import SmileCompareSection from './iv/SmileCompareSection';
 import ExpiryTableSection from './prob/ExpiryTableSection';
-import OIByExpirationSection from './oi/OIByExpirationSection';
+import OIByExpirySection from './oi/OIByExpirySection';
 import OIByStrikeSection from './oi/OIByStrikeSection';
-import OIChangeSection from './oi/OIChangeSection';
-import RVConeSection from './iv/RVConeSection';
+import OIChangeByStrikeSection from './oi/OIChangeByStrikeSection';
+import RVConeSection from './vol/RVConeSection';
 import SpotHistorySection from './spot/SpotHistorySection';
 import VolumeByStrikeSection from './volume/VolumeByStrikeSection';
-import FlowByExpirationSection from './flow/FlowByExpirationSection';
+import FlowByExpirySection from './flow/FlowByExpirySection';
 import FlowByStrikeSection from './flow/FlowByStrikeSection';
 import TapeSection from './flow/TapeSection';
-import GexLevelsHistorySection from './history/GexLevelsHistorySection';
+import GEXLevelsHistorySection from './history/GEXLevelsHistorySection';
 import OIHistorySection from './history/OIHistorySection';
 import SkewHistorySection from './history/SkewHistorySection';
 import VolHistorySection from './history/VolHistorySection';
-import VrpSection from './history/VrpSection';
+import VRPSection from './history/VRPSection';
 
 export default function Dashboard() {
   const [tab, setTab] = useState<TabId>('positioning');
@@ -46,8 +46,8 @@ export default function Dashboard() {
           <div className="panels">
             <GEXByStrikeSection />
             <OIByStrikeSection />
-            <OIByExpirationSection />
-            <OIChangeSection />
+            <OIByExpirySection />
+            <OIChangeByStrikeSection />
             <ExposureByStrikeSection />
           </div>
         )}
@@ -55,7 +55,7 @@ export default function Dashboard() {
         {tab === 'flow' && (
           <div className="panels">
             <FlowByStrikeSection />
-            <FlowByExpirationSection />
+            <FlowByExpirySection />
             <TapeSection />
             <VolumeByStrikeSection />
           </div>
@@ -77,9 +77,9 @@ export default function Dashboard() {
           <div className="panels">
             <VolHistorySection />
             <SkewHistorySection />
-            <VrpSection />
+            <VRPSection />
             <OIHistorySection />
-            <GexLevelsHistorySection />
+            <GEXLevelsHistorySection />
           </div>
         )}
 

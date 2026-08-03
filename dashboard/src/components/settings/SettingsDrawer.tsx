@@ -1,13 +1,13 @@
 import { useEffect, useState, type ReactNode } from 'react';
 
 import {
+  ARCHIVE_WINDOWS,
   CURRENCIES,
-  LOOKBACKS,
   MIN_REFRESH_SECONDS,
   type Currency,
-  type LookbackDays,
   type Settings,
 } from '../../config';
+import type { ArchiveWindow } from '../../types';
 import { useSettingsControl } from '../../settings/store';
 import { CONVENTIONS } from '../controls/ConventionSelect';
 import { WINDOWS } from '../controls/WindowSelect';
@@ -90,10 +90,7 @@ const FRONT_EXPIRY_OPTIONS = [
   { value: 'weekly' as const, label: 'WEEKLY' },
   { value: 'monthly' as const, label: 'MONTHLY' },
 ];
-const LOOKBACK_OPTIONS = LOOKBACKS.map((d) => ({
-  value: d,
-  label: d === 365 ? '1Y' : `${d}D`,
-}));
+const LOOKBACK_OPTIONS = ARCHIVE_WINDOWS.map((w) => ({ value: w, label: w.toUpperCase() }));
 
 export default function SettingsDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { settings, update, reset } = useSettingsControl();
@@ -171,15 +168,15 @@ export default function SettingsDrawer({ open, onClose }: { open: boolean; onClo
             <div className="settings__group-title">CHART DEFAULTS</div>
             <SelectField
               label="HISTORY LOOKBACK"
-              value={settings.historyLookbackDays}
+              value={settings.historyWindow}
               options={LOOKBACK_OPTIONS}
-              onCommit={(v) => update({ historyLookbackDays: v as LookbackDays })}
+              onCommit={(v) => update({ historyWindow: v as ArchiveWindow })}
             />
             <SelectField
               label="GEX SIGN"
-              value={settings.gexConvention}
+              value={settings.exposureConvention}
               options={CONVENTIONS}
-              onCommit={(v) => update({ gexConvention: v })}
+              onCommit={(v) => update({ exposureConvention: v })}
             />
             <SelectField
               label="FLOW WINDOW"

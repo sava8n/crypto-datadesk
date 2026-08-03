@@ -6,32 +6,8 @@ import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
 import { useCurrency, useSettings } from '../../settings/store';
 import { countFull, pctOne, timeLabel, usdShort } from '../../utils/format';
-import { MIN_PREMIUMS, instrumentLabel, tags } from './tape';
-
-function PremiumSelect({
-  minPremium,
-  onSelect,
-}: {
-  minPremium: number;
-  onSelect: (v: number) => void;
-}) {
-  return (
-    <label className="expiry">
-      <span className="expiry__label">PREM</span>
-      <select
-        className="expiry__select"
-        value={minPremium}
-        onChange={(e) => onSelect(Number(e.target.value))}
-      >
-        {MIN_PREMIUMS.map(({ value, label }) => (
-          <option key={value} value={value}>
-            {label}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
+import PremiumSelect from '../controls/PremiumSelect';
+import { instrumentLabel, tags } from './tape';
 
 function Row({ print }: { print: TapePrint }) {
   return (

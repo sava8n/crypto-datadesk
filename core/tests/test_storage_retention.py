@@ -6,7 +6,7 @@ from datetime import UTC, datetime, time, timedelta
 
 import pytest
 
-from data.storage.window import cutoff, seconds_until
+from data.storage.retention import cutoff, seconds_until
 
 _DAY = 86_400.0
 

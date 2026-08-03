@@ -7,21 +7,19 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from api.schemas.base import OptionType
+from api.schemas.base import CurrencyEnvelope, OptionType, SpanEnvelope, TapeStart
+from api.windows import RecentWindow
 
 
-class FlowEnvelope(BaseModel):
+class FlowEnvelope(SpanEnvelope):
     """Tape-backed aggregates over a trailing window; no live-market dependency."""
 
-    currency: str
-    window: Literal["24h", "7d"]
-    start: datetime
-    end: datetime
-    # earliest archived print; later than ``start`` means the window is truncated
-    tape_start: datetime | None = None
+    window: RecentWindow
+    # later than ``start`` means the tape truncates the requested window
+    tape_start: TapeStart
 
 
-class FlowStrikePoint(BaseModel):
+class FlowByStrikePoint(BaseModel):
     strike: float
     # net taker flow: buys - sells
     call_contracts: float
@@ -31,10 +29,10 @@ class FlowStrikePoint(BaseModel):
 
 
 class FlowByStrikeResponse(FlowEnvelope):
-    points: list[FlowStrikePoint]
+    points: list[FlowByStrikePoint]
 
 
-class FlowExpirationPoint(BaseModel):
+class FlowByExpiryPoint(BaseModel):
     expiry: datetime
     call_contracts: float
     put_contracts: float
@@ -42,8 +40,8 @@ class FlowExpirationPoint(BaseModel):
     put_premium: float
 
 
-class FlowByExpirationResponse(FlowEnvelope):
-    points: list[FlowExpirationPoint]
+class FlowByExpiryResponse(FlowEnvelope):
+    points: list[FlowByExpiryPoint]
 
 
 class TapePrint(BaseModel):
@@ -63,6 +61,7 @@ class TapePrint(BaseModel):
     liquidation: str | None = None
 
 
-class TapeResponse(BaseModel):
-    currency: str
+class TapeResponse(CurrencyEnvelope):
+    """Bounded by ``limit`` and premium, not by a span - hence no ``FlowEnvelope``."""
+
     points: list[TapePrint]

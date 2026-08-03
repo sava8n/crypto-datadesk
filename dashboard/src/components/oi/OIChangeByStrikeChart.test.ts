@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 
-import { buildOIChangeOption } from './OIChangeChart';
-import type { OIChangeResponse } from '../../types';
+import { buildOIChangeByStrikeOption } from './OIChangeByStrikeChart';
+import type { OIChangeByStrikeResponse } from '../../types';
 
-const resp = (points: OIChangeResponse['points']): OIChangeResponse => ({
+const resp = (points: OIChangeByStrikeResponse['points']): OIChangeByStrikeResponse => ({
   currency: 'BTC',
   spot: 100,
   as_of: '2026-08-01T00:00:00Z',
@@ -15,9 +15,9 @@ const resp = (points: OIChangeResponse['points']): OIChangeResponse => ({
   points,
 });
 
-describe('buildOIChangeOption', () => {
+describe('buildOIChangeByStrikeOption', () => {
   it('plots call and put deltas as two bar series over strikes, low first', () => {
-    const option = buildOIChangeOption(
+    const option = buildOIChangeByStrikeOption(
       resp([
         { strike: 110_000, call_oi_change: -3, put_oi_change: 1 },
         { strike: 90_000, call_oi_change: 5, put_oi_change: -2 },
@@ -33,7 +33,7 @@ describe('buildOIChangeOption', () => {
   });
 
   it('anchors a zero line for the signed deltas', () => {
-    const option = buildOIChangeOption(
+    const option = buildOIChangeByStrikeOption(
       resp([{ strike: 100_000, call_oi_change: 1, put_oi_change: 0 }]),
     );
     const first = (option.series as { markLine?: { data: { yAxis: number }[] } }[])[0];
