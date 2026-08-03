@@ -158,8 +158,8 @@ def test_oi_strike_change_diffs_against_the_baseline(client, market_state, monke
 
 
 def test_oi_strike_change_flags_a_stale_baseline(client, market_state, monkeypatch):
-    """A 25h-old baseline serving a 7d window drifted ~6d - far past the tolerance."""
-    baseline_as_of = market_state.as_of - timedelta(hours=25)
+    """An archive gap leaves a 10d-old baseline on a 7d window - 3d of drift, past tolerance."""
+    baseline_as_of = market_state.as_of - timedelta(days=10)
     monkeypatch.setattr(
         series, "baseline_snapshot", lambda ccy, target: (1, baseline_as_of, 100_000.0)
     )

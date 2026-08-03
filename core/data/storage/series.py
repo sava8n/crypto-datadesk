@@ -147,7 +147,7 @@ BASELINE_STALE_FRACTION = 0.25
 
 def baseline_stale(baseline_as_of: datetime, target: datetime, window: timedelta) -> bool:
     """Whether the baseline drifted more than ``BASELINE_STALE_FRACTION`` of ``window``."""
-    return (target - baseline_as_of) > BASELINE_STALE_FRACTION * window
+    return abs(target - baseline_as_of) > BASELINE_STALE_FRACTION * window
 
 
 def baseline_snapshot(currency: str, target: datetime) -> tuple[int, datetime, float] | None:

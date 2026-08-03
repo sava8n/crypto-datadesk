@@ -73,6 +73,7 @@ def test_trade_rows_keep_optional_fields_nullable():
 
 
 def test_record_trades_pages_until_caught_up(monkeypatch):
+    cursor = datetime.fromtimestamp(1, tz=UTC)  # 1000 ms; prints arrive at or after it
     pages = [
         {"trades": [_print("a", 1_000), _print("b", 2_000)], "has_more": True},
         {"trades": [_print("c", 3_000)], "has_more": False},
@@ -84,11 +85,11 @@ def test_record_trades_pages_until_caught_up(monkeypatch):
         return pages[len(starts) - 1]
 
     monkeypatch.setattr(tape.deribit, "fetch_option_trades", fetch)
-    monkeypatch.setattr(tape, "latest_ts", lambda currency: None)
+    monkeypatch.setattr(tape, "latest_ts", lambda currency: cursor)
     monkeypatch.setattr(tape, "_insert", len)
 
     assert tape.record_trades("BTC") == 3
-    assert starts[1] == 2_000  # cursor advanced to the last print's timestamp
+    assert starts == [1_000, 2_000]  # cursor advanced to the last print's timestamp
 
 
 def test_record_trades_steps_past_a_stuck_millisecond(monkeypatch):
