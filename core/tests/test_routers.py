@@ -7,7 +7,8 @@ from datetime import UTC, datetime, timedelta
 import pandas as pd
 import pytest
 
-from data.storage import read, series
+from data.clients.deribit import DeribitError
+from data.storage import flow, outcomes, read, series
 from data.storage.errors import StorageUnavailable
 
 # path -> the key holding the row array
@@ -150,8 +151,23 @@ def test_oi_strike_change_diffs_against_the_baseline(client, market_state, monke
 
     assert body["window"] == "24h"
     assert body["baseline_as_of"].startswith(baseline_as_of.strftime("%Y-%m-%dT%H:%M:%S"))
+    # 1h of drift on a 24h window is within tolerance
+    assert body["baseline_stale"] is False
     total = sum(p["call_oi_change"] + p["put_oi_change"] for p in body["points"])
     assert total == pytest.approx(chain["open_interest"].sum() / 2)
+
+
+def test_oi_strike_change_flags_a_stale_baseline(client, market_state, monkeypatch):
+    """An archive gap leaves a 10d-old baseline on a 7d window - 3d of drift, past tolerance."""
+    baseline_as_of = market_state.as_of - timedelta(days=10)
+    monkeypatch.setattr(
+        series, "baseline_snapshot", lambda ccy, target: (1, baseline_as_of, 100_000.0)
+    )
+    monkeypatch.setattr(series, "baseline_oi_by_strike", lambda sid, expiry, now: [])
+
+    body = client.get("/api/oi/strike-change", params={"window": "7d"}).json()
+
+    assert body["baseline_stale"] is True
 
 
 def test_oi_strike_change_without_a_baseline_is_empty(client, monkeypatch):
@@ -170,6 +186,86 @@ def test_exposure_serves_both_greeks(client, market_state):
         assert body["greek"] == greek
         assert len(body["points"]) == len(frame)
         assert body["points"][0]["net_exposure"] == pytest.approx(frame["net_exposure"].iloc[0])
+
+
+def test_gex_default_convention_never_touches_the_archive(client, monkeypatch):
+    def boom(ccy):
+        raise AssertionError("assumption mode must not read the archive")
+
+    monkeypatch.setattr(flow, "dealer_flow", boom)
+
+    body = client.get("/api/gex/strike").json()
+
+    assert body["convention"] == "assumption"
+    assert body["tape_start"] is None
+    assert body["oi_explained_fraction"] is None
+
+
+def _dealers_long_everything(market_state):
+    """Net taker selling of twice the OI on every contract: flow flips all signs long."""
+    chain = market_state.oi_chain
+    return [
+        {"expiry": e, "strike": s, "option_type": t, "net_taker": -2.0 * oi}
+        for e, s, t, oi in zip(
+            chain["expiry"], chain["strike"], chain["option_type"], chain["open_interest"],
+            strict=True,
+        )
+    ]
+
+
+def test_gex_flow_convention_signs_oi_by_the_tape(client, market_state, monkeypatch):
+    tape_start = market_state.as_of - timedelta(days=7)
+    rows = _dealers_long_everything(market_state)
+    monkeypatch.setattr(flow, "dealer_flow", lambda ccy: {"rows": rows, "tape_start": tape_start})
+
+    body = client.get("/api/gex/strike", params={"convention": "flow"}).json()
+    assumed = client.get("/api/gex/strike").json()
+
+    assert body["convention"] == "flow"
+    assert body["tape_start"].startswith(tape_start.strftime("%Y-%m-%dT%H:%M:%S"))
+    assert body["oi_explained_fraction"] == pytest.approx(1.0)
+    # dealers long the puts too, so put GEX flips positive relative to the assumption
+    for flowed, classic in zip(body["points"], assumed["points"], strict=True):
+        assert flowed["put_gex"] == pytest.approx(-classic["put_gex"])
+        assert flowed["call_gex"] == pytest.approx(classic["call_gex"])
+
+
+def test_gex_flow_convention_with_an_empty_tape_matches_assumption(client, monkeypatch):
+    monkeypatch.setattr(flow, "dealer_flow", lambda ccy: {"rows": [], "tape_start": None})
+
+    body = client.get("/api/gex/strike", params={"convention": "flow"}).json()
+    assumed = client.get("/api/gex/strike").json()
+
+    assert body["tape_start"] is None
+    assert body["oi_explained_fraction"] == 0.0
+    nets = [p["net_gex"] for p in body["points"]]
+    assert nets == pytest.approx([p["net_gex"] for p in assumed["points"]])
+    assert body["gex_flip"] == pytest.approx(assumed["gex_flip"])
+
+
+def test_gex_flow_convention_with_archive_down_is_503(client, monkeypatch):
+    def unavailable(ccy):
+        raise StorageUnavailable("archive unavailable")
+
+    monkeypatch.setattr(flow, "dealer_flow", unavailable)
+
+    assert client.get("/api/gex/strike", params={"convention": "flow"}).status_code == 503
+
+
+def test_exposure_flow_convention_flips_with_the_tape(client, market_state, monkeypatch):
+    rows = _dealers_long_everything(market_state)
+    monkeypatch.setattr(
+        flow, "dealer_flow", lambda ccy: {"rows": rows, "tape_start": market_state.as_of}
+    )
+
+    body = client.get(
+        "/api/gex/exposure", params={"greek": "vanna", "convention": "flow"}
+    ).json()
+    assumed = client.get("/api/gex/exposure", params={"greek": "vanna"}).json()
+
+    assert body["convention"] == "flow"
+    for flowed, classic in zip(body["points"], assumed["points"], strict=True):
+        assert flowed["put_exposure"] == pytest.approx(-classic["put_exposure"])
 
 
 def test_max_pain_by_expiry_leads_with_the_front(client, market_state):
@@ -191,6 +287,7 @@ def test_smile_history_restores_the_archived_smile(client, market_state, monkeyp
     ).json()
 
     assert body["baseline_as_of"].startswith(baseline_as_of.strftime("%Y-%m-%dT%H:%M:%S"))
+    assert body["baseline_stale"] is False  # the baseline sits exactly on target
     quotes = market_state.otm_quotes
     assert len(body["points"]) == int((quotes["expiry"] == pd.Timestamp(expiry)).sum())
     assert all(p["mark_iv"] > 0 for p in body["points"])
@@ -228,6 +325,84 @@ def test_history_cm_bands_serves_percentiles(client, monkeypatch):
     assert body["resolution"] == "1d"
     assert body["points"][0]["atm_iv_p50"] == pytest.approx(0.32)
     assert body["points"][0]["count"] == 12
+
+
+def test_flow_by_strike_serves_pivoted_sums(client, monkeypatch):
+    rows = [
+        {
+            "strike": 60_000.0,
+            "call_contracts": 12.0,
+            "put_contracts": -5.0,
+            "call_premium": 100_000.0,
+            "put_premium": -40_000.0,
+        }
+    ]
+    monkeypatch.setattr(flow, "net_flow_by_strike", lambda ccy, start, end: rows)
+    tape_start = datetime(2026, 7, 26, tzinfo=UTC)
+    monkeypatch.setattr(flow, "tape_start", lambda ccy: tape_start)
+
+    body = client.get("/api/flow/strike").json()
+
+    assert body["window"] == "24h"
+    assert body["tape_start"].startswith("2026-07-26")
+    assert body["points"][0]["call_contracts"] == 12.0
+    assert body["points"][0]["put_premium"] == -40_000.0
+
+
+def test_flow_tape_serves_prints(client, monkeypatch):
+    print_ = {
+        "trade_id": "BTC-1",
+        "ts": datetime(2026, 8, 2, 12, tzinfo=UTC),
+        "instrument_name": "BTC-07AUG26-64000-C",
+        "expiry": datetime(2026, 8, 7, 8, tzinfo=UTC),
+        "strike": 64_000.0,
+        "option_type": "C",
+        "direction": "buy",
+        "price": 0.012,
+        "amount": 25.0,
+        "iv": 0.34,
+        "premium": 18_900.0,
+        "block_trade_id": None,
+        "liquidation": None,
+    }
+    monkeypatch.setattr(flow, "recent_prints", lambda ccy, limit, min_premium: [print_])
+
+    body = client.get("/api/flow/tape", params={"min_premium": 10_000}).json()
+
+    assert body["points"][0]["direction"] == "buy"
+    assert body["points"][0]["premium"] == 18_900.0
+
+
+def test_flow_unreachable_archive_is_503(client, monkeypatch):
+    def unavailable(ccy, start, end):
+        raise StorageUnavailable("archive unavailable")
+
+    monkeypatch.setattr(flow, "tape_start", lambda ccy: None)
+    monkeypatch.setattr(flow, "net_flow_by_expiry", unavailable)
+
+    assert client.get("/api/flow/expiration").status_code == 503
+
+
+def test_expiry_outcomes_serve_the_cache_when_upstream_is_down(client, monkeypatch):
+    row = {
+        "expiry": datetime(2026, 8, 1, 8, tzinfo=UTC),
+        "reference_as_of": datetime(2026, 7, 31, 8, tzinfo=UTC),
+        "spot_ref": 62_000.0,
+        "em_implied": 1_500.0,
+        "settlement": 63_000.0,
+        "realized_move": 1_000.0,
+    }
+
+    def failing_refresh(ccy, now, limit):
+        raise DeribitError("delivery prices unavailable")
+
+    monkeypatch.setattr(outcomes, "refresh", failing_refresh)
+    monkeypatch.setattr(outcomes, "stored", lambda ccy, limit: [row])
+
+    body = client.get("/api/prob/expiry-outcomes").json()
+
+    assert body["currency"] == "BTC"
+    assert body["points"][0]["realized_move"] == 1_000.0
 
 
 def test_history_vol_serves_archived_rows(client, monkeypatch):

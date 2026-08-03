@@ -60,7 +60,8 @@ def get_smile_history(
     ``None`` with empty points means nothing that old is archived; an expiry that was
     not yet listed then simply yields no points.
     """
-    baseline = series.baseline_snapshot(ccy, state.as_of - series.WINDOWS[window])
+    target = state.as_of - series.WINDOWS[window]
+    baseline = series.baseline_snapshot(ccy, target)
     if baseline is None:
         return SmileHistoryResponse(
             **envelope(ccy, state), expiry=expiry, window=window, points=[]
@@ -73,6 +74,7 @@ def get_smile_history(
         expiry=expiry,
         window=window,
         baseline_as_of=baseline_as_of,
+        baseline_stale=series.baseline_stale(baseline_as_of, target, series.WINDOWS[window]),
         points=points(quotes[quotes["expiry"] == pd.Timestamp(expiry)], IVCurvePoint),
     )
 

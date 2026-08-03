@@ -67,6 +67,19 @@ def test_gamma_is_shared_by_both_legs_of_a_strike():
     assert row["net_gex"] == pytest.approx(0.0)
 
 
+def test_signed_oi_overrides_the_classic_sign():
+    """A chain carrying flow-signed OI is priced as-is - no put negation."""
+    greeks = _greeks([90.0], [0.001])
+    oi = _oi([90.0], ["P"], [10.0], forward=100.0)
+    oi["signed_oi"] = [10.0]  # flow says dealers are long these puts
+
+    out = build(greeks, oi)
+
+    row = out.iloc[0]
+    assert row["put_gex"] == pytest.approx(1.0)
+    assert row["net_gex"] == pytest.approx(1.0)
+
+
 def test_no_matching_gamma_at_all_is_empty():
     greeks = _greeks([500.0], [0.002])
     oi = _oi([90.0], ["P"], [10.0], forward=100.0)

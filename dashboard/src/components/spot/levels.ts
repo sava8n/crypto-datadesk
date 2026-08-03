@@ -83,6 +83,8 @@ function deduplicate(levels: PriceLevel[], tolerance: number): PriceLevel[] {
 // - front-expiry max pain
 // - front-expiry call/put OI walls
 // - clustered call-GEX resistance / put-GEX support (whole chain)
+// expects the assumption convention (call_gex >= 0, put_gex <= 0); the strip
+// always fetches it, so flow-signed data never reaches these weights
 export function buildLevels(
   gex: GEXByStrikeResponse | undefined,
   oiAll: OIByStrikeResponse | undefined,

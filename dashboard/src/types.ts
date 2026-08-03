@@ -146,9 +146,17 @@ export interface GEXByStrikePoint {
   net_gex: number;
 }
 
+// how dealer inventory is signed: the classic calls+/puts- assumption or cumulative taker flow
+export type GexConvention = 'assumption' | 'flow';
+
 export interface GEXByStrikeResponse extends MarketEnvelope {
   // zero-gamma level: cumulative net-GEX crossing nearest spot
   gex_flip: number | null;
+  convention: GexConvention;
+  // earliest archived print backing the flow signing; null under assumption or empty tape
+  tape_start: string | null;
+  // share of open interest whose sign the tape explains; null under assumption
+  oi_explained_fraction: number | null;
   points: GEXByStrikePoint[];
 }
 
@@ -206,6 +214,11 @@ export interface ExposurePoint {
 export interface ExposureResponse extends MarketEnvelope {
   // dollar delta per 1 vol-pt (vanna) or per calendar day (charm)
   greek: ExposureGreek;
+  convention: GexConvention;
+  // earliest archived print backing the flow signing; null under assumption or empty tape
+  tape_start: string | null;
+  // share of open interest whose sign the tape explains; null under assumption
+  oi_explained_fraction: number | null;
   points: ExposurePoint[];
 }
 
@@ -214,6 +227,8 @@ export interface SmileHistoryResponse extends MarketEnvelope {
   window: OIChangeWindow;
   // the archived book actually served; null = nothing archived that far back
   baseline_as_of: string | null;
+  // the baseline used is much younger than the window claims (short/gappy archive)
+  baseline_stale: boolean;
   points: IVCurvePoint[];
 }
 
@@ -227,6 +242,8 @@ export interface OIChangeResponse extends MarketEnvelope {
   window: OIChangeWindow;
   // the archived book actually diffed against; null = nothing archived that far back
   baseline_as_of: string | null;
+  // the baseline used is much younger than the window claims (short/gappy archive)
+  baseline_stale: boolean;
   expiries: string[];
   // selected expiry; null = all
   expiry: string | null;
@@ -246,6 +263,81 @@ export interface RVConePoint {
 
 export interface RVConeResponse extends MarketEnvelope {
   points: RVConePoint[];
+}
+
+// tape-backed aggregates over a trailing window; no live-market dependency
+export interface FlowEnvelope {
+  currency: string;
+  window: OIChangeWindow;
+  start: string;
+  end: string;
+  // earliest archived print; later than `start` means the window is truncated
+  tape_start: string | null;
+}
+
+// net taker flow: buys - sells, in contracts and USD premium
+export interface FlowStrikePoint {
+  strike: number;
+  call_contracts: number;
+  put_contracts: number;
+  call_premium: number;
+  put_premium: number;
+}
+
+export interface FlowByStrikeResponse extends FlowEnvelope {
+  points: FlowStrikePoint[];
+}
+
+export interface FlowExpirationPoint {
+  expiry: string;
+  call_contracts: number;
+  put_contracts: number;
+  call_premium: number;
+  put_premium: number;
+}
+
+export interface FlowByExpirationResponse extends FlowEnvelope {
+  points: FlowExpirationPoint[];
+}
+
+export interface TapePrint {
+  trade_id: string;
+  ts: string;
+  instrument_name: string;
+  expiry: string;
+  strike: number;
+  option_type: OptionType;
+  // taker side
+  direction: 'buy' | 'sell';
+  // premium in the base currency, per contract
+  price: number;
+  amount: number;
+  iv: number | null;
+  // price * index_price * amount; null when the print carried no index price
+  premium: number | null;
+  block_trade_id: string | null;
+  liquidation: string | null;
+}
+
+export interface TapeResponse {
+  currency: string;
+  points: TapePrint[];
+}
+
+export interface ExpiryOutcomePoint {
+  expiry: string;
+  // the archived snapshot the implied move was read from (nearest expiry - 1d)
+  reference_as_of: string;
+  spot_ref: number;
+  // implied +-1 sigma move in USD at the reference; null when the curve did not span it
+  em_implied: number | null;
+  settlement: number;
+  realized_move: number;
+}
+
+export interface ExpiryOutcomesResponse {
+  currency: string;
+  points: ExpiryOutcomePoint[];
 }
 
 export type Resolution = '1h' | '1d';

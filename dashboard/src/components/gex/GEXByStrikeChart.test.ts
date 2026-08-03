@@ -9,6 +9,9 @@ const resp = (gex_flip: number | null, strikes: number[]): GEXByStrikeResponse =
   spot: 100,
   as_of: '2026-07-26T00:00:00Z',
   gex_flip,
+  convention: 'assumption',
+  tape_start: null,
+  oi_explained_fraction: null,
   points: strikes.map((strike) => ({ strike, call_gex: 1, put_gex: -1, net_gex: 0 })),
 });
 

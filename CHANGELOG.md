@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0] - 2026-08-03
+
+### Added
+
+- **Trade tape** - every option print archived with its taker side, polled each minute
+- **Flow views** - net taker flow by strike and by expiration plus the raw tape, on a new FLOW tab
+- **Flow-signed dealer inventory** - GEX and vanna/charm panels can sign OI by cumulative taker flow instead of the classic calls+/puts- assumption, blending per contract where the tape only partly covers standing OI
+- **Coverage signals** - flow panels label windows truncated by tape depth; OI change and smile compare flag a stale archive baseline
+
+### Changed
+
+- **Layout** - traded volume moved to FLOW
+
 ## [0.2.0] - 2026-08-02
 
 ### Added

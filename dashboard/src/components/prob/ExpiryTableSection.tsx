@@ -1,16 +1,26 @@
 import { useMemo } from 'react';
 
-import { useMaxPain, useProbCurves } from '../../api/queries';
+import { useExpiryOutcomes, useMaxPain, useProbCurves } from '../../api/queries';
 import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
 import { useCurrency } from '../../settings/store';
 import { dteLabel, expiryLabel, priceWhole } from '../../utils/format';
-import { buildExpiryRows, type ExpiryRow } from './expiryTable';
+import {
+  buildExpiryRows,
+  buildSettledRows,
+  type ExpiryRow,
+  type SettledRow,
+} from './expiryTable';
 
 const signedPct = (v: number) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}%`;
 
-function Row({ row }: { row: ExpiryRow }) {
+interface TableData {
+  live: ExpiryRow[];
+  settled: SettledRow[];
+}
+
+function LiveRow({ row }: { row: ExpiryRow }) {
   return (
     <tr>
       <td>{expiryLabel(row.expiry)}</td>
@@ -19,6 +29,21 @@ function Row({ row }: { row: ExpiryRow }) {
       <td>{row.maxPainPct != null ? signedPct(row.maxPainPct) : '-'}</td>
       <td>{row.em != null ? `±${priceWhole(row.em)}` : '-'}</td>
       <td>{row.emPct != null ? `±${(row.emPct * 100).toFixed(1)}%` : '-'}</td>
+      <td>-</td>
+    </tr>
+  );
+}
+
+function SettledTableRow({ row }: { row: SettledRow }) {
+  return (
+    <tr className="exp-table__settled">
+      <td>{expiryLabel(row.expiry)}</td>
+      <td>SETTLED</td>
+      <td>-</td>
+      <td>-</td>
+      <td>{row.em != null ? `±${priceWhole(row.em)}` : '-'}</td>
+      <td>{row.emPct != null ? `±${(row.emPct * 100).toFixed(1)}%` : '-'}</td>
+      <td>{priceWhole(row.realized)}</td>
     </tr>
   );
 }
@@ -28,15 +53,24 @@ export default function ExpiryTableSection() {
   const maxPain = useMaxPain(currency);
   // the quantiles ride the prob-curves query the other probability panels already poll
   const prob = useProbCurves(currency);
+  // settled implied-vs-realized comes from the archive; unreachable = no settled rows
+  const outcomes = useExpiryOutcomes(currency);
 
-  const rows = useMemo(
-    () => (maxPain.data ? buildExpiryRows(maxPain.data, prob.data?.quantiles ?? []) : undefined),
-    [maxPain.data, prob.data],
-  );
-  const state = panelState(maxPain, rows, rows?.length ?? 0, MIN_POINTS.bars);
+  const value: TableData | undefined = useMemo(() => {
+    if (!maxPain.data) return undefined;
+    return {
+      live: buildExpiryRows(maxPain.data, prob.data?.quantiles ?? []),
+      settled: buildSettledRows(outcomes.data?.points ?? []),
+    };
+  }, [maxPain.data, prob.data, outcomes.data]);
+  const state = panelState(maxPain, value, value?.live.length ?? 0, MIN_POINTS.bars);
 
   return (
-    <Panel title="EXPIRIES" subtitle="MAX PAIN · IMPLIED ±1σ MOVE × EXPIRY" state={state}>
+    <Panel
+      title="EXPIRIES"
+      subtitle="MAX PAIN · IMPLIED ±1σ MOVE · REALIZED × EXPIRY"
+      state={state}
+    >
       {(data) => (
         <div className="exp-table">
           <table>
@@ -48,11 +82,15 @@ export default function ExpiryTableSection() {
                 <th>Δ SPOT</th>
                 <th>EM ±1σ</th>
                 <th>EM %</th>
+                <th>REALIZED</th>
               </tr>
             </thead>
             <tbody>
-              {data.map((row) => (
-                <Row key={row.expiry} row={row} />
+              {data.live.map((row) => (
+                <LiveRow key={row.expiry} row={row} />
+              ))}
+              {data.settled.map((row) => (
+                <SettledTableRow key={row.expiry} row={row} />
               ))}
             </tbody>
           </table>

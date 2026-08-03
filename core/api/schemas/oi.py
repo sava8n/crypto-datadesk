@@ -58,6 +58,8 @@ class OIChangePoint(BaseModel):
 class OIChangeResponse(MarketEnvelope):
     window: Literal["24h", "7d"]
     baseline_as_of: datetime | None = None  # None = nothing archived that far back
+    # the baseline used is much younger than the window claims (short/gappy archive)
+    baseline_stale: bool = False
     expiries: list[datetime]
     expiry: datetime | None = None  # echo of the selected expiry; None = all
     points: list[OIChangePoint]

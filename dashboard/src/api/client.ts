@@ -1,7 +1,11 @@
 import type {
   CMBandsResponse,
+  ExpiryOutcomesResponse,
   ExposureGreek,
   ExposureResponse,
+  FlowByExpirationResponse,
+  FlowByStrikeResponse,
+  GexConvention,
   GEXByStrikeResponse,
   GreeksChainResponse,
   IVCurvesResponse,
@@ -19,6 +23,7 @@ import type {
   SmileHistoryResponse,
   SpotHistoryResponse,
   StatsResponse,
+  TapeResponse,
   TermStructureResponse,
   VolHistoryResponse,
   VolumeByStrikeResponse,
@@ -65,8 +70,10 @@ export const fetchProbCurves = (currency: string): Promise<ProbCurvesResponse> =
 export const fetchGreeksChain = (currency: string): Promise<GreeksChainResponse> =>
   fetchJson(url('greeksChain', { currency }));
 
-export const fetchGEXByStrike = (currency: string): Promise<GEXByStrikeResponse> =>
-  fetchJson(url('gexByStrike', { currency }));
+export const fetchGEXByStrike = (
+  currency: string,
+  convention: GexConvention = 'assumption',
+): Promise<GEXByStrikeResponse> => fetchJson(url('gexByStrike', { currency, convention }));
 
 export const fetchOIByExpiration = (currency: string): Promise<OIByExpirationResponse> =>
   fetchJson(url('oiByExpiration', { currency }));
@@ -93,10 +100,27 @@ export const fetchRVCone = (currency: string): Promise<RVConeResponse> =>
 export const fetchMaxPain = (currency: string): Promise<MaxPainResponse> =>
   fetchJson(url('maxPain', { currency }));
 
+export const fetchFlowByStrike = (
+  currency: string,
+  window: OIChangeWindow,
+): Promise<FlowByStrikeResponse> => fetchJson(url('flowStrike', { currency, window }));
+
+export const fetchFlowByExpiration = (
+  currency: string,
+  window: OIChangeWindow,
+): Promise<FlowByExpirationResponse> => fetchJson(url('flowExpiration', { currency, window }));
+
+export const fetchTape = (currency: string, minPremium: number): Promise<TapeResponse> =>
+  fetchJson(url('flowTape', { currency, min_premium: String(minPremium) }));
+
+export const fetchExpiryOutcomes = (currency: string): Promise<ExpiryOutcomesResponse> =>
+  fetchJson(url('expiryOutcomes', { currency }));
+
 export const fetchExposure = (
   currency: string,
   greek: ExposureGreek,
-): Promise<ExposureResponse> => fetchJson(url('exposure', { currency, greek }));
+  convention: GexConvention = 'assumption',
+): Promise<ExposureResponse> => fetchJson(url('exposure', { currency, greek, convention }));
 
 export const fetchSmileHistory = (
   currency: string,

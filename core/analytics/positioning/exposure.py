@@ -1,13 +1,13 @@
 """Dollar vanna/charm exposure by strike.
 
-    dollar exposure = OI · greek · F      calls +, puts -
+    dollar exposure = signed_OI · greek · F
 
 Vanna is delta change per vol point and charm delta change per calendar day (see
 ``analytics.greeks``), so the dollar figures read "delta dollars gained per 1 vol-pt
 rise" and "per day passing". Under zero rates both greeks are identical for the call
 and put at a strike, so - exactly as with gamma - the one OTM quote that survived the
-quality filters prices both legs' open interest. Signs follow the same
-dealer-positioning assumption as GEX: long call greeks, short put greeks.
+quality filters prices both legs' open interest. A chain without a ``signed_oi`` column
+is signed by the classic dealer assumption: long call greeks (+OI), short put greeks (-OI).
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ EXPOSURE_COLUMNS = ["strike", "call_exposure", "put_exposure", "net_exposure"]
 
 
 def build(greeks_chain: pd.DataFrame, oi_chain: pd.DataFrame, greek: str) -> pd.DataFrame:
-    """Per-strike dollar exposure to ``greek`` (calls +, puts -), sorted by strike."""
+    """Per-strike dollar exposure to ``greek``, sorted by strike; sign carried by ``signed_oi``."""
     logger.info(
         "building %s exposure from %d greek rows and %d OI contracts",
         greek,
@@ -45,10 +45,12 @@ def build(greeks_chain: pd.DataFrame, oi_chain: pd.DataFrame, greek: str) -> pd.
         logger.warning("no OI contract matched a %s-bearing OTM quote", greek)
         return empty_frame(EXPOSURE_COLUMNS)
 
-    dollar = merged["open_interest"] * merged[greek] * merged["forward"]
     is_call = merged["option_type"] == "C"
+    if "signed_oi" not in merged.columns:
+        merged["signed_oi"] = np.where(is_call, merged["open_interest"], -merged["open_interest"])
+    dollar = merged["signed_oi"] * merged[greek] * merged["forward"]
     merged["call_exposure"] = np.where(is_call, dollar, 0.0)
-    merged["put_exposure"] = np.where(is_call, 0.0, -dollar)
+    merged["put_exposure"] = np.where(is_call, 0.0, dollar)
 
     per_strike = merged.groupby("strike", as_index=False)[["call_exposure", "put_exposure"]].sum()
     per_strike["net_exposure"] = per_strike["call_exposure"] + per_strike["put_exposure"]

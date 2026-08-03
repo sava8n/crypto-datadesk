@@ -64,6 +64,16 @@ def test_open_interest_without_a_quote_is_dropped():
     assert list(out["strike"]) == [110.0]
 
 
+def test_signed_oi_overrides_the_classic_sign():
+    greeks = _greeks([90.0], [0.001], "vanna")
+    oi = _oi([90.0], ["P"], [10.0], forward=100.0)
+    oi["signed_oi"] = [10.0]  # flow says dealers are long these puts
+
+    out = build(greeks, oi, "vanna")
+
+    assert out.iloc[0]["put_exposure"] == pytest.approx(1.0)
+
+
 def test_build_empty_inputs_typed(assert_declared_dtypes):
     empty_greeks = pd.DataFrame({"expiry": [], "strike": [], "vanna": []})
     empty_oi = pd.DataFrame(

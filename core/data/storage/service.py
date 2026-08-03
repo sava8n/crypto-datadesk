@@ -10,7 +10,7 @@ import asyncio
 import logging
 from contextlib import suppress
 
-from data.storage import db, recorder, retention
+from data.storage import db, recorder, retention, tape
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +30,7 @@ async def start() -> list[asyncio.Task]:
 
     return [
         asyncio.create_task(recorder.run(), name="snapshot-recorder"),
+        asyncio.create_task(tape.run(), name="tape-recorder"),
         asyncio.create_task(retention.run(), name="retention-sweep"),
     ]
 

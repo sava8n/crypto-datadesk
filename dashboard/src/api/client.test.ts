@@ -47,7 +47,6 @@ const ROUTES: [keyof typeof client, string][] = [
   ['fetchSkew', 'iv/skew'],
   ['fetchProbCurves', 'prob/curves'],
   ['fetchGreeksChain', 'greeks/chain'],
-  ['fetchGEXByStrike', 'gex/strike'],
   ['fetchOIByExpiration', 'oi/expiration'],
   ['fetchOIByStrike', 'oi/strike'],
   ['fetchVolumeByStrike', 'volume/strike'],
@@ -66,6 +65,19 @@ describe('URL building', () => {
   it('encodes the currency query param', async () => {
     await client.fetchIVSurface('ET H');
     expect(fetchMock).toHaveBeenCalledWith('/api/iv/surface?currency=ET+H');
+  });
+
+  it('carries the sign convention on the GEX routes', async () => {
+    await client.fetchGEXByStrike('BTC');
+    expect(fetchMock).toHaveBeenCalledWith('/api/gex/strike?currency=BTC&convention=assumption');
+
+    await client.fetchGEXByStrike('BTC', 'flow');
+    expect(fetchMock).toHaveBeenCalledWith('/api/gex/strike?currency=BTC&convention=flow');
+
+    await client.fetchExposure('BTC', 'vanna', 'flow');
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/gex/exposure?currency=BTC&greek=vanna&convention=flow',
+    );
   });
 
   it('appends the expiry only when provided', async () => {

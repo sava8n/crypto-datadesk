@@ -140,6 +140,16 @@ def cm_bands(currency: str, start: datetime) -> list[dict]:
     return _rows(stmt)
 
 
+# a baseline drifting further than this fraction of the window off its target is
+# flagged as stale rather than dropped - an older-but-usable baseline still informs
+BASELINE_STALE_FRACTION = 0.25
+
+
+def baseline_stale(baseline_as_of: datetime, target: datetime, window: timedelta) -> bool:
+    """Whether the baseline drifted more than ``BASELINE_STALE_FRACTION`` of ``window``."""
+    return abs(target - baseline_as_of) > BASELINE_STALE_FRACTION * window
+
+
 def baseline_snapshot(currency: str, target: datetime) -> tuple[int, datetime, float] | None:
     """The latest archived ``(id, as_of, spot)`` at or before ``target``."""
     c = schema.snapshot.c
