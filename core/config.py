@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     report_source: str = "openrouter"
     # Sundays, weekday fixed in data/report/scheduler.py
     report_generate_at_utc: time = time(8, 0)
+    # failed generation retries with doubling backoff: first delay / ceiling
+    report_retry_seconds: float = 1800.0
+    report_retry_max_seconds: float = 43200.0
 
     @property
     def snapshot_interval_seconds(self) -> int:

@@ -56,12 +56,20 @@ def ensure_current() -> None:
 
 
 async def run() -> None:
-    """Catch up at boot, then generate every ``REPORT_WEEKDAY`` at the configured time."""
+    """Catch up at boot, then generate every ``REPORT_WEEKDAY`` at the configured time.
+
+    A failed attempt retries with doubling backoff instead of waiting for the next slot.
+    """
+    delay = settings.report_retry_seconds
     while True:
         try:
             await asyncio.to_thread(ensure_current)
         except Exception:
-            logger.exception("weekly report generation failed")
+            logger.exception("weekly report generation failed, retrying in %.0fs", delay)
+            await asyncio.sleep(delay)
+            delay = min(delay * 2, settings.report_retry_max_seconds)
+            continue
+        delay = settings.report_retry_seconds
         await asyncio.sleep(
             seconds_until_weekday(datetime.now(UTC), REPORT_WEEKDAY, settings.report_generate_at_utc)
         )

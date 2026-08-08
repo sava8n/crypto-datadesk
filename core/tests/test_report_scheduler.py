@@ -1,7 +1,8 @@
-"""Weekly schedule arithmetic and the restart guard."""
+"""Weekly schedule arithmetic, the restart guard, and failure retries."""
 
 from __future__ import annotations
 
+import asyncio
 from datetime import UTC, datetime, time, timedelta
 
 import pytest
@@ -75,6 +76,62 @@ def test_ensure_current_generates_when_stale_or_empty(monkeypatch, latest):
 
     scheduler.ensure_current()
     assert ran == [now]
+
+
+class _Stop(Exception):
+    pass
+
+
+def test_run_retries_failures_with_capped_backoff(monkeypatch):
+    monkeypatch.setattr(scheduler.settings, "report_retry_seconds", 100.0)
+    monkeypatch.setattr(scheduler.settings, "report_retry_max_seconds", 250.0)
+    attempts = []
+
+    def failing():
+        attempts.append(1)
+        raise RuntimeError("boom")
+
+    sleeps = []
+
+    async def fake_sleep(seconds):
+        sleeps.append(seconds)
+        if len(sleeps) == 4:
+            raise _Stop
+
+    monkeypatch.setattr(scheduler, "ensure_current", failing)
+    monkeypatch.setattr(scheduler.asyncio, "sleep", fake_sleep)
+
+    with pytest.raises(_Stop):
+        asyncio.run(scheduler.run())
+    assert sleeps == [100.0, 200.0, 250.0, 250.0]
+    assert len(attempts) == 4
+
+
+def test_run_success_resets_backoff_and_resumes_weekly_cadence(monkeypatch):
+    monkeypatch.setattr(scheduler, "datetime", _frozen(SUNDAY_SLOT + timedelta(days=2)))
+    monkeypatch.setattr(scheduler.settings, "report_retry_seconds", 100.0)
+    calls = []
+
+    def flaky():
+        calls.append(1)
+        if len(calls) == 1:
+            raise RuntimeError("boom")
+
+    sleeps = []
+
+    async def fake_sleep(seconds):
+        sleeps.append(seconds)
+        if len(sleeps) == 2:
+            raise _Stop
+
+    monkeypatch.setattr(scheduler, "ensure_current", flaky)
+    monkeypatch.setattr(scheduler.asyncio, "sleep", fake_sleep)
+
+    with pytest.raises(_Stop):
+        asyncio.run(scheduler.run())
+    # retry delay first, then the weekly sleep (frozen Tuesday 08:00 -> next Sunday)
+    assert sleeps == [100.0, timedelta(days=5).total_seconds()]
+    assert len(calls) == 2
 
 
 def _frozen(now: datetime):
