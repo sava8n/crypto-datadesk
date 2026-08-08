@@ -29,6 +29,17 @@ class Settings(BaseSettings):
     tape_poll_seconds: int = 60
     # how far back the first tape poll reaches when the archive is empty
     tape_bootstrap_days: int = 7
+    openrouter_api_key: str = ""
+    openrouter_api_url: str = "https://openrouter.ai/api/v1"
+    # deep research holds the connection for many minutes
+    openrouter_read_timeout: float = 3600.0
+    report_model: str = "perplexity/sonar-deep-research"
+    # the deep-research report needs reasoning; "" omits the param entirely
+    report_reasoning_effort: str = "high"
+    # "openrouter" | "fixture" - fixture replays the bundled sample, no silent fallback
+    report_source: str = "openrouter"
+    # Sundays, weekday fixed in data/report/scheduler.py
+    report_generate_at_utc: time = time(8, 0)
 
     @property
     def snapshot_interval_seconds(self) -> int:

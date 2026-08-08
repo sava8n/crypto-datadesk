@@ -25,6 +25,8 @@ services:
       - "8000:8000"
     environment:
       - DATADESK_SERVICE_DB_DSN=postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - DATADESK_SERVICE_OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - DATADESK_SERVICE_REPORT_SOURCE=${REPORT_SOURCE:-openrouter}
     depends_on:
       db:
         condition: service_healthy

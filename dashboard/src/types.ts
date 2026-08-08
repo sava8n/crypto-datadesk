@@ -331,3 +331,53 @@ export interface CMBandPoint {
 export interface CMBandsResponse extends HistoryEnvelope {
   points: CMBandPoint[];
 }
+
+export type ReportImportance = 'high' | 'med' | 'low';
+export type ReferenceRole = 'citation' | 'further_reading';
+
+export interface ReportReference {
+  id: number;
+  title: string;
+  url: string;
+  note: string;
+  role: ReferenceRole;
+}
+
+export interface ReportCalendarEvent {
+  date: string;
+  time_utc: string | null;
+  title: string;
+  note: string;
+  importance: ReportImportance;
+}
+
+export interface ReportPayload {
+  headline: string;
+  standfirst: string;
+  body_md: string;
+  references: ReportReference[];
+  calendar: ReportCalendarEvent[];
+}
+
+export interface ReportListItem {
+  id: number;
+  generated_at: string;
+  model: string;
+  headline: string;
+}
+
+export interface ReportListResponse {
+  reports: ReportListItem[];
+}
+
+export interface ReportDetail {
+  id: number;
+  generated_at: string;
+  model: string;
+  source: string;
+  prompt_tokens: number | null;
+  completion_tokens: number | null;
+  cost_usd: number | null;
+  next_report_at: string;
+  payload: ReportPayload;
+}

@@ -21,6 +21,7 @@ export const ENDPOINTS = {
   cmBands: 'history/cm-bands',
   stats: 'stats',
   spotHistory: 'spot/history',
+  reports: 'report/weekly',
 } as const;
 
 export type EndpointName = keyof typeof ENDPOINTS;
