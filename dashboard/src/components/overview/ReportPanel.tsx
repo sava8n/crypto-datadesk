@@ -13,7 +13,10 @@ export default function ReportPanel({ state }: { state: PanelState<ReportDetail>
           <div className="report__meta">{metaLine(detail)}</div>
           <p className="report__standfirst">{detail.payload.standfirst}</p>
           <div className="report-body">
-            <ReportBody body_md={detail.payload.body_md} />
+            <ReportBody
+              body_md={detail.payload.body_md}
+              refIds={new Set(detail.payload.references.map((r) => r.id))}
+            />
           </div>
         </div>
       )}
