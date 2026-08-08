@@ -106,11 +106,24 @@ def _delete_aged_outcomes(horizon: datetime) -> int:
         ).rowcount
 
 
+def _delete_aged_reports(horizon: datetime) -> int:
+    """One small delete - a year holds ~52 report rows."""
+    with db.connection() as conn:
+        conn.execute(
+            text("select set_config('lock_timeout', :timeout, true)"),
+            {"timeout": f"{LOCK_TIMEOUT_SECONDS}s"},
+        )
+        return conn.execute(
+            schema.market_report.delete().where(schema.market_report.c.generated_at < horizon)
+        ).rowcount
+
+
 class Pruned(NamedTuple):
     contracts: int
     snapshots: int
     trades: int
     outcomes: int
+    reports: int
 
 
 def prune() -> Pruned:
@@ -128,10 +141,11 @@ def prune() -> Pruned:
         snapshots=total_snapshots,
         trades=_delete_aged_trades(horizon),
         outcomes=_delete_aged_outcomes(horizon),
+        reports=_delete_aged_reports(horizon),
     )
     logger.info(
-        "retention sweep removed %d contracts, %d snapshots, %d prints and %d outcomes "
-        "older than %s",
+        "retention sweep removed %d contracts, %d snapshots, %d prints, %d outcomes "
+        "and %d reports older than %s",
         *pruned,
         horizon.isoformat(),
     )

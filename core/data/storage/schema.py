@@ -178,5 +178,6 @@ market_report = Table(
     CheckConstraint("source in ('openrouter', 'fixture')", name="ck_market_report_source"),
 )
 
-# serves both the newest-first listing and the scheduler's max(generated_at) guard
+# serves the newest-first listing, the scheduler's max(generated_at) guard
+# and the retention sweep
 Index("ix_market_report_generated_at", market_report.c.generated_at)
