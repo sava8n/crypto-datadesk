@@ -2,7 +2,7 @@ import type { ReportListItem } from '../../types';
 import { dateLabel, timeLabel } from '../../utils/format';
 import Panel from '../panel/Panel';
 import type { PanelState } from '../panel/panelState';
-import { timelineLabel } from './overview';
+import { timelineLabel } from './timeline';
 
 interface Props {
   state: PanelState<ReportListItem[]>;
@@ -26,6 +26,7 @@ export default function TimelinePanel({ state, selectedId, onSelect }: Props) {
                 {dateLabel(report.generated_at)} {timeLabel(report.generated_at)}
               </span>
               <span className="timeline__label">{timelineLabel(report.generated_at)}</span>
+              <span className="timeline__headline">{report.headline}</span>
             </button>
           ))}
         </div>

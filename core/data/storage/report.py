@@ -30,7 +30,7 @@ def list_reports(limit: int) -> list[dict]:
     """Report listing metadata, newest first - headlines only, never full payloads."""
     c = schema.market_report.c
     stmt = (
-        select(c.id, c.generated_at, c.model, c.payload["headline"].astext.label("headline"))
+        select(c.id, c.generated_at, c.payload["headline"].astext.label("headline"))
         .order_by(c.generated_at.desc(), c.id.desc())
         .limit(limit)
     )

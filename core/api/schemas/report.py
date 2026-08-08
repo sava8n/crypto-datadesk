@@ -12,7 +12,6 @@ from data.report.schema import ReportPayload
 class ReportListItem(BaseModel):
     id: int
     generated_at: datetime
-    model: str
     headline: str
 
 
@@ -23,11 +22,6 @@ class ReportListResponse(BaseModel):
 class ReportDetail(BaseModel):
     id: int
     generated_at: datetime
-    model: str
-    source: str
-    prompt_tokens: int | None = None
-    completion_tokens: int | None = None
-    cost_usd: float | None = None
     # computed from the schedule, feeds the dashboard's "next weekly note" row
     next_report_at: datetime
     payload: ReportPayload

@@ -10,7 +10,7 @@ export type TabId =
 
 const GROUPS: { label: string; tabs: { id: TabId; label: string }[] }[] = [
   {
-    label: 'DESK',
+    label: 'MARKET',
     tabs: [{ id: 'overview', label: 'OVERVIEW' }],
   },
   {

@@ -362,7 +362,6 @@ export interface ReportPayload {
 export interface ReportListItem {
   id: number;
   generated_at: string;
-  model: string;
   headline: string;
 }
 
@@ -373,11 +372,6 @@ export interface ReportListResponse {
 export interface ReportDetail {
   id: number;
   generated_at: string;
-  model: string;
-  source: string;
-  prompt_tokens: number | null;
-  completion_tokens: number | null;
-  cost_usd: number | null;
   next_report_at: string;
   payload: ReportPayload;
 }

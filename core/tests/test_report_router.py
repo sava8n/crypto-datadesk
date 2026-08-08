@@ -37,7 +37,6 @@ def _listing(row):
     return {
         "id": row["id"],
         "generated_at": row["generated_at"],
-        "model": row["model"],
         "headline": row["payload"]["headline"],
     }
 
@@ -63,8 +62,7 @@ def test_detail_carries_the_full_payload_and_schedule(client, stored_report):
 
     assert body["payload"] == stored_report["payload"]
     assert body["next_report_at"].startswith("2026-08-16T08:00:00")
-    assert body["source"] == "fixture"
-    assert body["cost_usd"] is None
+    assert set(body) == {"id", "generated_at", "next_report_at", "payload"}
 
 
 def test_an_unknown_report_is_404(client, stored_report):
