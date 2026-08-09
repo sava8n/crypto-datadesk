@@ -2,105 +2,130 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
+
+import httpx
 import pytest
-import requests
 
 from config import settings
 from data.clients import openrouter
 from data.clients.openrouter import OpenRouterError
 
 
-class _Response:
-    def __init__(self, payload, status_error=None):
-        self._payload = payload
-        self._status_error = status_error
+class _Events:
+    """Stand-in for the SDK's EventStream: a context manager over canned events."""
 
-    def raise_for_status(self):
-        if self._status_error:
-            raise self._status_error
+    def __init__(self, events):
+        self._events = events
 
-    def json(self):
-        if isinstance(self._payload, Exception):
-            raise self._payload
-        return self._payload
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_exc):
+        return False
+
+    def __iter__(self):
+        return iter(self._events)
+
+
+class _Client:
+    """Stand-in for the SDK client capturing constructor and send kwargs."""
+
+    init_kwargs: dict
+    seen: dict
+    outcome: object
+
+    def __init__(self, **kwargs):
+        type(self).init_kwargs = kwargs
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_exc):
+        return False
+
+    @property
+    def responses(self):
+        return self
+
+    def send(self, **kwargs):
+        type(self).seen = kwargs
+        if isinstance(type(self).outcome, Exception):
+            raise type(self).outcome
+        return _Events(type(self).outcome)
 
 
 @pytest.fixture
 def respond(monkeypatch):
-    """Make the shared session return one canned response and record the request."""
+    """Point the client at a stub SDK yielding the given events; returns the seen kwargs."""
     monkeypatch.setattr(settings, "openrouter_api_key", "test-key")
-    seen = {}
+    monkeypatch.setattr(openrouter, "OpenRouter", _Client)
 
-    def stub(url, json=None, headers=None, timeout=None):
-        seen["url"] = url
-        seen["json"] = json
-        seen["headers"] = headers
-        seen["timeout"] = timeout
-        return stub.response
+    def set_outcome(events_or_error):
+        _Client.outcome = events_or_error
+        _Client.seen = {}
+        return _Client
 
-    monkeypatch.setattr(openrouter._SESSION, "post", stub)
-
-    def set_response(payload, status_error=None):
-        stub.response = _Response(payload, status_error)
-        return seen
-
-    return set_response
+    return set_outcome
 
 
-def _completion_payload(content="{}"):
-    return {
-        "choices": [{"message": {"content": content}}],
-        "usage": {"prompt_tokens": 100, "completion_tokens": 8200, "cost": 0.041},
-    }
+def _completed(content="{}", usage=SimpleNamespace(input_tokens=100, output_tokens=8200, cost=0.041)):
+    return SimpleNamespace(
+        type="response.completed",
+        response=SimpleNamespace(output_text=content, output=None, usage=usage),
+    )
+
+
+def _in_progress():
+    return SimpleNamespace(type="response.in_progress")
 
 
 def test_complete_unwraps_content_and_usage(respond):
-    seen = respond(_completion_payload('{"headline": "x"}'))
+    stub = respond([_in_progress(), _completed('{"headline": "x"}')])
     completion = openrouter.complete("some/model", "the prompt")
     assert completion.content == '{"headline": "x"}'
     assert completion.prompt_tokens == 100
     assert completion.completion_tokens == 8200
     assert completion.cost_usd == pytest.approx(0.041)
-    assert seen["json"]["model"] == "some/model"
-    assert seen["json"]["messages"] == [{"role": "user", "content": "the prompt"}]
-    assert seen["json"]["usage"] == {"include": True}
-    assert seen["headers"]["Authorization"] == "Bearer test-key"
-    # a connect timeout is a reachability check, the read timeout must cover deep research
-    assert isinstance(seen["timeout"], tuple)
+    assert stub.seen["model"] == "some/model"
+    assert stub.seen["input"] == "the prompt"
+    assert stub.seen["stream"] is True
+    # the read ceiling must cover deep research
+    assert stub.seen["timeout_ms"] == int(settings.openrouter_read_timeout * 1000)
+    assert stub.init_kwargs["api_key"] == "test-key"
+    assert stub.init_kwargs["server_url"] == settings.openrouter_api_url
 
 
 def test_request_carries_reasoning_effort(respond):
-    seen = respond(_completion_payload())
+    stub = respond([_completed()])
     openrouter.complete("some/model", "p")
-    assert seen["json"]["reasoning"] == {"effort": settings.report_reasoning_effort}
+    assert stub.seen["reasoning"] == {"effort": settings.report_reasoning_effort}
 
 
 def test_empty_reasoning_effort_omits_the_param(respond, monkeypatch):
     monkeypatch.setattr(settings, "report_reasoning_effort", "")
-    seen = respond(_completion_payload())
+    stub = respond([_completed()])
     openrouter.complete("some/model", "p")
-    assert "reasoning" not in seen["json"]
+    assert "reasoning" not in stub.seen
 
 
-def test_json_mode_requests_json_and_healing(respond):
-    seen = respond(_completion_payload())
+def test_json_mode_requests_json_output(respond):
+    stub = respond([_completed()])
     openrouter.complete("some/model", "p")
-    assert seen["json"]["response_format"] == {"type": "json_object"}
-    assert seen["json"]["plugins"] == [{"id": "response-healing"}]
+    assert stub.seen["text"] == {"format": {"type": "json_object"}}
 
 
-def test_disabled_json_mode_omits_both_params(respond, monkeypatch):
+def test_disabled_json_mode_omits_the_param(respond, monkeypatch):
     monkeypatch.setattr(settings, "report_json_mode", False)
-    seen = respond(_completion_payload())
+    stub = respond([_completed()])
     openrouter.complete("some/model", "p")
-    assert "response_format" not in seen["json"]
-    assert "plugins" not in seen["json"]
+    assert "text" not in stub.seen
 
 
 def test_web_tools_are_requested(respond):
-    seen = respond(_completion_payload())
+    stub = respond([_completed()])
     openrouter.complete("some/model", "p")
-    assert seen["json"]["tools"] == [
+    assert stub.seen["tools"] == [
         {"type": "openrouter:web_search"},
         {"type": "openrouter:web_fetch"},
     ]
@@ -108,48 +133,73 @@ def test_web_tools_are_requested(respond):
 
 def test_disabled_web_tools_omit_the_param(respond, monkeypatch):
     monkeypatch.setattr(settings, "report_web_tools", False)
-    seen = respond(_completion_payload())
+    stub = respond([_completed()])
     openrouter.complete("some/model", "p")
-    assert "tools" not in seen["json"]
+    assert "tools" not in stub.seen
 
 
 def test_missing_usage_yields_none_fields(respond):
-    respond({"choices": [{"message": {"content": "hi"}}]})
+    respond([_completed("hi", usage=None)])
     completion = openrouter.complete("some/model", "p")
     assert completion.prompt_tokens is None
     assert completion.completion_tokens is None
     assert completion.cost_usd is None
 
 
-def test_missing_choices_becomes_openrouter_error(respond):
-    respond({"error": {"message": "no output"}})
+def test_output_items_back_up_a_missing_output_text(respond):
+    part = SimpleNamespace(text='{"a": 1}')
+    item = SimpleNamespace(content=[part])
+    respond(
+        [
+            SimpleNamespace(
+                type="response.completed",
+                response=SimpleNamespace(output_text=None, output=[item], usage=None),
+            )
+        ]
+    )
+    assert openrouter.complete("some/model", "p").content == '{"a": 1}'
+
+
+def test_completed_without_any_text_becomes_openrouter_error(respond):
+    respond([_completed(content=None)])
     with pytest.raises(OpenRouterError):
         openrouter.complete("some/model", "p")
 
 
-def test_bad_status_becomes_openrouter_error(respond):
-    respond({}, status_error=requests.HTTPError("402 Payment Required"))
+def test_failed_event_becomes_openrouter_error(respond):
+    respond(
+        [
+            SimpleNamespace(
+                type="response.failed",
+                response=SimpleNamespace(error=SimpleNamespace(message="provider crashed")),
+            )
+        ]
+    )
+    with pytest.raises(OpenRouterError, match="provider crashed"):
+        openrouter.complete("some/model", "p")
+
+
+def test_error_event_becomes_openrouter_error(respond):
+    respond([SimpleNamespace(type="error", message="overloaded")])
+    with pytest.raises(OpenRouterError, match="overloaded"):
+        openrouter.complete("some/model", "p")
+
+
+def test_stream_without_completion_becomes_openrouter_error(respond):
+    respond([_in_progress()])
+    with pytest.raises(OpenRouterError, match="without a completed response"):
+        openrouter.complete("some/model", "p")
+
+
+def test_transport_failure_becomes_openrouter_error(respond):
+    respond(httpx.ConnectError("no route to host"))
     with pytest.raises(OpenRouterError):
         openrouter.complete("some/model", "p")
 
 
-def test_transport_failure_becomes_openrouter_error(monkeypatch):
-    monkeypatch.setattr(settings, "openrouter_api_key", "test-key")
-
-    def boom(*_args, **_kwargs):
-        raise requests.ConnectionError("no route to host")
-
-    monkeypatch.setattr(openrouter._SESSION, "post", boom)
-    with pytest.raises(OpenRouterError):
-        openrouter.complete("some/model", "p")
-
-
-def test_missing_api_key_raises_before_any_request(monkeypatch):
+def test_missing_api_key_raises_before_any_request(respond, monkeypatch):
     monkeypatch.setattr(settings, "openrouter_api_key", "")
-
-    def unexpected(*_args, **_kwargs):
-        raise AssertionError("no request should be made without a key")
-
-    monkeypatch.setattr(openrouter._SESSION, "post", unexpected)
+    stub = respond([_completed()])
     with pytest.raises(OpenRouterError):
         openrouter.complete("some/model", "p")
+    assert stub.seen == {}

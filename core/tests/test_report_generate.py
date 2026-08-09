@@ -69,6 +69,14 @@ def test_extract_json_ignores_surrounding_prose():
     assert generate.extract_json('Here is the report:\n{"a": {"b": 2}}\nDone.') == {"a": {"b": 2}}
 
 
+def test_extract_json_ignores_trailing_data_with_braces():
+    assert generate.extract_json('{"a": 1}\nsee section {3} above.}') == {"a": 1}
+
+
+def test_extract_json_skips_non_json_braces_before_the_object():
+    assert generate.extract_json('{not json} then {"a": 1}') == {"a": 1}
+
+
 def test_extract_json_without_an_object_raises():
     with pytest.raises(ValueError):
         generate.extract_json("no json here")

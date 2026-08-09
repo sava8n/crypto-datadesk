@@ -51,6 +51,7 @@ def ensure_current() -> None:
     now = datetime.now(UTC)
     latest = storage.latest_generated_at()
     if latest is not None and latest >= last_scheduled(now):
+        logger.debug("report from %s is current, skipping generation", latest.isoformat())
         return
     generate.generate(now)
 
@@ -65,11 +66,13 @@ async def run() -> None:
         try:
             await asyncio.to_thread(ensure_current)
         except Exception:
-            logger.exception("weekly report generation failed, retrying in %.0fs", delay)
+            logger.exception("weekly report generation failed, retrying in %.0f s", delay)
             await asyncio.sleep(delay)
             delay = min(delay * 2, settings.report_retry_max_seconds)
             continue
         delay = settings.report_retry_seconds
-        await asyncio.sleep(
-            seconds_until_weekday(datetime.now(UTC), REPORT_WEEKDAY, settings.report_generate_at_utc)
+        pause = seconds_until_weekday(
+            datetime.now(UTC), REPORT_WEEKDAY, settings.report_generate_at_utc
         )
+        logger.info("next report generation in %.0f s", pause)
+        await asyncio.sleep(pause)

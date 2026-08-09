@@ -23,3 +23,6 @@ def setup_logging(level: str = "INFO") -> None:
     root.handlers.clear()
     root.addHandler(handler)
     root.setLevel(level.upper())
+
+    # the openrouter SDK's transport logs every request at INFO; keep it to warnings
+    logging.getLogger("httpx").setLevel(logging.WARNING)

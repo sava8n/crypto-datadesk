@@ -50,19 +50,32 @@ def render_prompt(now: datetime, previous: str = "") -> str:
 
 
 def extract_json(text: str) -> dict:
-    """The one JSON object in ``text``, tolerating fences and stray prose around it."""
-    start, end = text.find("{"), text.rfind("}")
-    if start == -1 or end <= start:
-        raise ValueError("no JSON object in model output")
-    return json.loads(text[start : end + 1])
+    """The first complete JSON object in ``text``, tolerating fences and prose around it."""
+    decoder = json.JSONDecoder()
+    idx = text.find("{")
+    while idx != -1:
+        try:
+            obj = decoder.raw_decode(text, idx)[0]
+        except ValueError:
+            obj = None
+        if isinstance(obj, dict):
+            return obj
+        idx = text.find("{", idx + 1)
+    raise ValueError("no JSON object in model output")
 
 
 def generate(now: datetime) -> int:
     """Produce and store the report for ``now``; returns the stored id."""
     if settings.report_source == "fixture":
+        logger.info("generating report from the bundled fixture")
         completion = openrouter.Completion(FIXTURE_PATH.read_text(), None, None, None)
     elif settings.report_source == "openrouter":
         previous = render_previous(storage.latest_payload())
+        logger.info(
+            "generating report with %s, %s",
+            settings.report_model,
+            "with prior report context" if previous else "no prior report",
+        )
         completion = openrouter.complete(settings.report_model, render_prompt(now, previous))
     else:
         raise ValueError(f"unknown report_source: {settings.report_source!r}")

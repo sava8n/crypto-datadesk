@@ -47,6 +47,7 @@ export default function Panel<T>({
         {state.kind === 'sparse' && (
           <div className="panel__msg panel__msg--warn">INSUFFICIENT DATA · {state.count} PTS</div>
         )}
+        {state.kind === 'empty' && <div className="panel__msg">{state.message}</div>}
         {state.kind === 'ready' && children(state.data)}
       </div>
 

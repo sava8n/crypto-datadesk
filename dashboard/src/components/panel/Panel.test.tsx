@@ -37,6 +37,13 @@ describe('Panel', () => {
     expect(document.querySelector('.panel__msg--warn')).not.toBeNull();
   });
 
+  it('shows the empty message without error styling', () => {
+    renderPanel({ kind: 'empty', message: 'NO REPORT YET' });
+    expect(body().textContent).toBe('NO REPORT YET');
+    expect(document.querySelector('.panel__msg--err')).toBeNull();
+    expect(document.querySelector('.panel__msg--warn')).toBeNull();
+  });
+
   it('renders children with the ready data', () => {
     renderPanel({ kind: 'ready', data: 'payload' });
     expect(screen.getByTestId('chart').textContent).toBe('payload');
@@ -46,6 +53,7 @@ describe('Panel', () => {
     ['loading', { kind: 'loading' }],
     ['error', { kind: 'error', message: 'x' }],
     ['sparse', { kind: 'sparse', count: 0 }],
+    ['empty', { kind: 'empty', message: 'm' }],
     ['ready', { kind: 'ready', data: 'd' }],
   ] as const)('puts exactly one element in the body when %s', (_label, state) => {
     renderPanel(state as PanelState<string>);
