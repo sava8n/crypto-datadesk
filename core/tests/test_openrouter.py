@@ -82,6 +82,37 @@ def test_empty_reasoning_effort_omits_the_param(respond, monkeypatch):
     assert "reasoning" not in seen["json"]
 
 
+def test_json_mode_requests_json_and_healing(respond):
+    seen = respond(_completion_payload())
+    openrouter.complete("some/model", "p")
+    assert seen["json"]["response_format"] == {"type": "json_object"}
+    assert seen["json"]["plugins"] == [{"id": "response-healing"}]
+
+
+def test_disabled_json_mode_omits_both_params(respond, monkeypatch):
+    monkeypatch.setattr(settings, "report_json_mode", False)
+    seen = respond(_completion_payload())
+    openrouter.complete("some/model", "p")
+    assert "response_format" not in seen["json"]
+    assert "plugins" not in seen["json"]
+
+
+def test_web_tools_are_requested(respond):
+    seen = respond(_completion_payload())
+    openrouter.complete("some/model", "p")
+    assert seen["json"]["tools"] == [
+        {"type": "openrouter:web_search"},
+        {"type": "openrouter:web_fetch"},
+    ]
+
+
+def test_disabled_web_tools_omit_the_param(respond, monkeypatch):
+    monkeypatch.setattr(settings, "report_web_tools", False)
+    seen = respond(_completion_payload())
+    openrouter.complete("some/model", "p")
+    assert "tools" not in seen["json"]
+
+
 def test_missing_usage_yields_none_fields(respond):
     respond({"choices": [{"message": {"content": "hi"}}]})
     completion = openrouter.complete("some/model", "p")

@@ -26,6 +26,18 @@ def latest_generated_at() -> datetime | None:
     return db.scalars(stmt, "report latest")[0]
 
 
+def latest_payload() -> dict | None:
+    """The newest ``generated_at`` + ``payload`` row - prompt context for generation."""
+    c = schema.market_report.c
+    stmt = (
+        select(c.generated_at, c.payload)
+        .order_by(c.generated_at.desc(), c.id.desc())
+        .limit(1)
+    )
+    found = db.rows(stmt, "report context")
+    return found[0] if found else None
+
+
 def list_reports(limit: int) -> list[dict]:
     """Report listing metadata, newest first - headlines only, never full payloads."""
     c = schema.market_report.c

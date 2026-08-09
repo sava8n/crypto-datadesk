@@ -15,13 +15,38 @@ from data.storage import report as storage
 logger = logging.getLogger(__name__)
 
 _DIR = Path(__file__).resolve().parent
-PROMPT_PATH = _DIR / "prompt.md"
+PROMPT_PATH = _DIR / "prompts" / "weekly-market-overview.md"
 FIXTURE_PATH = _DIR / "fixture.json"
 
 
-def render_prompt(now: datetime) -> str:
-    """The system prompt with ``{{CURRENT_DATE}}`` substituted."""
-    return PROMPT_PATH.read_text().replace("{{CURRENT_DATE}}", now.date().isoformat())
+def render_previous(row: dict | None) -> str:
+    """``{{PREVIOUS_REPORTS}}`` text from the newest stored report, "" on first run.
+
+    References are included so the model can re-verify prior sources; the calendar is
+    not - a past event list carries nothing the drift analysis needs.
+    """
+    if row is None:
+        return ""
+    payload = row["payload"]
+    refs = "\n".join(
+        f"[{ref['id']}] {ref['title']} - {ref['url']}" for ref in payload["references"]
+    )
+    return (
+        f"--- PRIOR REPORT · {row['generated_at'].date().isoformat()} ---\n"
+        f"HEADLINE: {payload['headline']}\n"
+        f"STANDFIRST: {payload['standfirst']}\n\n"
+        f"{payload['body_md']}\n\n"
+        f"REFERENCES:\n{refs}"
+    )
+
+
+def render_prompt(now: datetime, previous: str = "") -> str:
+    """The system prompt with the date and prior-report placeholders substituted."""
+    return (
+        PROMPT_PATH.read_text()
+        .replace("{{CURRENT_DATE}}", now.date().isoformat())
+        .replace("{{PREVIOUS_REPORTS}}", previous)
+    )
 
 
 def extract_json(text: str) -> dict:
@@ -37,7 +62,8 @@ def generate(now: datetime) -> int:
     if settings.report_source == "fixture":
         completion = openrouter.Completion(FIXTURE_PATH.read_text(), None, None, None)
     elif settings.report_source == "openrouter":
-        completion = openrouter.complete(settings.report_model, render_prompt(now))
+        previous = render_previous(storage.latest_payload())
+        completion = openrouter.complete(settings.report_model, render_prompt(now, previous))
     else:
         raise ValueError(f"unknown report_source: {settings.report_source!r}")
 

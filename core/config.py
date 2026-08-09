@@ -33,9 +33,16 @@ class Settings(BaseSettings):
     openrouter_api_url: str = "https://openrouter.ai/api/v1"
     # deep research holds the connection for many minutes
     openrouter_read_timeout: float = 3600.0
-    report_model: str = "perplexity/sonar-deep-research"
-    # the deep-research report needs reasoning; "" omits the param entirely
-    report_reasoning_effort: str = "high"
+    report_model: str = "qwen/qwen3.8-max"
+    # strict-JSON output plus OpenRouter's response-healing repair; disable for models
+    # without response_format support (e.g. perplexity/sonar-deep-research)
+    report_json_mode: bool = True
+    # OpenRouter-executed web search/fetch tools, needed by models without built-in
+    # browsing; disable for models that research on their own (e.g. sonar-deep-research)
+    report_web_tools: bool = True
+    # the deep-research report needs reasoning; "" omits the param entirely.
+    # OpenRouter maps unsupported levels down to the model's nearest supported one
+    report_reasoning_effort: str = "max"
     # "openrouter" | "fixture" - fixture replays the bundled sample, no silent fallback
     report_source: str = "openrouter"
     # Sundays, weekday fixed in data/report/scheduler.py

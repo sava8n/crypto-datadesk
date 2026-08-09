@@ -18,6 +18,45 @@ def test_render_prompt_substitutes_the_date():
     assert "2026-08-09" in prompt
 
 
+def test_render_prompt_substitutes_prior_reports():
+    prompt = generate.render_prompt(NOW, "PRIOR CONTEXT HERE")
+    assert "{{PREVIOUS_REPORTS}}" not in prompt
+    assert "PRIOR CONTEXT HERE" in prompt
+
+
+def test_render_prompt_leaves_the_placeholder_empty_on_first_run():
+    assert "{{PREVIOUS_REPORTS}}" not in generate.render_prompt(NOW)
+
+
+def _prior(date_str, headline):
+    return {
+        "generated_at": datetime.fromisoformat(f"{date_str}T08:00:00+00:00"),
+        "payload": {
+            "headline": headline,
+            "standfirst": "the standfirst",
+            "body_md": f"body of {headline}",
+            "references": [
+                {"id": 1, "title": "Source", "url": "https://x.test/a", "note": "n", "role": "citation"}
+            ],
+            "calendar": [
+                {"date": date_str, "time_utc": None, "title": "stale", "note": "n", "importance": "low"}
+            ],
+        },
+    }
+
+
+def test_render_previous_carries_refs_but_no_calendar():
+    text = generate.render_previous(_prior("2026-08-02", "prior regime call"))
+    assert "2026-08-02" in text
+    assert "prior regime call" in text
+    assert "https://x.test/a" in text
+    assert "stale" not in text
+
+
+def test_render_previous_is_empty_without_a_prior():
+    assert generate.render_previous(None) == ""
+
+
 def test_extract_json_takes_a_bare_object():
     assert generate.extract_json('{"a": 1}') == {"a": 1}
 
@@ -68,11 +107,31 @@ def test_openrouter_generation_uses_the_rendered_prompt(monkeypatch):
         )
 
     monkeypatch.setattr(generate.openrouter, "complete", fake_complete)
+    monkeypatch.setattr(generate.storage, "latest_payload", lambda: None)
     monkeypatch.setattr(generate.storage, "insert_report", lambda row: 1)
 
     generate.generate(NOW)
     assert asked["model"] == settings.report_model
     assert "2026-08-09" in asked["prompt"]
+
+
+def test_openrouter_generation_feeds_prior_reports_into_the_prompt(monkeypatch):
+    monkeypatch.setattr(settings, "report_source", "openrouter")
+    asked = {}
+
+    def fake_complete(model, prompt):
+        asked["prompt"] = prompt
+        return generate.openrouter.Completion(generate.FIXTURE_PATH.read_text(), None, None, None)
+
+    monkeypatch.setattr(generate.openrouter, "complete", fake_complete)
+    monkeypatch.setattr(
+        generate.storage, "latest_payload", lambda: _prior("2026-08-02", "prior regime call")
+    )
+    monkeypatch.setattr(generate.storage, "insert_report", lambda row: 1)
+
+    generate.generate(NOW)
+    assert "prior regime call" in asked["prompt"]
+    assert "{{PREVIOUS_REPORTS}}" not in asked["prompt"]
 
 
 def test_an_unknown_source_raises(monkeypatch):

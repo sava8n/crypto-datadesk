@@ -56,6 +56,17 @@ def complete(model: str, prompt: str) -> Completion:
     }
     if settings.report_reasoning_effort:
         body["reasoning"] = {"effort": settings.report_reasoning_effort}
+    if settings.report_json_mode:
+        # response-healing only activates alongside response_format, non-streaming
+        body["response_format"] = {"type": "json_object"}
+        body["plugins"] = [{"id": "response-healing"}]
+    if settings.report_web_tools:
+        # server tools: OpenRouter runs the search/fetch loop itself and returns the
+        # finished message, so no tool handling is needed here
+        body["tools"] = [
+            {"type": "openrouter:web_search"},
+            {"type": "openrouter:web_fetch"},
+        ]
 
     start = time.perf_counter()
     try:
