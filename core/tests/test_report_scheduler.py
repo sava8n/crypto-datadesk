@@ -83,8 +83,8 @@ class _Stop(Exception):
 
 
 def test_run_retries_failures_with_capped_backoff(monkeypatch):
-    monkeypatch.setattr(scheduler.settings, "report_retry_seconds", 100.0)
-    monkeypatch.setattr(scheduler.settings, "report_retry_max_seconds", 250.0)
+    monkeypatch.setattr(scheduler.settings, "report_retry_seconds", 100)
+    monkeypatch.setattr(scheduler.settings, "report_retry_max_seconds", 250)
     attempts = []
 
     def failing():
@@ -103,13 +103,13 @@ def test_run_retries_failures_with_capped_backoff(monkeypatch):
 
     with pytest.raises(_Stop):
         asyncio.run(scheduler.run())
-    assert sleeps == [100.0, 200.0, 250.0, 250.0]
+    assert sleeps == [100, 200, 250, 250]
     assert len(attempts) == 4
 
 
 def test_run_success_resets_backoff_and_resumes_weekly_cadence(monkeypatch):
     monkeypatch.setattr(scheduler, "datetime", _frozen(SUNDAY_SLOT + timedelta(days=2)))
-    monkeypatch.setattr(scheduler.settings, "report_retry_seconds", 100.0)
+    monkeypatch.setattr(scheduler.settings, "report_retry_seconds", 100)
     calls = []
 
     def flaky():
@@ -130,7 +130,7 @@ def test_run_success_resets_backoff_and_resumes_weekly_cadence(monkeypatch):
     with pytest.raises(_Stop):
         asyncio.run(scheduler.run())
     # retry delay first, then the weekly sleep (frozen Tuesday 08:00 -> next Sunday)
-    assert sleeps == [100.0, timedelta(days=5).total_seconds()]
+    assert sleeps == [100, timedelta(days=5).total_seconds()]
     assert len(calls) == 2
 
 

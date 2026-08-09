@@ -12,44 +12,52 @@ VERSION = "0.3.1"
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="DATADESK_SERVICE_", extra="ignore")
 
-    cors_origins: str = "http://localhost:5173,http://localhost:8080"
-    supported_currencies: str = "BTC"
+    # --- api ---
     log_level: str = "INFO"
-    market_cache_ttl_seconds: int = 10
+    cors_origins: str = "http://localhost:5173,http://localhost:8080"  # comma-separated
+    supported_currencies: str = "BTC"  # comma-separated
+
+    # --- market data (Deribit) ---
     deribit_api_url: str = "https://www.deribit.com/api/v2"
-    http_connect_timeout: float = 3.0
+    http_connect_timeout: int = 3
     # must cover the multi-MB option book
-    http_read_timeout: float = 20.0
+    http_read_timeout: int = 20
+    market_cache_ttl_seconds: int = 10
     # how long a state may be served past its TTL when upstream is failing
     max_stale_seconds: int = 300
-    db_dsn: str = "postgresql+psycopg://user:password@localhost:5432/datadesk"
+
+    # --- database ---
+    db_dsn: str = ""
+
+    # --- archive: snapshots, tape, retention ---
     snapshot_interval_minutes: int = 60
-    retention_days: int = 365
-    retention_sweep_at_utc: time = time(0, 0)
     tape_poll_seconds: int = 60
     # how far back the first tape poll reaches when the archive is empty
     tape_bootstrap_days: int = 7
-    openrouter_api_key: str = ""
+    retention_days: int = 365
+    retention_sweep_at_utc: time = time(0, 0)
+
+    # --- market reports (openrouter) ---
     openrouter_api_url: str = "https://openrouter.ai/api/v1"
+    openrouter_api_key: str = ""
     # deep research holds the connection for many minutes
-    openrouter_read_timeout: float = 3600.0
+    openrouter_read_timeout: int = 3600
     report_model: str = "qwen/qwen3.8-max"
-    # strict-JSON output plus OpenRouter's response-healing repair; disable for models
-    # without response_format support (e.g. perplexity/sonar-deep-research)
+    # strict-JSON output plus openrouter's response-healing repair;
+    # disable for models without response_format support
     report_json_mode: bool = True
-    # OpenRouter-executed web search/fetch tools, needed by models without built-in
-    # browsing; disable for models that research on their own (e.g. sonar-deep-research)
+    # openrouter-executed web search/fetch tools for models without built-in browsing;
+    # disable for models that research on their own
     report_web_tools: bool = True
-    # the deep-research report needs reasoning; "" omits the param entirely.
-    # OpenRouter maps unsupported levels down to the model's nearest supported one
+    # openrouter maps unsupported levels down to the model's nearest supported one
     report_reasoning_effort: str = "max"
     # "openrouter" | "fixture" - fixture replays the bundled sample, no silent fallback
     report_source: str = "openrouter"
-    # Sundays, weekday fixed in data/report/scheduler.py
+    # Sundays at this UTC time
     report_generate_at_utc: time = time(8, 0)
     # failed generation retries with doubling backoff: first delay / ceiling
-    report_retry_seconds: float = 1800.0
-    report_retry_max_seconds: float = 43200.0
+    report_retry_seconds: int = 1800
+    report_retry_max_seconds: int = 43200
 
     @property
     def snapshot_interval_seconds(self) -> int:
