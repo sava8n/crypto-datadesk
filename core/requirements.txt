@@ -12,5 +12,6 @@ psycopg[binary]>=3.2
 # data access + analytics
 requests==2.33.1
 certifi==2026.4.22
+openrouter>=1.1
 numpy==2.4.4
 pandas==3.0.2

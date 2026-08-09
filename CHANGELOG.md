@@ -1,5 +1,17 @@
 # Changelog
 
+
+## [0.4.0] - 2026-08-09
+
+### Added
+
+- **Weekly market report** - a deep-research note generated every Sunday in a new OVERVIEW tab
+
+### Fixed
+
+- **Tape archive counts** - the "archived N prints" log could report negative numbers under psycopg 3
+
+
 ## [0.3.1] - 2026-08-04
 
 ### Added
@@ -30,6 +42,7 @@
 
 - **Layout** - traded volume moved to FLOW
 
+
 ## [0.2.0] - 2026-08-02
 
 ### Added
@@ -48,11 +61,13 @@
 
 - **Layout** - CHAIN tab retired: basis moved to VOLATILITY; the per-strike greek panels and the 3D IV surface are unmounted (kept in the codebase as deprecated)
 
+
 ## [0.1.1] - 2026-08-01
 
 ### Added
 
 - **Auto-refresh** with non-disruptive updates
+
 
 ## [0.1.0] - 2026-07-27
 
@@ -60,11 +75,13 @@
 
 - **Market snapshots persistence**
 
+
 ## [0.0.2] - 2026-07-24
 
 ### Removed
 
 - **COT report**
+
 
 ## [0.0.1] - 2026-07-18
 

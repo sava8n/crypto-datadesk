@@ -15,6 +15,8 @@ import type {
   PositioningHistoryResponse,
   ProbCurvesResponse,
   RecentWindow,
+  ReportDetail,
+  ReportListResponse,
   Resolution,
   RVConeResponse,
   SkewResponse,
@@ -139,3 +141,9 @@ export const fetchStats = (currency: string): Promise<StatsResponse> =>
 
 export const fetchSpotHistory = (currency: string): Promise<SpotHistoryResponse> =>
   fetchJson(url('spotHistory', { currency }));
+
+export const fetchReports = (): Promise<ReportListResponse> =>
+  fetchJson(url('reports', {}));
+
+export const fetchReport = (id: number): Promise<ReportDetail> =>
+  fetchJson(`/api/${ENDPOINTS.reports}/${id}`);

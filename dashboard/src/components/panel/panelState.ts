@@ -2,6 +2,7 @@ export type PanelState<T> =
   | { kind: 'loading' }
   | { kind: 'error'; message: string }
   | { kind: 'sparse'; count: number }
+  | { kind: 'empty'; message: string }
   | { kind: 'ready'; data: T };
 
 // structural match for react-query's result, so this module stays dependency-free

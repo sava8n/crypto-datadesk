@@ -147,6 +147,24 @@ export function useVolHistory(currency: string, window: ArchiveWindow, resolutio
   });
 }
 
+export function useReports() {
+  return useQuery({
+    queryKey: ['reports'],
+    queryFn: client.fetchReports,
+    ...polling(useRefreshMs()),
+  });
+}
+
+export function useReport(id: number | null) {
+  return useQuery({
+    queryKey: ['report', id],
+    queryFn: () => client.fetchReport(id as number),
+    enabled: id != null,
+    // a stored report never changes
+    staleTime: Infinity,
+  });
+}
+
 export function usePositioningHistory(
   currency: string,
   window: ArchiveWindow,

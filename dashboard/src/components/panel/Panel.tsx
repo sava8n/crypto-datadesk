@@ -4,7 +4,7 @@ import type { PanelState } from './panelState';
 
 interface Props<T> {
   title: string;
-  subtitle: ReactNode;
+  subtitle?: ReactNode;
   state: PanelState<T>;
   // DTE window or expiry picker
   // `.dte`/`.expiry` right-align themselves in the title row
@@ -35,7 +35,7 @@ export default function Panel<T>({
     <section className={full ? 'panel panel--full' : 'panel'}>
       <div className="panel__title">
         <span className="panel__title-main">{title}</span>
-        <span className="panel__title-sub">{subtitle}</span>
+        {subtitle != null && <span className="panel__title-sub">{subtitle}</span>}
         {controls}
       </div>
 
@@ -47,6 +47,7 @@ export default function Panel<T>({
         {state.kind === 'sparse' && (
           <div className="panel__msg panel__msg--warn">INSUFFICIENT DATA · {state.count} PTS</div>
         )}
+        {state.kind === 'empty' && <div className="panel__msg">{state.message}</div>}
         {state.kind === 'ready' && children(state.data)}
       </div>
 

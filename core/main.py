@@ -16,6 +16,7 @@ from api.routers.history import router as history_router
 from api.routers.iv import router as iv_router
 from api.routers.oi import router as oi_router
 from api.routers.prob import router as prob_router
+from api.routers.report import router as report_router
 from api.routers.spot import router as spot_router
 from api.routers.stats import router as stats_router
 from api.routers.vol import router as vol_router
@@ -65,6 +66,7 @@ for router in (
     iv_router,
     oi_router,
     prob_router,
+    report_router,
     spot_router,
     stats_router,
     vol_router,

@@ -24,6 +24,7 @@ cd core
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt -r requirements-dev.txt
+set -a; source ../.env; set +a # export the shared config into the shell
 uvicorn main:server --reload # serves http://localhost:8000
 ```
 

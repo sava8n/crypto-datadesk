@@ -10,6 +10,7 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Index,
+    Integer,
     MetaData,
     PrimaryKeyConstraint,
     String,
@@ -17,6 +18,7 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 
 metadata = MetaData()
 
@@ -159,3 +161,21 @@ cm_metric = Table(
     PrimaryKeyConstraint("snapshot_id", "tenor_days"),
     CheckConstraint("tenor_days > 0", name="ck_cm_metric_tenor_positive"),
 )
+
+# market reports, stored as the model's validated payload
+market_report = Table(
+    "market_report",
+    metadata,
+    Column("id", BigInteger, primary_key=True, autoincrement=True),
+    Column("generated_at", DateTime(timezone=True), nullable=False),
+    Column("model", String(128), nullable=False),
+    # usage as reported by the provider
+    Column("prompt_tokens", Integer),
+    Column("completion_tokens", Integer),
+    Column("cost_usd", Float),
+    Column("payload", JSONB, nullable=False),
+)
+
+# serves the newest-first listing, the scheduler's max(generated_at) guard
+# and the retention sweep
+Index("ix_market_report_generated_at", market_report.c.generated_at)

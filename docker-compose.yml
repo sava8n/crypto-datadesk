@@ -1,7 +1,15 @@
+# cap container logs at 3 x 10 MB per service, oldest file dropped first
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
 services:
   db:
     image: postgres:17-alpine
     container_name: datadesk-db
+    logging: *logging
     ports:
       - "5432:5432"
     environment:
@@ -21,10 +29,10 @@ services:
   core:
     build: ./core
     container_name: datadesk-core
+    logging: *logging
     ports:
       - "8000:8000"
-    environment:
-      - DATADESK_SERVICE_DB_DSN=postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    env_file: .env
     depends_on:
       db:
         condition: service_healthy
@@ -39,6 +47,7 @@ services:
   dashboard:
     build: ./dashboard
     container_name: datadesk-dashboard
+    logging: *logging
     ports:
       - "8080:80"
     depends_on:

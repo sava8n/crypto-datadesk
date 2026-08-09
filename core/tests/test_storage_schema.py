@@ -56,3 +56,20 @@ def test_retention_predicates_are_indexed():
 def test_contract_carries_no_denormalized_as_of():
     """Dropped with the chunked sweep: once retention keys on snapshot_id nothing read it."""
     assert "as_of" not in schema.contract.c
+
+
+def test_market_report_columns():
+    expected = {
+        "id",
+        "generated_at",
+        "model",
+        "prompt_tokens",
+        "completion_tokens",
+        "cost_usd",
+        "payload",
+    }
+    assert set(schema.market_report.c.keys()) == expected
+
+
+def test_market_report_listing_scan_is_indexed():
+    assert ("generated_at",) in _indexed(schema.market_report)

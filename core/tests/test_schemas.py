@@ -12,6 +12,7 @@ from pydantic import BaseModel
 import api.schemas
 from api.schemas.base import CurrencyEnvelope
 from api.schemas.health import HealthResponse
+from api.schemas.report import ReportListResponse
 
 
 def _response_models() -> list[type[BaseModel]]:
@@ -30,9 +31,9 @@ def test_every_response_is_discovered():
 
 @pytest.mark.parametrize("model", _response_models(), ids=lambda m: m.__name__)
 def test_responses_are_currency_scoped(model):
-    """Health is the one route that is not about a book; everything else says which."""
-    if model is HealthResponse:
-        pytest.skip("health is not currency-scoped")
+    """Health and the market-wide report listing aside, every response says which book."""
+    if model in (HealthResponse, ReportListResponse):
+        pytest.skip(f"{model.__name__} is not currency-scoped")
     assert issubclass(model, CurrencyEnvelope), (
         f"{model.__name__} declares its own currency instead of extending CurrencyEnvelope"
     )

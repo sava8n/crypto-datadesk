@@ -28,6 +28,7 @@ import OIHistorySection from './history/OIHistorySection';
 import SkewHistorySection from './history/SkewHistorySection';
 import VolHistorySection from './history/VolHistorySection';
 import VRPSection from './history/VRPSection';
+import OverviewTab from './overview/OverviewTab';
 
 export default function Dashboard() {
   const [tab, setTab] = useState<TabId>('positioning');
@@ -42,6 +43,8 @@ export default function Dashboard() {
       <Tabs active={tab} onSelect={setTab} />
 
       <main className="tab-body">
+        {tab === 'overview' && <OverviewTab />}
+
         {tab === 'positioning' && (
           <div className="panels">
             <GEXByStrikeSection />
