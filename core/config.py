@@ -51,8 +51,6 @@ class Settings(BaseSettings):
     report_web_tools: bool = True
     # openrouter maps unsupported levels down to the model's nearest supported one
     report_reasoning_effort: str = "max"
-    # "openrouter" | "fixture" - fixture replays the bundled sample, no silent fallback
-    report_source: str = "openrouter"
     # Sundays at this UTC time
     report_generate_at_utc: time = time(8, 0)
     # failed generation retries with doubling backoff: first delay / ceiling

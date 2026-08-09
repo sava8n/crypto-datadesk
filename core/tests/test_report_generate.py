@@ -1,8 +1,9 @@
-"""Report generation: prompt rendering, JSON extraction, the fixture path."""
+"""Report generation: prompt rendering, JSON extraction, storage."""
 
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 
@@ -10,6 +11,8 @@ from config import settings
 from data.report import generate
 
 NOW = datetime(2026, 8, 9, 8, 0, tzinfo=UTC)
+# a real deep-research response, style flaws included
+FIXTURE_PATH = Path(__file__).parent / "fixtures" / "market-report.json"
 
 
 def test_render_prompt_substitutes_the_date():
@@ -82,37 +85,40 @@ def test_extract_json_without_an_object_raises():
         generate.extract_json("no json here")
 
 
-def test_fixture_generation_stores_a_validated_row(monkeypatch):
-    monkeypatch.setattr(settings, "report_source", "fixture")
+def test_generation_stores_a_validated_row(monkeypatch):
     stored = {}
 
     def capture(row):
         stored.update(row)
         return 7
 
+    monkeypatch.setattr(
+        generate.openrouter,
+        "complete",
+        lambda model, prompt: generate.openrouter.Completion(
+            FIXTURE_PATH.read_text(), 100, 8200, 0.041
+        ),
+    )
+    monkeypatch.setattr(generate.storage, "latest_payload", lambda: None)
     monkeypatch.setattr(generate.storage, "insert_report", capture)
 
     assert generate.generate(NOW) == 7
     assert stored["generated_at"] == NOW
-    assert stored["source"] == "fixture"
     assert stored["model"] == settings.report_model
-    assert stored["prompt_tokens"] is None
-    assert stored["completion_tokens"] is None
-    assert stored["cost_usd"] is None
+    assert stored["prompt_tokens"] == 100
+    assert stored["completion_tokens"] == 8200
+    assert stored["cost_usd"] == pytest.approx(0.041)
     assert stored["payload"]["headline"]
     # JSONB-ready: dates already serialized to strings
     assert all(isinstance(event["date"], str) for event in stored["payload"]["calendar"])
 
 
-def test_openrouter_generation_uses_the_rendered_prompt(monkeypatch):
-    monkeypatch.setattr(settings, "report_source", "openrouter")
+def test_generation_uses_the_rendered_prompt(monkeypatch):
     asked = {}
 
     def fake_complete(model, prompt):
         asked["model"], asked["prompt"] = model, prompt
-        return generate.openrouter.Completion(
-            generate.FIXTURE_PATH.read_text(), 100, 8200, 0.041
-        )
+        return generate.openrouter.Completion(FIXTURE_PATH.read_text(), None, None, None)
 
     monkeypatch.setattr(generate.openrouter, "complete", fake_complete)
     monkeypatch.setattr(generate.storage, "latest_payload", lambda: None)
@@ -123,13 +129,12 @@ def test_openrouter_generation_uses_the_rendered_prompt(monkeypatch):
     assert "2026-08-09" in asked["prompt"]
 
 
-def test_openrouter_generation_feeds_prior_reports_into_the_prompt(monkeypatch):
-    monkeypatch.setattr(settings, "report_source", "openrouter")
+def test_generation_feeds_prior_reports_into_the_prompt(monkeypatch):
     asked = {}
 
     def fake_complete(model, prompt):
         asked["prompt"] = prompt
-        return generate.openrouter.Completion(generate.FIXTURE_PATH.read_text(), None, None, None)
+        return generate.openrouter.Completion(FIXTURE_PATH.read_text(), None, None, None)
 
     monkeypatch.setattr(generate.openrouter, "complete", fake_complete)
     monkeypatch.setattr(
@@ -140,9 +145,3 @@ def test_openrouter_generation_feeds_prior_reports_into_the_prompt(monkeypatch):
     generate.generate(NOW)
     assert "prior regime call" in asked["prompt"]
     assert "{{PREVIOUS_REPORTS}}" not in asked["prompt"]
-
-
-def test_an_unknown_source_raises(monkeypatch):
-    monkeypatch.setattr(settings, "report_source", "psychic")
-    with pytest.raises(ValueError):
-        generate.generate(NOW)

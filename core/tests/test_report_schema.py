@@ -3,17 +3,17 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
-from data.report import generate
 from data.report.schema import CalendarEvent, Reference, ReportPayload
 
 
 @pytest.fixture(scope="module")
 def fixture_payload() -> dict:
-    return json.loads(generate.FIXTURE_PATH.read_text())
+    return json.loads((Path(__file__).parent / "fixtures" / "market-report.json").read_text())
 
 
 def test_the_bundled_fixture_validates(fixture_payload):

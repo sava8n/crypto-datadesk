@@ -169,13 +169,11 @@ market_report = Table(
     Column("id", BigInteger, primary_key=True, autoincrement=True),
     Column("generated_at", DateTime(timezone=True), nullable=False),
     Column("model", String(128), nullable=False),
-    Column("source", String(16), nullable=False),
-    # usage as reported by the provider; absent for fixture rows
+    # usage as reported by the provider
     Column("prompt_tokens", Integer),
     Column("completion_tokens", Integer),
     Column("cost_usd", Float),
     Column("payload", JSONB, nullable=False),
-    CheckConstraint("source in ('openrouter', 'fixture')", name="ck_market_report_source"),
 )
 
 # serves the newest-first listing, the scheduler's max(generated_at) guard

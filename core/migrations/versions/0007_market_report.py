@@ -22,13 +22,11 @@ def upgrade() -> None:
         sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False),
         sa.Column("generated_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("model", sa.String(length=128), nullable=False),
-        sa.Column("source", sa.String(length=16), nullable=False),
         sa.Column("prompt_tokens", sa.Integer(), nullable=True),
         sa.Column("completion_tokens", sa.Integer(), nullable=True),
         sa.Column("cost_usd", sa.Float(), nullable=True),
         sa.Column("payload", JSONB(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
-        sa.CheckConstraint("source in ('openrouter', 'fixture')", name="ck_market_report_source"),
     )
     op.create_index("ix_market_report_generated_at", "market_report", ["generated_at"])
 

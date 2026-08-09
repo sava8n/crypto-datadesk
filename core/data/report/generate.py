@@ -14,9 +14,7 @@ from data.storage import report as storage
 
 logger = logging.getLogger(__name__)
 
-_DIR = Path(__file__).resolve().parent
-PROMPT_PATH = _DIR / "prompts" / "weekly-market-overview.md"
-FIXTURE_PATH = _DIR / "fixture.json"
+PROMPT_PATH = Path(__file__).resolve().parent / "prompts" / "weekly-market-overview.md"
 
 
 def render_previous(row: dict | None) -> str:
@@ -66,26 +64,19 @@ def extract_json(text: str) -> dict:
 
 def generate(now: datetime) -> int:
     """Produce and store the report for ``now``; returns the stored id."""
-    if settings.report_source == "fixture":
-        logger.info("generating report from the bundled fixture")
-        completion = openrouter.Completion(FIXTURE_PATH.read_text(), None, None, None)
-    elif settings.report_source == "openrouter":
-        previous = render_previous(storage.latest_payload())
-        logger.info(
-            "generating report with %s, %s",
-            settings.report_model,
-            "with prior report context" if previous else "no prior report",
-        )
-        completion = openrouter.complete(settings.report_model, render_prompt(now, previous))
-    else:
-        raise ValueError(f"unknown report_source: {settings.report_source!r}")
+    previous = render_previous(storage.latest_payload())
+    logger.info(
+        "generating report with %s, %s",
+        settings.report_model,
+        "with prior report context" if previous else "no prior report",
+    )
+    completion = openrouter.complete(settings.report_model, render_prompt(now, previous))
 
     payload = ReportPayload.model_validate(extract_json(completion.content))
     report_id = storage.insert_report(
         {
             "generated_at": now,
             "model": settings.report_model,
-            "source": settings.report_source,
             "prompt_tokens": completion.prompt_tokens,
             "completion_tokens": completion.completion_tokens,
             "cost_usd": completion.cost_usd,
@@ -94,9 +85,8 @@ def generate(now: datetime) -> int:
         }
     )
     logger.info(
-        "stored report %d from %s (%s tokens, cost %s)",
+        "stored report %d (%s tokens, cost %s)",
         report_id,
-        settings.report_source,
         completion.completion_tokens,
         completion.cost_usd,
     )

@@ -63,7 +63,6 @@ def test_market_report_columns():
         "id",
         "generated_at",
         "model",
-        "source",
         "prompt_tokens",
         "completion_tokens",
         "cost_usd",
@@ -74,8 +73,3 @@ def test_market_report_columns():
 
 def test_market_report_listing_scan_is_indexed():
     assert ("generated_at",) in _indexed(schema.market_report)
-
-
-def test_market_report_source_is_constrained():
-    names = {c.name for c in schema.market_report.constraints if c.name}
-    assert "ck_market_report_source" in names

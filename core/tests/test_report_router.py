@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 
-from data.report import generate, scheduler
+from data.report import scheduler
 from data.storage import report as storage
 from data.storage.errors import StorageUnavailable
 
@@ -21,11 +22,12 @@ def stored_report(monkeypatch):
         "id": 1,
         "generated_at": GENERATED_AT,
         "model": "perplexity/sonar-deep-research",
-        "source": "fixture",
         "prompt_tokens": None,
         "completion_tokens": None,
         "cost_usd": None,
-        "payload": json.loads(generate.FIXTURE_PATH.read_text()),
+        "payload": json.loads(
+            (Path(__file__).parent / "fixtures" / "market-report.json").read_text()
+        ),
     }
     monkeypatch.setattr(storage, "list_reports", lambda limit: [_listing(row)][:limit])
     monkeypatch.setattr(storage, "get_report", lambda rid: row if rid == row["id"] else None)
