@@ -96,7 +96,10 @@ def _insert(rows: list[dict]) -> int:
         return 0
     with db.connection() as conn:
         result = conn.execute(
-            pg_insert(schema.trade).values(rows).on_conflict_do_nothing(index_elements=["trade_id"])
+            pg_insert(schema.trade)
+            .values(rows)
+            .on_conflict_do_nothing(index_elements=["trade_id"])
+            .execution_options(preserve_rowcount=True)
         )
         return int(result.rowcount)
 
