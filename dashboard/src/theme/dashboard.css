@@ -673,7 +673,7 @@ body {
 /* ---- overview tab ---- */
 .overview {
   display: grid;
-  grid-template-columns: 400px minmax(0, 1fr) 400px;
+  grid-template-columns: 320px minmax(0, 1fr) 400px; /* timeline | report | refs+calendar */
   gap: var(--gap);
   margin: var(--gap) var(--edge);
 }
@@ -903,7 +903,7 @@ sup.ref-mark {
 }
 
 .refs__note {
-  color: var(--text-dim);
+  color: var(--text);
   font-size: 11px;
   line-height: 1.5;
   margin-top: 3px;
@@ -935,7 +935,7 @@ sup.ref-mark {
 }
 
 .cal__time {
-  color: var(--text-dim);
+  color: var(--text);
   font-size: 10px;
   letter-spacing: 1px;
 }
@@ -956,7 +956,7 @@ sup.ref-mark {
 }
 
 .cal__note {
-  color: var(--text-dim);
+  color: var(--text);
   font-size: 11px;
   line-height: 1.5;
   margin-top: 3px;
