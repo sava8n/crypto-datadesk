@@ -4,14 +4,14 @@ import type { EChartsOption, LineSeriesOption } from 'echarts';
 import EChart from '../chart/EChart';
 import type { VolHistoryPoint, VolHistoryResponse } from '../../types';
 import { volPct } from '../../utils/format';
-import { AMBER, CALL, MUTED, PALETTE } from '../../theme/charts';
+import { ACCENT, CYAN, MUTED, PALETTE } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY } from '../../theme/options';
 
 
 const SERIES: { key: keyof VolHistoryPoint; name: string; color: string }[] = [
-  { key: 'rr25_7', name: 'RR 25Δ 7D', color: AMBER },
+  { key: 'rr25_7', name: 'RR 25Δ 7D', color: ACCENT },
   { key: 'rr25_30', name: 'RR 25Δ 30D', color: PALETTE[1] },
-  { key: 'bf25_30', name: 'BF 25Δ 30D', color: CALL },
+  { key: 'bf25_30', name: 'BF 25Δ 30D', color: CYAN },
 ];
 
 export function buildSkewHistoryOption(data: VolHistoryResponse): EChartsOption {

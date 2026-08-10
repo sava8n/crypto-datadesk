@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { AMBER, AXIS_LINE, GRID } from './charts';
+import { AXIS_LINE, GRID, MUTED } from './charts';
 import { GRID_INSETS, categoryAxisX, grid, tuple, valueAxisX, valueAxisY } from './options';
 
 describe('valueAxisY', () => {
@@ -74,7 +74,7 @@ describe('categoryAxisX', () => {
   it('carries the labels and rotates them by default', () => {
     const axis = categoryAxisX(['a', 'b']) as Record<string, never>;
     expect(axis).toMatchObject({ type: 'category', data: ['a', 'b'] });
-    expect(axis.axisLabel).toMatchObject({ rotate: 45, interval: 'auto', color: AMBER });
+    expect(axis.axisLabel).toMatchObject({ rotate: 45, interval: 'auto', color: MUTED });
   });
 
   it('can force a label on every category', () => {

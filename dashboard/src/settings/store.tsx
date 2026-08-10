@@ -18,7 +18,10 @@ function load(): Settings {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return DEFAULT_SETTINGS;
-    const saved = JSON.parse(raw) as Partial<Settings>;
+    const saved = JSON.parse(raw) as Partial<Settings> & { frontExpiry?: 'weekly' | 'monthly' };
+    // pre-merge blobs: '' (or nothing) meant "follow the front expiry", tenor in a separate field
+    if (!saved.expiry) saved.expiry = saved.frontExpiry ?? DEFAULT_SETTINGS.expiry;
+    delete saved.frontExpiry;
     return { ...DEFAULT_SETTINGS, ...saved };
   } catch {
     return DEFAULT_SETTINGS; // unparseable blob or storage blocked
@@ -75,7 +78,6 @@ export function useCurrency(): Settings['currency'] {
   return useSettingsContext().settings.currency;
 }
 
-// the poll period every query reads, in ms
 export function useRefreshMs(): number {
   return refreshMs(useSettingsContext().settings.refreshSeconds);
 }

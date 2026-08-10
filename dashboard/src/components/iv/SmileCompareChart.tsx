@@ -5,7 +5,7 @@ import EChart from '../chart/EChart';
 import type { IVCurvePoint } from '../../types';
 import { averageByStrike } from '../../utils/curves';
 import { pctOne, pctWhole, strikeFmt, strikeFull } from '../../utils/format';
-import { AMBER, MUTED } from '../../theme/charts';
+import { ACCENT, MUTED } from '../../theme/charts';
 import { grid, itemTooltip, legendBar, tuple, valueAxisX, valueAxisY } from '../../theme/options';
 
 export interface SmileCompareData {
@@ -38,8 +38,8 @@ export function buildSmileCompareOption(data: SmileCompareData): EChartsOption {
         data: current,
         showSymbol: false,
         smooth: true,
-        itemStyle: { color: AMBER },
-        lineStyle: { width: 1.5, color: AMBER },
+        itemStyle: { color: ACCENT },
+        lineStyle: { width: 1.5, color: ACCENT },
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
       },
       ...(previous.length >= 2

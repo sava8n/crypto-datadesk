@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [0.4.1] - 2026-08-10
+
+### Added
+
+- **UI thenme** - new light theme (replacing the old, Bloomberg Terminal-inspired)
+
+
 ## [0.4.0] - 2026-08-09
 
 ### Added

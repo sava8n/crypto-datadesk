@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { resolveFrontExpiry } from './expiry';
+import { MS_PER_DAY } from './constants';
+import { resolveExpiry, resolveFrontExpiry, tenorOf } from './expiry';
 
 // Jan 2026: the 1st is a Thursday, so Fridays fall on the 2nd, 9th, 16th, 23rd, 30th
 const WED = '2026-01-07T08:00:00Z';
@@ -24,5 +25,39 @@ describe('resolveFrontExpiry', () => {
 
   it('returns undefined for an empty chain', () => {
     expect(resolveFrontExpiry([], 'weekly')).toBeUndefined();
+  });
+});
+
+// relative to the wall clock, since tenorOf measures DTE from now
+const iso = (daysAhead: number) => new Date(Date.now() + daysAhead * MS_PER_DAY).toISOString();
+
+describe('tenorOf', () => {
+  it('passes tenor literals through', () => {
+    expect(tenorOf('weekly')).toBe('weekly');
+    expect(tenorOf('monthly')).toBe('monthly');
+  });
+
+  it('reads all-expiries as monthly', () => {
+    expect(tenorOf('all')).toBe('monthly');
+  });
+
+  it('reads a concrete pick by its DTE', () => {
+    expect(tenorOf(iso(3))).toBe('weekly');
+    expect(tenorOf(iso(40))).toBe('monthly');
+  });
+});
+
+describe('resolveExpiry', () => {
+  it('holds a quoted concrete pick', () => {
+    expect(resolveExpiry(FRI_1, [WED, FRI_1, FRI_2])).toBe(FRI_1);
+  });
+
+  it('falls back to the front expiry of the setting tenor', () => {
+    expect(resolveExpiry('weekly', [WED, FRI_1, FRI_2])).toBe(FRI_1);
+    expect(resolveExpiry('monthly', [FRI_1, FRI_2, FRI_LAST])).toBe(FRI_LAST);
+  });
+
+  it('returns undefined for an empty chain', () => {
+    expect(resolveExpiry('weekly', [])).toBeUndefined();
   });
 });

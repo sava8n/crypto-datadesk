@@ -5,7 +5,7 @@ import EChart from '../chart/EChart';
 import type { CMBandPoint, SkewResponse } from '../../types';
 import { dteOf } from '../../utils/dte';
 import { dteLabel, dateLabel, volPct } from '../../utils/format';
-import { AMBER, CALL, MUTED } from '../../theme/charts';
+import { ACCENT, CYAN, MUTED } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, valueAxisX, valueAxisY } from '../../theme/options';
 import { bandRows, bandSeries } from './bands';
 
@@ -35,15 +35,15 @@ export function buildSkewOption(data: SkewResponse, bands: CMBandPoint[] = []): 
     yAxis: valueAxisY({ name: 'ΔIV', scale: true, format: volPct }),
     series: [
       // shaded p25-p75 of the archived CM risk reversal, under the live curves
-      ...bandSeries(bandRows(bands, 'rr25', maxDte), AMBER),
+      ...bandSeries(bandRows(bands, 'rr25', maxDte), ACCENT),
       {
         type: 'line',
         name: 'RR 25Δ',
         data: rows.map((r) => [r.dte, r.rr]),
         showSymbol: true,
         symbolSize: 6,
-        itemStyle: { color: AMBER },
-        lineStyle: { width: 1.5, color: AMBER },
+        itemStyle: { color: ACCENT },
+        lineStyle: { width: 1.5, color: ACCENT },
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
         // zero line: RR above = calls richer, below = puts richer
         markLine: {
@@ -60,8 +60,8 @@ export function buildSkewOption(data: SkewResponse, bands: CMBandPoint[] = []): 
         data: rows.map((r) => [r.dte, r.bf]),
         showSymbol: true,
         symbolSize: 6,
-        itemStyle: { color: CALL },
-        lineStyle: { width: 1.5, color: CALL },
+        itemStyle: { color: CYAN },
+        lineStyle: { width: 1.5, color: CYAN },
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
       },
     ],

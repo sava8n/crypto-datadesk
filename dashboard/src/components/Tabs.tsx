@@ -11,16 +11,16 @@ export type TabId =
 const GROUPS: { label: string; tabs: { id: TabId; label: string }[] }[] = [
   {
     label: 'MARKET',
-    tabs: [{ id: 'overview', label: 'OVERVIEW' }],
+    tabs: [{ id: 'overview', label: 'Overview' }],
   },
   {
     label: 'OPTIONS',
     tabs: [
-      { id: 'positioning', label: 'POSITIONING' },
-      { id: 'flow', label: 'FLOW' },
-      { id: 'volatility', label: 'VOLATILITY' },
-      { id: 'probabilities', label: 'PROBABILITIES' },
-      { id: 'history', label: 'HISTORY' },
+      { id: 'positioning', label: 'Positioning' },
+      { id: 'flow', label: 'Flow' },
+      { id: 'volatility', label: 'Volatility' },
+      { id: 'probabilities', label: 'Probabilities' },
+      { id: 'history', label: 'History' },
     ],
   },
 ];

@@ -3,7 +3,7 @@ import type { EChartsOption } from 'echarts';
 
 import EChart from '../chart/EChart';
 import { volPct } from '../../utils/format';
-import { AMBER, CALL, DANGER, MUTED } from '../../theme/charts';
+import { ACCENT, CYAN, DANGER, MUTED } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY } from '../../theme/options';
 import type { VRPRow } from './vrp';
 
@@ -27,10 +27,10 @@ export function buildVRPOption(rows: VRPRow[]): EChartsOption {
     xAxis: timeAxisX(),
     yAxis: valueAxisY({ name: 'VOL', scale: true, format: volPct }),
     series: [
-      line('IV30', (r) => r.iv30, AMBER),
+      line('IV30', (r) => r.iv30, ACCENT),
       line('RV30 +30D', (r) => r.rv30Fwd, DANGER, true),
       {
-        ...line('VRP', (r) => r.vrp, CALL),
+        ...line('VRP', (r) => r.vrp, CYAN),
         // zero line: above = implied paid more than was realized
         markLine: {
           symbol: 'none',

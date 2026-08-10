@@ -10,7 +10,7 @@ import {
 import type { SpotCandle } from '../../types';
 import type { Cone } from './ExpectedMoveConePrimitive';
 import { ExpectedMoveConePrimitive } from './ExpectedMoveConePrimitive';
-import { AMBER, AXIS_LINE, DOWN, GRID, MONO, UP } from '../../theme/charts';
+import { AXIS_LINE, DOWN, GRID, MONO, MUTED, TEXT, UP } from '../../theme/charts';
 import { useSettings } from '../../settings/store';
 import { priceWhole } from '../../utils/format';
 
@@ -57,7 +57,7 @@ export default function SpotHistoryChart({ candles, cone }: Props) {
       autoSize: true,
       layout: {
         background: { type: ColorType.Solid, color: 'transparent' },
-        textColor: AMBER,
+        textColor: MUTED,
         fontFamily: MONO,
         fontSize: 11,
       },
@@ -72,8 +72,8 @@ export default function SpotHistoryChart({ candles, cone }: Props) {
       },
       timeScale: { borderColor: AXIS_LINE },
       crosshair: {
-        vertLine: { color: AXIS_LINE, labelBackgroundColor: '#0b0e10' },
-        horzLine: { color: AXIS_LINE, labelBackgroundColor: '#0b0e10' },
+        vertLine: { color: MUTED, labelBackgroundColor: TEXT },
+        horzLine: { color: MUTED, labelBackgroundColor: TEXT },
       },
       localization: {
         priceFormatter: priceWhole,
@@ -119,7 +119,6 @@ export default function SpotHistoryChart({ candles, cone }: Props) {
     }
   }, [rows, bars.length, spotLookbackDays]);
 
-  // the expected-move cone, drawn forward from the last candle
   useEffect(() => {
     coneRef.current?.setCone(cone ?? null);
   }, [cone]);

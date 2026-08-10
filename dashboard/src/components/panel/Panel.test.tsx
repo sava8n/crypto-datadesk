@@ -31,17 +31,16 @@ describe('Panel', () => {
     expect(document.querySelector('.panel__msg--err')).not.toBeNull();
   });
 
-  it('shows the point count when sparse', () => {
+  it('shows a plain message when sparse', () => {
     renderPanel({ kind: 'sparse', count: 2 });
-    expect(body().textContent).toBe('INSUFFICIENT DATA · 2 PTS');
-    expect(document.querySelector('.panel__msg--warn')).not.toBeNull();
+    expect(body().textContent).toBe('INSUFFICIENT DATA');
+    expect(document.querySelector('.panel__msg--err')).toBeNull();
   });
 
   it('shows the empty message without error styling', () => {
     renderPanel({ kind: 'empty', message: 'NO REPORT YET' });
     expect(body().textContent).toBe('NO REPORT YET');
     expect(document.querySelector('.panel__msg--err')).toBeNull();
-    expect(document.querySelector('.panel__msg--warn')).toBeNull();
   });
 
   it('renders children with the ready data', () => {

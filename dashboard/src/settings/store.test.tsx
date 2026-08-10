@@ -46,6 +46,14 @@ describe('load (via SettingsProvider)', () => {
     const { result } = renderHook(() => useSettings(), { wrapper });
     expect(result.current.refreshSeconds).toBe(DEFAULT_SETTINGS.refreshSeconds);
   });
+
+  // a blob written while '' meant "front expiry" with the tenor in a separate field
+  it('migrates a pre-merge front-expiry pair into the single expiry field', () => {
+    localStorage.setItem(KEY, JSON.stringify({ expiry: '', frontExpiry: 'weekly' }));
+    const { result } = renderHook(() => useSettings(), { wrapper });
+    expect(result.current.expiry).toBe('weekly');
+    expect('frontExpiry' in result.current).toBe(false);
+  });
 });
 
 describe('useRefreshMs', () => {

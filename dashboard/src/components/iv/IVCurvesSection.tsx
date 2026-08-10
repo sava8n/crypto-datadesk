@@ -1,5 +1,4 @@
 import { useIVCurves } from '../../api/queries';
-import DTEControl from '../controls/DTEControl';
 import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
@@ -9,16 +8,11 @@ import IVCurvesChart from './IVCurvesChart';
 
 export default function IVCurvesSection() {
   const query = useIVCurves(useCurrency());
-  const { windowed, count, dteProps } = useDteWindowed(query.data);
+  const { windowed, count } = useDteWindowed(query.data);
   const state = panelState(query, windowed, count, MIN_POINTS.family);
 
   return (
-    <Panel
-      title="IMPLIED VOLATILITY CURVES"
-      subtitle="2D · STRIKE × IV · PER EXPIRY"
-      state={state}
-      controls={<DTEControl {...dteProps} />}
-    >
+    <Panel title="IMPLIED VOLATILITY CURVES" subtitle="2D · STRIKE × IV · PER EXPIRY" state={state}>
       {(data) => <IVCurvesChart data={data} />}
     </Panel>
   );

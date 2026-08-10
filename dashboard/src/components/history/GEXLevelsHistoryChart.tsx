@@ -4,7 +4,7 @@ import type { EChartsOption } from 'echarts';
 import EChart from '../chart/EChart';
 import type { PositioningHistoryResponse } from '../../types';
 import { priceWhole, usdShort } from '../../utils/format';
-import { AMBER, FLIP, MAX_PAIN, NET_EXPOSURE } from '../../theme/charts';
+import { ACCENT, FLIP, MAX_PAIN, MUTED } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY, values } from '../../theme/options';
 
 export function buildGEXLevelsHistoryOption(data: PositioningHistoryResponse): EChartsOption {
@@ -34,14 +34,14 @@ export function buildGEXLevelsHistoryOption(data: PositioningHistoryResponse): E
       valueAxisY({ name: 'PRICE', scale: true, format: priceWhole }),
       valueAxisY({
         name: 'NET GEX',
-        accent: NET_EXPOSURE,
+        accent: MUTED,
         position: 'right',
         splitLine: false,
         format: usdShort,
       }),
     ],
     series: [
-      level('spot', 'Spot', AMBER, false),
+      level('spot', 'Spot', ACCENT, false),
       level('gex_flip', 'GEX Flip', FLIP, true),
       level('max_pain_front', 'Max Pain', MAX_PAIN, true),
       {
@@ -50,7 +50,8 @@ export function buildGEXLevelsHistoryOption(data: PositioningHistoryResponse): E
         yAxisIndex: 1,
         barMaxWidth: 6,
         data: data.points.map((p) => [p.as_of, p.gex_net_total]),
-        itemStyle: { color: NET_EXPOSURE, opacity: 0.5 },
+        // context bars behind the level lines; gray so Max Pain keeps violet to itself
+        itemStyle: { color: MUTED, opacity: 0.5 },
         emphasis: { focus: 'series' },
         tooltip: { valueFormatter: values(usdShort) },
       },

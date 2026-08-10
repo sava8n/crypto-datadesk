@@ -4,7 +4,7 @@ import type { EChartsOption } from 'echarts';
 import EChart from '../chart/EChart';
 import type { TermStructureResponse } from '../../types';
 import { dteLabel, dateLabel, usdFull, volPct } from '../../utils/format';
-import { AMBER, MUTED } from '../../theme/charts';
+import { ACCENT, MUTED } from '../../theme/charts';
 import { axisTooltip, grid, valueAxisX, valueAxisY } from '../../theme/options';
 import { buildBasisRows } from './basis';
 
@@ -31,8 +31,8 @@ export function buildBasisOption(data: TermStructureResponse): EChartsOption {
         data: rows.map((r) => [r.dte, r.basisAnn]),
         showSymbol: true,
         symbolSize: 6,
-        itemStyle: { color: AMBER },
-        lineStyle: { width: 1.5, color: AMBER },
+        itemStyle: { color: ACCENT },
+        lineStyle: { width: 1.5, color: ACCENT },
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
         // zero line: above = contango (forwards over spot), below = backwardation
         markLine: {
