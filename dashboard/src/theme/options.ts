@@ -10,7 +10,7 @@ import type {
   YAXisComponentOption,
 } from 'echarts';
 
-import { AMBER, AXIS_LINE, GRID, MONO, TEXT, axisLabelStyle, tooltipStyle } from './charts';
+import { ACCENT, AXIS_LINE, GRID, MONO, MUTED, TEXT, axisLabelStyle, tooltipStyle } from './charts';
 
 export interface AxisOpts {
   name?: string;
@@ -30,7 +30,7 @@ export interface AxisOpts {
 const labelSize = (o: AxisOpts) => (o.compact ? 10 : 11);
 const nameSize = (o: AxisOpts) => (o.compact ? 12 : 13);
 const nameStyle = (o: AxisOpts) => ({
-  color: o.accent ?? AMBER,
+  color: o.accent ?? TEXT,
   fontFamily: MONO,
   fontSize: nameSize(o),
 });
@@ -44,7 +44,7 @@ function valueBase(o: AxisOpts) {
     axisLine: { lineStyle: { color: o.accent ?? AXIS_LINE } },
     axisTick: { lineStyle: { color: o.accent ?? AXIS_LINE } },
     axisLabel: {
-      color: o.accent ?? AMBER,
+      color: o.accent ?? MUTED,
       fontFamily: MONO,
       fontSize: labelSize(o),
       ...(o.format && { formatter: o.format }),
@@ -78,7 +78,7 @@ export const timeAxisX = (o: { compact?: boolean } = {}): XAXisComponentOption =
   type: 'time',
   axisLine: { lineStyle: { color: AXIS_LINE } },
   axisTick: { lineStyle: { color: AXIS_LINE } },
-  axisLabel: { color: AMBER, fontFamily: MONO, fontSize: o.compact ? 10 : 11 },
+  axisLabel: { color: MUTED, fontFamily: MONO, fontSize: o.compact ? 10 : 11 },
   splitLine: { lineStyle: { color: GRID } },
 });
 
@@ -91,7 +91,7 @@ export const categoryAxisX = (
   axisLine: { lineStyle: { color: AXIS_LINE } },
   axisTick: { lineStyle: { color: AXIS_LINE } },
   axisLabel: {
-    color: AMBER,
+    color: MUTED,
     fontFamily: MONO,
     fontSize: o.compact ? 10 : 11,
     rotate: o.rotate ?? 45,
@@ -138,8 +138,8 @@ export const legendScroll = (data: string[]): LegendComponentOption => ({
   itemHeight: 2,
   itemGap: 12,
   textStyle: { color: TEXT, fontFamily: MONO, fontSize: 10 },
-  pageTextStyle: { color: AMBER, fontFamily: MONO },
-  pageIconColor: AMBER,
+  pageTextStyle: { color: ACCENT, fontFamily: MONO },
+  pageIconColor: ACCENT,
   pageIconInactiveColor: AXIS_LINE,
 });
 

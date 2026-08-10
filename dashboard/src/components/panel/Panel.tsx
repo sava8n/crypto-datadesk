@@ -6,8 +6,7 @@ interface Props<T> {
   title: string;
   subtitle?: ReactNode;
   state: PanelState<T>;
-  // DTE window or expiry picker
-  // `.dte`/`.expiry` right-align themselves in the title row
+  // section-local controls; `.expiry` right-aligns itself in the title row
   controls?: ReactNode;
   // rendered below the body, outside its absolute-positioned box
   footer?: (data: T) => ReactNode;
@@ -44,9 +43,7 @@ export default function Panel<T>({
         {state.kind === 'error' && (
           <div className="panel__msg panel__msg--err">ERR · {state.message}</div>
         )}
-        {state.kind === 'sparse' && (
-          <div className="panel__msg panel__msg--warn">INSUFFICIENT DATA · {state.count} PTS</div>
-        )}
+        {state.kind === 'sparse' && <div className="panel__msg">INSUFFICIENT DATA</div>}
         {state.kind === 'empty' && <div className="panel__msg">{state.message}</div>}
         {state.kind === 'ready' && children(state.data)}
       </div>

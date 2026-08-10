@@ -1,64 +1,66 @@
-// Chart tokens for the amber-terminal theme
+// Chart tokens for the light editorial theme
 
-export const MONO = 'monospace';
+export const MONO = "'IBM Plex Mono', 'SF Mono', Menlo, monospace";
 
-export const AMBER = '#ffb000';
-export const GRID = '#243133';
-export const AXIS_LINE = '#3a4a4d';
-export const BLACK = '#000000';
-export const PANEL_BG = '#0b0e10';
+export const ACCENT = '#2f56d9';
+export const GRID = '#eef0f2';
+export const AXIS_LINE = '#d2d7de';
+export const PANEL_BG = '#ffffff';
 
 // legend/label text on multi-series charts
-export const TEXT = '#c8d0d0';
+export const TEXT = '#1a1a1e';
 
-// muted line, brighter than the gridlines: zero references and spot markers
-export const MUTED = '#6c7a7a';
+// axis tick labels, zero references and spot markers
+export const MUTED = '#8a9099';
 
-export const DANGER = '#ff3b30';
-export const VIOLET = '#b06cf0';
-export const UP = '#33ff66';
+export const DANGER = '#d93025';
+export const VIOLET = '#7c3aed';
+export const UP = '#188038';
 export const DOWN = DANGER;
 
-// call/put split: calls = teal, puts = amber; ITM brighter, OTM deeper
-export const CALL = '#5fded0';
-export const CALL_DEEP = '#178f80';
-export const PUT = '#ffcf4d';
-export const PUT_DEEP = '#c8860b';
+// call/put split: calls = blue, puts = yellow; ITM lighter, OTM deeper
+export const CALL = '#618cf5';
+export const CALL_DEEP = '#1652f0';
+export const PUT = '#eace3d';
+export const PUT_DEEP = '#c39c08';
 
-// categorical palette for multi-expiry line charts, one color per series
+// generic secondary series where blue is already taken (not call-side data)
+export const CYAN = '#0aa2c0';
+
+// categorical palette for multi-expiry line charts, one color per series.
+// Ordered so adjacent legend neighbors stay distinguishable on white.
 export const PALETTE = [
-  '#ffb000', '#4aa3ff', '#33ff66', '#ff6b6b', '#b388ff',
-  '#ffd24a', '#2ee6c5', '#ff8adf', '#7cff4a', '#ff9d4a',
-  '#6ce5ff', '#c0c8c8', '#e05aff', '#f0f0f0', '#8fa0ff',
-  '#d4b483',
+  '#2f56d9', '#d9a441', '#188038', '#d93025', '#7c3aed',
+  '#0aa2c0', '#c2410c', '#b0398f', '#4d7c0f', '#155e9e',
+  '#a16207', '#8c5cf0', '#be123c', '#0d9f6e', '#8f5b1a',
+  '#d55181',
 ];
 
 
 // gamma-flip (zero-gamma) level
 export const FLIP = DANGER;
-// max-pain strike
 export const MAX_PAIN = VIOLET;
 // intrinsic-value overlay axis on the OI chain
 export const INTRINSIC = DANGER;
-// net dealer-exposure line
 export const NET_EXPOSURE = VIOLET;
 // distribution tail buckets
 export const TAIL = PUT_DEEP;
 
 // expected-move cone over the spot chart
-export const CONE_FILL = 'rgba(200, 208, 208, 0.10)';
-export const CONE_EDGE = 'rgba(200, 208, 208, 0.5)';
-export const CONE_MID = 'rgba(200, 208, 208, 0.7)';
-export const CONE_LABEL = 'rgba(200, 208, 208, 0.9)';
+export const CONE_FILL = 'rgba(47, 86, 217, 0.06)';
+export const CONE_EDGE = 'rgba(47, 86, 217, 0.40)';
+export const CONE_MID = 'rgba(47, 86, 217, 0.65)';
+export const CONE_LABEL = 'rgba(26, 26, 30, 0.75)';
 
 
-export const axisLabelStyle = { color: AMBER, fontFamily: MONO, fontSize: 11 };
-export const axisNameStyle = { color: AMBER, fontFamily: MONO, fontSize: 13 };
+export const axisLabelStyle = { color: MUTED, fontFamily: MONO, fontSize: 11 };
+export const axisNameStyle = { color: TEXT, fontFamily: MONO, fontSize: 13 };
 
 // base tooltip box; panels add trigger/formatter
 export const tooltipStyle = {
   backgroundColor: PANEL_BG,
-  borderColor: GRID,
+  borderColor: '#e5e7eb',
   borderWidth: 1,
-  textStyle: { color: AMBER, fontFamily: MONO, fontSize: 12 },
+  extraCssText: 'box-shadow: 0 4px 16px rgba(26, 26, 30, 0.10); border-radius: 6px;',
+  textStyle: { color: TEXT, fontFamily: MONO, fontSize: 12 },
 };

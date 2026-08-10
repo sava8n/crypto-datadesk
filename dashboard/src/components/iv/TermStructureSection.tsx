@@ -1,5 +1,4 @@
 import { useCMBands, useTermStructure } from '../../api/queries';
-import DTEControl from '../controls/DTEControl';
 import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
@@ -12,16 +11,11 @@ export default function TermStructureSection() {
   const query = useTermStructure(currency);
   // best-effort context: an unreachable archive just leaves the band off
   const bands = useCMBands(currency);
-  const { windowed, count, dteProps } = useDteWindowed(query.data);
+  const { windowed, count } = useDteWindowed(query.data);
   const state = panelState(query, windowed, count, MIN_POINTS.series);
 
   return (
-    <Panel
-      title="TERM STRUCTURE"
-      subtitle="2D · ATM IV × EXPIRY · 90D BAND"
-      state={state}
-      controls={<DTEControl {...dteProps} />}
-    >
+    <Panel title="TERM STRUCTURE" subtitle="2D · ATM IV × EXPIRY · 90D BAND" state={state}>
       {(data) => <TermStructureChart data={data} bands={bands.data?.points} />}
     </Panel>
   );

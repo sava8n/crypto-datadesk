@@ -47,10 +47,11 @@ export const useVolumeByStrike = resourceHook('volumeByStrike', client.fetchVolu
 export const useStats = resourceHook('stats', client.fetchStats);
 export const useSpotHistory = resourceHook('spotHistory', client.fetchSpotHistory);
 
-export function useOIByStrike(currency: string, expiry?: string | null) {
+export function useOIByStrike(currency: string, expiry?: string | null, opts?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['oiByStrike', currency, expiry ?? 'all'],
     queryFn: () => client.fetchOIByStrike(currency, expiry ?? undefined),
+    enabled: opts?.enabled ?? true,
     // keep the dropdown + chart populated while switching expiry
     placeholderData: keepPreviousData,
     ...polling(useRefreshMs()),

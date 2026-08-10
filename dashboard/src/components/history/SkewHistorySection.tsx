@@ -1,5 +1,4 @@
 import { useVolHistory } from '../../api/queries';
-import LookbackControl from '../controls/LookbackControl';
 import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
@@ -8,17 +7,12 @@ import { useLookback } from '../controls/useLookback';
 import SkewHistoryChart from './SkewHistoryChart';
 
 export default function SkewHistorySection() {
-  const { window, setWindow, resolution } = useLookback();
+  const { window, resolution } = useLookback();
   const query = useVolHistory(useCurrency(), window, resolution);
   const state = panelState(query, query.data, query.data?.points.length ?? 0, MIN_POINTS.line);
 
   return (
-    <Panel
-      title="SKEW HISTORY"
-      subtitle="25Δ RR / BF · CM 7D/30D × TIME"
-      state={state}
-      controls={<LookbackControl window={window} onChange={setWindow} />}
-    >
+    <Panel title="SKEW HISTORY" subtitle="25Δ RR / BF · CM 7D/30D × TIME" state={state}>
       {(data) => <SkewHistoryChart data={data} />}
     </Panel>
   );

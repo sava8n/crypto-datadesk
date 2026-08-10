@@ -5,7 +5,7 @@ import EChart from '../chart/EChart';
 import type { RVConePoint, RVConeResponse, TermStructurePoint } from '../../types';
 import { dteOf } from '../../utils/dte';
 import { dteLabel, pctWhole, volPct } from '../../utils/format';
-import { AMBER, AXIS_LINE, CALL, MUTED, TEXT } from '../../theme/charts';
+import { ACCENT, AXIS_LINE, CYAN, MUTED, TEXT } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, valueAxisX, valueAxisY } from '../../theme/options';
 
 export interface RVConeChartData {
@@ -48,7 +48,7 @@ export function buildRVConeOption({ cone, implied }: RVConeChartData): EChartsOp
     name: 'CURRENT RV',
     data: rows.filter((r) => r.current != null).map((r) => [r.days, r.current as number]),
     symbolSize: 9,
-    itemStyle: { color: AMBER },
+    itemStyle: { color: ACCENT },
   };
 
   const series: (LineSeriesOption | ScatterSeriesOption)[] = [...percentiles, current];
@@ -59,8 +59,8 @@ export function buildRVConeOption({ cone, implied }: RVConeChartData): EChartsOp
       data: impliedRows.map((p) => [p.dte, p.iv]),
       showSymbol: true,
       symbolSize: 4,
-      itemStyle: { color: CALL },
-      lineStyle: { width: 1.5, color: CALL },
+      itemStyle: { color: CYAN },
+      lineStyle: { width: 1.5, color: CYAN },
       emphasis: { focus: 'series', lineStyle: { width: 3 } },
     });
   }

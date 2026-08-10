@@ -1,14 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
 import { useIVCurves, useSmileHistory } from '../../api/queries';
 import type { RecentWindow } from '../../types';
-import ExpirySelect from '../controls/ExpirySelect';
-import WindowSelect from '../controls/WindowSelect';
 import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
-import { useCurrency } from '../../settings/store';
-import { useExpiryPicker } from '../controls/useExpiryPicker';
+import { useCurrency, useSettings } from '../../settings/store';
+import { useExpiry } from '../controls/useExpiry';
 import { expiriesOf } from '../../utils/expiry';
 import SmileCompareChart, { type SmileCompareData } from './SmileCompareChart';
 
@@ -16,12 +14,12 @@ const WINDOW_LABELS: Record<RecentWindow, string> = { '24h': '24H AGO', '7d': '7
 
 export default function SmileCompareSection() {
   const currency = useCurrency();
-  const [window, setWindow] = useState<RecentWindow>('24h');
+  const { flowWindow } = useSettings();
 
   const curves = useIVCurves(currency);
   const expiries = useMemo(() => expiriesOf(curves.data?.points), [curves.data]);
-  const { selected, select } = useExpiryPicker(expiries);
-  const history = useSmileHistory(currency, selected, window);
+  const selected = useExpiry(expiries);
+  const history = useSmileHistory(currency, selected, flowWindow);
 
   const value: SmileCompareData | undefined = useMemo(() => {
     if (!curves.data) return undefined;
@@ -30,24 +28,14 @@ export default function SmileCompareSection() {
       current: selected ? curves.data.points.filter((p) => p.expiry === selected) : [],
       previous: history.data?.points ?? [],
       previousLabel: history.data?.baseline_stale
-        ? `${WINDOW_LABELS[window]} · STALE`
-        : WINDOW_LABELS[window],
+        ? `${WINDOW_LABELS[flowWindow]} · STALE`
+        : WINDOW_LABELS[flowWindow],
     };
-  }, [curves.data, history.data, selected, window]);
+  }, [curves.data, history.data, selected, flowWindow]);
   const state = panelState(curves, value, value?.current.length ?? 0, MIN_POINTS.line);
 
   return (
-    <Panel
-      title="SMILE COMPARE"
-      subtitle="STRIKE × IV · NOW VS ARCHIVED"
-      state={state}
-      controls={
-        <>
-          <WindowSelect window={window} onSelect={setWindow} />
-          <ExpirySelect expiries={expiries} selected={selected} onSelect={select} />
-        </>
-      }
-    >
+    <Panel title="SMILE COMPARE" subtitle="STRIKE × IV · NOW VS ARCHIVED" state={state}>
       {(data) => <SmileCompareChart data={data} />}
     </Panel>
   );

@@ -1,12 +1,10 @@
 import { useTape } from '../../api/queries';
 import type { TapePrint } from '../../types';
-import { useSeeded } from '../controls/useSeeded';
 import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
 import { panelState } from '../panel/panelState';
 import { useCurrency, useSettings } from '../../settings/store';
 import { countFull, pctOne, timeLabel, usdShort } from '../../utils/format';
-import PremiumSelect from '../controls/PremiumSelect';
 import { instrumentLabel, tags } from './tape';
 
 function Row({ print }: { print: TapePrint }) {
@@ -24,17 +22,12 @@ function Row({ print }: { print: TapePrint }) {
 }
 
 export default function TapeSection() {
-  const [minPremium, setMinPremium] = useSeeded(useSettings().tapeMinPremium);
-  const query = useTape(useCurrency(), minPremium);
+  const { tapeMinPremium } = useSettings();
+  const query = useTape(useCurrency(), tapeMinPremium);
   const state = panelState(query, query.data, query.data?.points.length ?? 0, MIN_POINTS.bars);
 
   return (
-    <Panel
-      title="TAPE"
-      subtitle="LATEST PRINTS · NEWEST FIRST"
-      state={state}
-      controls={<PremiumSelect minPremium={minPremium} onSelect={setMinPremium} />}
-    >
+    <Panel title="TAPE" subtitle="LATEST PRINTS · NEWEST FIRST" state={state}>
       {(data) => (
         <div className="exp-table">
           <table>

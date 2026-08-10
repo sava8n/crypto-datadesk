@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import { useProbCurves, useSpotHistory } from '../../api/queries';
 import { useCurrency, useSettings } from '../../settings/store';
-import { resolveFrontExpiry } from '../../utils/expiry';
+import { resolveExpiry } from '../../utils/expiry';
 import { dateLabel } from '../../utils/format';
 import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
@@ -13,7 +13,7 @@ import { buildCone, coneAnchor } from './cone';
 
 export default function SpotHistorySection() {
   const currency = useCurrency();
-  const { frontExpiry: frontPref } = useSettings();
+  const { expiry: expiryPref } = useSettings();
 
   const query = useSpotHistory(currency);
   const candles = query.data?.candles;
@@ -22,9 +22,9 @@ export default function SpotHistorySection() {
   // overlay shares that cache entry rather than costing a request of its own
   const prob = useProbCurves(currency);
   const expiry = prob.data
-    ? resolveFrontExpiry(
+    ? resolveExpiry(
+        expiryPref,
         prob.data.quantiles.map((q) => q.expiry),
-        frontPref,
       )
     : undefined;
 

@@ -4,7 +4,7 @@ import type { EChartsOption } from 'echarts';
 import EChart from '../chart/EChart';
 import type { ProbCurvePoint } from '../../types';
 import { pctWhole, volPct } from '../../utils/format';
-import { AMBER, MONO, MUTED, TAIL } from '../../theme/charts';
+import { ACCENT, MONO, MUTED, TAIL } from '../../theme/charts';
 import { axisTooltip, categoryAxisX, grid, valueAxisY } from '../../theme/options';
 import { buildBuckets } from './buckets';
 
@@ -31,7 +31,7 @@ export function buildProbDistributionOption(points: ProbCurvePoint[], spot: numb
         barCategoryGap: '20%',
         data: buckets.map((b) => ({
           value: b.prob,
-          itemStyle: { color: b.tail ? TAIL : AMBER },
+          itemStyle: { color: b.tail ? TAIL : ACCENT },
         })),
         emphasis: { focus: 'series' },
         ...(spotBucket >= 0 && {
