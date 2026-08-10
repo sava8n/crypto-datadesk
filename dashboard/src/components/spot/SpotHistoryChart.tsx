@@ -59,7 +59,7 @@ export default function SpotHistoryChart({ candles, cone }: Props) {
         background: { type: ColorType.Solid, color: 'transparent' },
         textColor: MUTED,
         fontFamily: MONO,
-        fontSize: 11,
+        fontSize: 13,
       },
       grid: {
         vertLines: { color: GRID },

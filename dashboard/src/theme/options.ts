@@ -27,8 +27,8 @@ export interface AxisOpts {
   splitLine?: boolean;
 }
 
-const labelSize = (o: AxisOpts) => (o.compact ? 10 : 11);
-const nameSize = (o: AxisOpts) => (o.compact ? 12 : 13);
+const labelSize = (o: AxisOpts) => (o.compact ? 12 : 13);
+const nameSize = (o: AxisOpts) => (o.compact ? 14 : 15);
 const nameStyle = (o: AxisOpts) => ({
   color: o.accent ?? TEXT,
   fontFamily: MONO,
@@ -78,7 +78,7 @@ export const timeAxisX = (o: { compact?: boolean } = {}): XAXisComponentOption =
   type: 'time',
   axisLine: { lineStyle: { color: AXIS_LINE } },
   axisTick: { lineStyle: { color: AXIS_LINE } },
-  axisLabel: { color: MUTED, fontFamily: MONO, fontSize: o.compact ? 10 : 11 },
+  axisLabel: { color: MUTED, fontFamily: MONO, fontSize: o.compact ? 12 : 13 },
   splitLine: { lineStyle: { color: GRID } },
 });
 
@@ -93,7 +93,7 @@ export const categoryAxisX = (
   axisLabel: {
     color: MUTED,
     fontFamily: MONO,
-    fontSize: o.compact ? 10 : 11,
+    fontSize: o.compact ? 12 : 13,
     rotate: o.rotate ?? 45,
     interval: o.interval ?? 'auto',
   },
@@ -137,7 +137,7 @@ export const legendScroll = (data: string[]): LegendComponentOption => ({
   itemWidth: 18,
   itemHeight: 2,
   itemGap: 12,
-  textStyle: { color: TEXT, fontFamily: MONO, fontSize: 10 },
+  textStyle: { color: TEXT, fontFamily: MONO, fontSize: 12 },
   pageTextStyle: { color: ACCENT, fontFamily: MONO },
   pageIconColor: ACCENT,
   pageIconInactiveColor: AXIS_LINE,

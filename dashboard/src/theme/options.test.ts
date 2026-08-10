@@ -45,10 +45,10 @@ describe('valueAxisY', () => {
   it('drops a point in compact panels', () => {
     const normal = valueAxisY({ name: 'IV' }) as Record<string, never>;
     const compact = valueAxisY({ name: 'IV', compact: true }) as Record<string, never>;
-    expect((normal.axisLabel as { fontSize: number }).fontSize).toBe(11);
-    expect((compact.axisLabel as { fontSize: number }).fontSize).toBe(10);
-    expect((normal.nameTextStyle as { fontSize: number }).fontSize).toBe(13);
-    expect((compact.nameTextStyle as { fontSize: number }).fontSize).toBe(12);
+    expect((normal.axisLabel as { fontSize: number }).fontSize).toBe(13);
+    expect((compact.axisLabel as { fontSize: number }).fontSize).toBe(12);
+    expect((normal.nameTextStyle as { fontSize: number }).fontSize).toBe(15);
+    expect((compact.nameTextStyle as { fontSize: number }).fontSize).toBe(14);
   });
 
   it('passes scale and explicit bounds through', () => {

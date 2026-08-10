@@ -53,8 +53,8 @@ export const CONE_MID = 'rgba(47, 86, 217, 0.65)';
 export const CONE_LABEL = 'rgba(26, 26, 30, 0.75)';
 
 
-export const axisLabelStyle = { color: MUTED, fontFamily: MONO, fontSize: 11 };
-export const axisNameStyle = { color: TEXT, fontFamily: MONO, fontSize: 13 };
+export const axisLabelStyle = { color: MUTED, fontFamily: MONO, fontSize: 13 };
+export const axisNameStyle = { color: TEXT, fontFamily: MONO, fontSize: 15 };
 
 // base tooltip box; panels add trigger/formatter
 export const tooltipStyle = {
@@ -62,5 +62,5 @@ export const tooltipStyle = {
   borderColor: '#e5e7eb',
   borderWidth: 1,
   extraCssText: 'box-shadow: 0 4px 16px rgba(26, 26, 30, 0.10); border-radius: 6px;',
-  textStyle: { color: TEXT, fontFamily: MONO, fontSize: 12 },
+  textStyle: { color: TEXT, fontFamily: MONO, fontSize: 14 },
 };
