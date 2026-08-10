@@ -156,7 +156,7 @@ export class ExpectedMoveConePrimitive implements ISeriesPrimitive<Time> {
       }
       context.setLineDash([]); // restore solid for later bottom-layer primitives
 
-      context.font = `10px ${MONO}`;
+      context.font = `12px ${MONO}`;
       context.fillStyle = CONE_LABEL;
 
       const texts: [number | null, string][] = [
