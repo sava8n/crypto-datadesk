@@ -1,8 +1,8 @@
 import { useExposureByStrike } from '../../api/queries';
-import Panel from '../panel/Panel';
-import { MIN_POINTS } from '../panel/minPoints';
-import { panelState } from '../panel/panelState';
 import { useCurrency, useSettings } from '../../settings/store';
+import { MIN_POINTS } from '../panel/minPoints';
+import Panel from '../panel/Panel';
+import { panelState } from '../panel/panelState';
 import { conventionSubtitle } from './convention';
 import ExposureByStrikeChart from './ExposureByStrikeChart';
 

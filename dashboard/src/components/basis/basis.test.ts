@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { buildBasisRows } from './basis';
+import { describe, expect, it } from 'vitest';
 import type { TermStructureResponse } from '../../types';
+import { buildBasisRows } from './basis';
 
 const resp = (
   spot: number,

@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { filterByDte } from './dte';
+import { describe, expect, it } from 'vitest';
 import { DAYS_PER_YEAR } from './constants';
+import { filterByDte } from './dte';
 
 const pt = (days: number) => ({ tte_years: days / DAYS_PER_YEAR, label: `${days}d` });
 

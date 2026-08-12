@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import data.market.history as history
 from analytics.conventions import DAY_MS
+from data.market import history
 from data.market.history import (
     WINDOW_DAYS,
     dvol_last_tick,

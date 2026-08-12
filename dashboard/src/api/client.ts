@@ -65,10 +65,7 @@ export const fetchProbCurves = (currency: string): Promise<ProbCurvesResponse> =
 export const fetchOIByExpiry = (currency: string): Promise<OIByExpiryResponse> =>
   fetchJson(url('oiByExpiry', { currency }));
 
-export const fetchOIByStrike = (
-  currency: string,
-  expiry?: string,
-): Promise<OIByStrikeResponse> =>
+export const fetchOIByStrike = (currency: string, expiry?: string): Promise<OIByStrikeResponse> =>
   fetchJson(url('oiByStrike', expiry ? { currency, expiry } : { currency }));
 
 export const fetchVolumeByStrike = (currency: string): Promise<VolumeByStrikeResponse> =>
@@ -114,20 +111,16 @@ export const fetchSmileHistory = (
   currency: string,
   expiry: string,
   window: RecentWindow,
-): Promise<SmileHistoryResponse> =>
-  fetchJson(url('smileHistory', { currency, expiry, window }));
+): Promise<SmileHistoryResponse> => fetchJson(url('smileHistory', { currency, expiry, window }));
 
-export const fetchCMBands = (
-  currency: string,
-  window: ArchiveWindow,
-): Promise<CMBandsResponse> => fetchJson(url('cmBands', { currency, window }));
+export const fetchCMBands = (currency: string, window: ArchiveWindow): Promise<CMBandsResponse> =>
+  fetchJson(url('cmBands', { currency, window }));
 
 export const fetchVolHistory = (
   currency: string,
   window: ArchiveWindow,
   resolution: Resolution,
-): Promise<VolHistoryResponse> =>
-  fetchJson(url('historyVol', { currency, window, resolution }));
+): Promise<VolHistoryResponse> => fetchJson(url('historyVol', { currency, window, resolution }));
 
 export const fetchPositioningHistory = (
   currency: string,
@@ -142,8 +135,7 @@ export const fetchStats = (currency: string): Promise<StatsResponse> =>
 export const fetchSpotHistory = (currency: string): Promise<SpotHistoryResponse> =>
   fetchJson(url('spotHistory', { currency }));
 
-export const fetchReports = (): Promise<ReportListResponse> =>
-  fetchJson(url('reports', {}));
+export const fetchReports = (): Promise<ReportListResponse> => fetchJson(url('reports', {}));
 
 export const fetchReport = (id: number): Promise<ReportDetail> =>
   fetchJson(`/api/${ENDPOINTS.reports}/${id}`);

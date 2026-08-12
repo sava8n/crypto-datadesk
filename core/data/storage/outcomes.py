@@ -20,7 +20,6 @@ from analytics.prob import distribution, quantiles
 from data.clients import deribit
 from data.market.chain import prepare_otm_quotes
 from data.storage import db, read, schema, series
-from data.storage.errors import StorageUnavailable
 
 logger = logging.getLogger(__name__)
 

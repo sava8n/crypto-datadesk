@@ -1,6 +1,17 @@
 # Changelog
 
 
+## [0.4.2] - 2026-08-12
+
+### Added
+
+- **Linters** - ruff on the service and Biome on the dashboard, both run in CI
+
+### Changed
+
+- **Static assets** - served compressed, with immutable caching on the hashed bundles and none on the entrypoint
+
+
 ## [0.4.1] - 2026-08-10
 
 ### Added

@@ -1,12 +1,11 @@
-import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
-
-import EChart from '../chart/EChart';
-import type { CMBandPoint, SkewResponse } from '../../types';
-import { dteOf } from '../../utils/dte';
-import { dteLabel, dateLabel, volPct } from '../../utils/format';
+import { useMemo } from 'react';
 import { ACCENT, CYAN, MUTED } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, valueAxisX, valueAxisY } from '../../theme/options';
+import type { CMBandPoint, SkewResponse } from '../../types';
+import { dteOf } from '../../utils/dte';
+import { dateLabel, dteLabel, volPct } from '../../utils/format';
+import EChart from '../chart/EChart';
 import { bandRows, bandSeries } from './bands';
 
 const SERIES_NAMES = ['RR 25Δ', 'BF 25Δ'];
@@ -68,12 +67,6 @@ export function buildSkewOption(data: SkewResponse, bands: CMBandPoint[] = []): 
   };
 }
 
-export default function SkewChart({
-  data,
-  bands,
-}: {
-  data: SkewResponse;
-  bands?: CMBandPoint[];
-}) {
+export default function SkewChart({ data, bands }: { data: SkewResponse; bands?: CMBandPoint[] }) {
   return <EChart option={useMemo(() => buildSkewOption(data, bands), [data, bands])} />;
 }

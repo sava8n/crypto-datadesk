@@ -8,7 +8,7 @@ import numpy as np
 
 _SQRT2 = sqrt(2.0)
 _SQRT_2PI = sqrt(2.0 * np.pi)
-# np.vectorize is not a true vectorization, but numpy ships no erf 
+# np.vectorize is not a true vectorization, but numpy ships no erf
 # and the alternative is a scipy dependency
 _erf = np.vectorize(erf, otypes=[float])
 

@@ -1,4 +1,4 @@
-// Chain points -> per-expiry curves. Calls and puts quoted at the 
+// Chain points -> per-expiry curves. Calls and puts quoted at the
 // same strike are averaged, which is what makes a smile single-valued.
 
 export interface StrikePoint {

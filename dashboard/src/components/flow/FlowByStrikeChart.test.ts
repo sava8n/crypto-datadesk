@@ -1,7 +1,6 @@
-import { describe, it, expect } from 'vitest';
-
-import { buildFlowByStrikeOption } from './FlowByStrikeChart';
+import { describe, expect, it } from 'vitest';
 import type { FlowByStrikeResponse } from '../../types';
+import { buildFlowByStrikeOption } from './FlowByStrikeChart';
 
 const resp = (points: FlowByStrikeResponse['points']): FlowByStrikeResponse => ({
   currency: 'BTC',

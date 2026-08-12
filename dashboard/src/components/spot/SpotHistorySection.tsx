@@ -4,12 +4,12 @@ import { useProbCurves, useSpotHistory } from '../../api/queries';
 import { useCurrency, useSettings } from '../../settings/store';
 import { resolveExpiry } from '../../utils/expiry';
 import { dateLabel } from '../../utils/format';
-import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
+import Panel from '../panel/Panel';
 import { panelState } from '../panel/panelState';
-import SpotHistoryChart from './SpotHistoryChart';
-import type { Cone } from './ExpectedMoveConePrimitive';
 import { buildCone, coneAnchor } from './cone';
+import type { Cone } from './ExpectedMoveConePrimitive';
+import SpotHistoryChart from './SpotHistoryChart';
 
 export default function SpotHistorySection() {
   const currency = useCurrency();

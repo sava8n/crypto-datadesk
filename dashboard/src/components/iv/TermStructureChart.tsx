@@ -1,12 +1,11 @@
-import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
-
-import EChart from '../chart/EChart';
-import type { CMBandPoint, TermStructureResponse } from '../../types';
-import { dteOf } from '../../utils/dte';
-import { dteLabel, dateLabel, pctOne, pctWhole } from '../../utils/format';
+import { useMemo } from 'react';
 import { ACCENT } from '../../theme/charts';
 import { grid, itemTooltip, valueAxisX, valueAxisY } from '../../theme/options';
+import type { CMBandPoint, TermStructureResponse } from '../../types';
+import { dteOf } from '../../utils/dte';
+import { dateLabel, dteLabel, pctOne, pctWhole } from '../../utils/format';
+import EChart from '../chart/EChart';
 import { bandRows, bandSeries } from './bands';
 
 export function buildTermStructureOption(

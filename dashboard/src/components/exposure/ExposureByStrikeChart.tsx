@@ -1,12 +1,11 @@
-import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
-
-import EChart from '../chart/EChart';
-import type { ExposureGreek, ExposureByStrikeResponse } from '../../types';
-import { strikeFmt, usdFull, usdShort } from '../../utils/format';
-import { nearestIdx } from './nearest';
-import { CALL, FLIP, NET_EXPOSURE, PUT, axisLabelStyle } from '../../theme/charts';
+import { useMemo } from 'react';
+import { axisLabelStyle, CALL, FLIP, NET_EXPOSURE, PUT } from '../../theme/charts';
 import { axisTooltip, categoryAxisX, grid, legendBar, valueAxisY } from '../../theme/options';
+import type { ExposureByStrikeResponse, ExposureGreek } from '../../types';
+import { strikeFmt, usdFull, usdShort } from '../../utils/format';
+import EChart from '../chart/EChart';
+import { nearestIdx } from './nearest';
 
 // dollars per 1% move in the forward (gamma), per vol point (vanna), per day (charm)
 const AXIS_NAMES: Record<ExposureGreek, string> = {

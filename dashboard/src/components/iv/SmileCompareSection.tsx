@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
 
 import { useIVCurves, useSmileHistory } from '../../api/queries';
-import type { RecentWindow } from '../../types';
-import Panel from '../panel/Panel';
-import { MIN_POINTS } from '../panel/minPoints';
-import { panelState } from '../panel/panelState';
 import { useCurrency, useSettings } from '../../settings/store';
-import { useExpiry } from '../controls/useExpiry';
+import type { RecentWindow } from '../../types';
 import { expiriesOf } from '../../utils/expiry';
+import { useExpiry } from '../controls/useExpiry';
+import { MIN_POINTS } from '../panel/minPoints';
+import Panel from '../panel/Panel';
+import { panelState } from '../panel/panelState';
 import SmileCompareChart, { type SmileCompareData } from './SmileCompareChart';
 
 const WINDOW_LABELS: Record<RecentWindow, string> = { '24h': '24H AGO', '7d': '7D AGO' };

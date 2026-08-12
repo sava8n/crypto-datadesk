@@ -1,12 +1,10 @@
-import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
-
-import EChart from '../chart/EChart';
-import { volPct } from '../../utils/format';
+import { useMemo } from 'react';
 import { ACCENT, CYAN, DANGER, MUTED } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY } from '../../theme/options';
+import { volPct } from '../../utils/format';
+import EChart from '../chart/EChart';
 import type { VRPRow } from './vrp';
-
 
 export function buildVRPOption(rows: VRPRow[]): EChartsOption {
   const line = (name: string, pick: (r: VRPRow) => number, color: string, dashed = false) => ({

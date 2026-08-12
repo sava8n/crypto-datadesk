@@ -17,11 +17,7 @@ export type BandMetric = 'atm_iv' | 'rr25';
 // keep tenors near the shown x-range so a 180d band cannot stretch a 0-30d chart
 const RANGE_SLACK = 1.15;
 
-export function bandRows(
-  points: CMBandPoint[],
-  metric: BandMetric,
-  maxX: number,
-): BandRow[] {
+export function bandRows(points: CMBandPoint[], metric: BandMetric, maxX: number): BandRow[] {
   return points
     .filter((p) => p.tenor_days <= maxX * RANGE_SLACK)
     .flatMap((p) => {

@@ -1,7 +1,6 @@
-import { describe, it, expect } from 'vitest';
-
-import { buildVolHistoryOption } from './VolHistoryChart';
+import { describe, expect, it } from 'vitest';
 import type { VolHistoryPoint, VolHistoryResponse } from '../../types';
+import { buildVolHistoryOption } from './VolHistoryChart';
 
 const point = (asOf: string, iv30: number | null): VolHistoryPoint => ({
   as_of: asOf,

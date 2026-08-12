@@ -3,3 +3,7 @@ dist
 .vite
 npm-debug.log*
 *.md
+.env*
+biome.json
+Dockerfile
+.dockerignore

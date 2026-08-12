@@ -7,9 +7,9 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from config import settings
+from data.cache import TTLCache
 from data.clients.deribit import DeribitError
 from data.market import loader
-from data.cache import TTLCache
 from data.market.errors import UpstreamError
 
 

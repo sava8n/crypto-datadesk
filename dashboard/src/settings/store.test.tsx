@@ -1,9 +1,8 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { renderHook, act } from '@testing-library/react';
-
-import { SettingsProvider, useRefreshMs, useSettings, useSettingsControl } from './store';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_SETTINGS, MIN_REFRESH_SECONDS } from '../config';
+import { SettingsProvider, useRefreshMs, useSettings, useSettingsControl } from './store';
 
 const KEY = 'datadesk.settings.v2';
 
@@ -77,7 +76,7 @@ describe('update / reset', () => {
     act(() => result.current.update({ spotLookbackDays: 90 }));
 
     expect(result.current.settings.spotLookbackDays).toBe(90);
-    expect(JSON.parse(localStorage.getItem(KEY)!).spotLookbackDays).toBe(90);
+    expect(JSON.parse(localStorage.getItem(KEY) ?? '{}').spotLookbackDays).toBe(90);
   });
 
   it('restores the defaults on reset', () => {

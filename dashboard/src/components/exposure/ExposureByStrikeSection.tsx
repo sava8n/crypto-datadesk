@@ -1,12 +1,12 @@
 import { useState } from 'react';
 
 import { useExposureByStrike } from '../../api/queries';
+import { useCurrency, useSettings } from '../../settings/store';
 import type { ExposureGreek } from '../../types';
 import GreekSelect from '../controls/GreekSelect';
-import Panel from '../panel/Panel';
 import { MIN_POINTS } from '../panel/minPoints';
+import Panel from '../panel/Panel';
 import { panelState } from '../panel/panelState';
-import { useCurrency, useSettings } from '../../settings/store';
 import { conventionSubtitle } from './convention';
 import ExposureByStrikeChart from './ExposureByStrikeChart';
 

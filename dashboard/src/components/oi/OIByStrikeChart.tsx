@@ -1,15 +1,11 @@
-import { useMemo } from 'react';
 import type {
   BarSeriesOption,
   EChartsOption,
   ScatterSeriesOption,
   YAXisComponentOption,
 } from 'echarts';
-
-import EChart from '../chart/EChart';
-import type { OIByStrikeResponse } from '../../types';
-import { countShort, strikeFmt, usdFull, usdShort } from '../../utils/format';
-import { INTRINSIC, axisLabelStyle } from '../../theme/charts';
+import { useMemo } from 'react';
+import { axisLabelStyle, INTRINSIC } from '../../theme/charts';
 import {
   axisTooltip,
   categoryAxisX,
@@ -18,6 +14,9 @@ import {
   valueAxisY,
   values,
 } from '../../theme/options';
+import type { OIByStrikeResponse } from '../../types';
+import { countShort, strikeFmt, usdFull, usdShort } from '../../utils/format';
+import EChart from '../chart/EChart';
 import { OI_SERIES, OI_SERIES_NAMES } from './series';
 
 const INTRINSIC_NAME = 'Total Intrinsic Value';

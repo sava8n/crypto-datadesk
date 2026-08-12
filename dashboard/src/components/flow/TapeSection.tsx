@@ -1,10 +1,10 @@
 import { useTape } from '../../api/queries';
-import type { TapePrint } from '../../types';
-import Panel from '../panel/Panel';
-import { MIN_POINTS } from '../panel/minPoints';
-import { panelState } from '../panel/panelState';
 import { useCurrency, useSettings } from '../../settings/store';
+import type { TapePrint } from '../../types';
 import { countFull, pctOne, timeLabel, usdShort } from '../../utils/format';
+import { MIN_POINTS } from '../panel/minPoints';
+import Panel from '../panel/Panel';
+import { panelState } from '../panel/panelState';
 import { instrumentLabel, tags } from './tape';
 
 function Row({ print }: { print: TapePrint }) {

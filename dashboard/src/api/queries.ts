@@ -47,7 +47,11 @@ export const useVolumeByStrike = resourceHook('volumeByStrike', client.fetchVolu
 export const useStats = resourceHook('stats', client.fetchStats);
 export const useSpotHistory = resourceHook('spotHistory', client.fetchSpotHistory);
 
-export function useOIByStrike(currency: string, expiry?: string | null, opts?: { enabled?: boolean }) {
+export function useOIByStrike(
+  currency: string,
+  expiry?: string | null,
+  opts?: { enabled?: boolean },
+) {
   return useQuery({
     queryKey: ['oiByStrike', currency, expiry ?? 'all'],
     queryFn: () => client.fetchOIByStrike(currency, expiry ?? undefined),
@@ -103,11 +107,7 @@ export function useExposureByStrike(
   });
 }
 
-export function useSmileHistory(
-  currency: string,
-  expiry: string | null,
-  window: RecentWindow,
-) {
+export function useSmileHistory(currency: string, expiry: string | null, window: RecentWindow) {
   return useQuery({
     queryKey: ['smileHistory', currency, expiry, window],
     queryFn: () => client.fetchSmileHistory(currency, expiry as string, window),

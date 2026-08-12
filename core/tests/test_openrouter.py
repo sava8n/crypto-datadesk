@@ -69,7 +69,10 @@ def respond(monkeypatch):
     return set_outcome
 
 
-def _completed(content="{}", usage=SimpleNamespace(input_tokens=100, output_tokens=8200, cost=0.041)):
+DEFAULT_USAGE = SimpleNamespace(input_tokens=100, output_tokens=8200, cost=0.041)
+
+
+def _completed(content="{}", usage=DEFAULT_USAGE):
     return SimpleNamespace(
         type="response.completed",
         response=SimpleNamespace(output_text=content, output=None, usage=usage),

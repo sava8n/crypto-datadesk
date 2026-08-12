@@ -34,7 +34,9 @@ def test_derived_scalars_match_their_frames(market_state):
     puts = chain.loc[chain["option_type"] == "P", "open_interest"].sum()
     assert market_state.oi_total_calls == pytest.approx(calls)
     assert market_state.oi_total_puts == pytest.approx(puts)
-    assert market_state.gex_net_total == pytest.approx(market_state.exposure("gamma")["net_exposure"].sum())
+    assert market_state.gex_net_total == pytest.approx(
+        market_state.exposure("gamma")["net_exposure"].sum()
+    )
     assert market_state.max_pain_front == market_state.oi_by_strike(market_state.oi_expiries[0])[1]
     assert market_state.iv7 is not None and market_state.iv7 > 0
     for name in ("rr25_7", "bf25_7", "rr25_30", "bf25_30"):

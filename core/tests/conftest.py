@@ -41,7 +41,7 @@ _FRACS = (0.80, 0.85, 0.90, 0.95, 1.00, 1.05, 1.10, 1.15, 1.20)
 
 
 # A put-skewed, convex smile in log-moneyness: sigma(k) = ATM_IV + SKEW*k + CURVATURE*k^2.
-# *Flat* smile makes smooth_smile return a zero slope, which silently switches off 
+# *Flat* smile makes smooth_smile return a zero slope, which silently switches off
 # the Breeden-Litzenberger correction that prob.distribution exists for. Any test wanting
 # the flat case must ask for it (skew=0, curvature=0) rather than get it by accident.
 ATM_IV = 0.60

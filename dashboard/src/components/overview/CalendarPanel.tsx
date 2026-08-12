@@ -30,8 +30,8 @@ export default function CalendarPanel({ state }: { state: PanelState<ReportDetai
     <Panel title="CALENDAR" subtitle="MACRO · NEXT 7-10D" state={state}>
       {(detail) => (
         <div className="cal">
-          {detail.payload.calendar.map((event, i) => (
-            <Row key={i} event={event} />
+          {detail.payload.calendar.map((event) => (
+            <Row key={`${event.date}-${event.time_utc ?? ''}-${event.title}`} event={event} />
           ))}
           {/* appended by the frontend from the schedule, never part of the stored payload */}
           <div className="cal__row">

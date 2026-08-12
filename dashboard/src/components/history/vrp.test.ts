@@ -1,7 +1,6 @@
-import { describe, it, expect } from 'vitest';
-
-import { pairForwardRealized } from './vrp';
+import { describe, expect, it } from 'vitest';
 import type { VolHistoryPoint } from '../../types';
+import { pairForwardRealized } from './vrp';
 
 const DAY = 86_400_000;
 const START = Date.parse('2026-06-01T00:00:00Z');

@@ -1,18 +1,17 @@
-import { useEffect, useState, type ReactNode } from 'react';
-
+import { type ReactNode, useEffect, useState } from 'react';
+import { useOIByStrike } from '../../api/queries';
 import {
   ARCHIVE_WINDOWS,
   CONVENTIONS,
   CURRENCIES,
+  type Currency,
   MAX_DTE_LIMIT,
   MIN_REFRESH_SECONDS,
   RECENT_WINDOWS,
   SPOT_LOOKBACKS,
-  type Currency,
 } from '../../config';
-import type { ArchiveWindow } from '../../types';
-import { useOIByStrike } from '../../api/queries';
 import { useCurrency, useSettingsControl } from '../../settings/store';
+import type { ArchiveWindow } from '../../types';
 import { EXPIRY_ALL } from '../../utils/expiry';
 import { dateLabel } from '../../utils/format';
 import { MIN_PREMIUMS } from '../flow/tape';
@@ -155,7 +154,10 @@ export default function SettingsDrawer({ open, onClose }: { open: boolean; onClo
   // a hand-typed lookback from an older blob still shows as the selected value
   const spotOptions = SPOT_LOOKBACKS.some((o) => o.value === settings.spotLookbackDays)
     ? SPOT_LOOKBACKS
-    : [...SPOT_LOOKBACKS, { value: settings.spotLookbackDays, label: `${settings.spotLookbackDays}D` }];
+    : [
+        ...SPOT_LOOKBACKS,
+        { value: settings.spotLookbackDays, label: `${settings.spotLookbackDays}D` },
+      ];
 
   useEffect(() => {
     if (!open) return;
@@ -168,12 +170,25 @@ export default function SettingsDrawer({ open, onClose }: { open: boolean; onClo
 
   return (
     <>
-      {open && <div className="settings__scrim" onClick={onClose} />}
+      {/* a button, not a div: click-outside then also works from the keyboard */}
+      {open && (
+        <button
+          type="button"
+          className="settings__scrim"
+          aria-label="Close settings"
+          onClick={onClose}
+        />
+      )}
 
       <aside className={`settings${open ? ' settings--open' : ''}`} aria-hidden={!open}>
         <div className="settings__head">
           <span className="settings__title">SETTINGS</span>
-          <button type="button" className="settings__close" onClick={onClose} aria-label="Close settings">
+          <button
+            type="button"
+            className="settings__close"
+            onClick={onClose}
+            aria-label="Close settings"
+          >
             ✕
           </button>
         </div>
@@ -255,6 +270,7 @@ export default function SettingsDrawer({ open, onClose }: { open: boolean; onClo
 
         <div className="settings__foot">
           <button
+            type="button"
             className="refresh"
             onClick={() => {
               reset();

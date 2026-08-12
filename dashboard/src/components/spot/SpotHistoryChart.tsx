@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useRef } from 'react';
 import {
   CandlestickSeries,
   ColorType,
@@ -6,14 +5,13 @@ import {
   type IChartApi,
   type ISeriesApi,
 } from 'lightweight-charts';
-
+import { useEffect, useMemo, useRef } from 'react';
+import { useSettings } from '../../settings/store';
+import { AXIS_LINE, DOWN, GRID, MONO, MUTED, TEXT, UP } from '../../theme/charts';
 import type { SpotCandle } from '../../types';
+import { priceWhole } from '../../utils/format';
 import type { Cone } from './ExpectedMoveConePrimitive';
 import { ExpectedMoveConePrimitive } from './ExpectedMoveConePrimitive';
-import { AXIS_LINE, DOWN, GRID, MONO, MUTED, TEXT, UP } from '../../theme/charts';
-import { useSettings } from '../../settings/store';
-import { priceWhole } from '../../utils/format';
-
 
 // blank space kept past the cone, as a fraction of the visible window
 const LABEL_ROOM = 0.09;

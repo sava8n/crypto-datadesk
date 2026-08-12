@@ -39,6 +39,6 @@ def build(prob_curves: pd.DataFrame) -> pd.DataFrame:
         prob = curve["prob_above"].to_numpy(dtype=float)
         row = {"expiry": expiry, "tte_years": expiry_tte(group)}
         for q in QUANTILE_LEVELS:
-            row[f"p{int(round(q * 100))}"] = invert_survival(strike, prob, q)
+            row[f"p{round(q * 100)}"] = invert_survival(strike, prob, q)
         rows.append(row)
     return pd.DataFrame(rows, columns=QUANTILE_COLUMNS)

@@ -1,10 +1,5 @@
-import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
-
-import EChart from '../chart/EChart';
-import type { ProbCurvesResponse } from '../../types';
-import { groupByExpiry } from '../../utils/curves';
-import { dateLabel, pctOne, pctWhole, strikeFmt, strikeFull } from '../../utils/format';
+import { useMemo } from 'react';
 import { MONO, MUTED, PALETTE } from '../../theme/charts';
 import {
   grid,
@@ -14,6 +9,10 @@ import {
   valueAxisX,
   valueAxisY,
 } from '../../theme/options';
+import type { ProbCurvesResponse } from '../../types';
+import { groupByExpiry } from '../../utils/curves';
+import { dateLabel, pctOne, pctWhole, strikeFmt, strikeFull } from '../../utils/format';
+import EChart from '../chart/EChart';
 
 export function buildProbCurvesOption(data: ProbCurvesResponse): EChartsOption {
   // near-dated first, so legend and z-order are chronological

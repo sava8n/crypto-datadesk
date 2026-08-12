@@ -1,7 +1,6 @@
-import { describe, it, expect } from 'vitest';
-
-import { buildExpiryRows, buildSettledRows } from './expiryTable';
+import { describe, expect, it } from 'vitest';
 import type { ExpiryOutcomePoint, MaxPainResponse, ProbQuantilePoint } from '../../types';
+import { buildExpiryRows, buildSettledRows } from './expiryTable';
 
 const maxPain = (points: MaxPainResponse['points']): MaxPainResponse => ({
   currency: 'BTC',

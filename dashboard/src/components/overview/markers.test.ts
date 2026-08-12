@@ -1,10 +1,15 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { dropUnknownMarkers, groupMarkers, splitMarkers } from './markers';
 
 describe('splitMarkers', () => {
   it('splits text around markers, keeping ids as numbers', () => {
-    expect(splitMarkers('vol widened.[1][3] Meanwhile')).toEqual(['vol widened.', 1, 3, ' Meanwhile']);
+    expect(splitMarkers('vol widened.[1][3] Meanwhile')).toEqual([
+      'vol widened.',
+      1,
+      3,
+      ' Meanwhile',
+    ]);
   });
 
   it('handles markers at the start and end', () => {

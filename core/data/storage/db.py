@@ -79,7 +79,7 @@ def is_available() -> bool:
         with engine().connect() as conn:
             conn.execute(text("select 1"))
         return True
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001, see the docstring
         logger.warning("database unavailable: %s", exc)
         return False
 

@@ -1,7 +1,6 @@
-import { describe, it, expect } from 'vitest';
-
-import { buildOIByStrikeOption } from './OIByStrikeChart';
+import { describe, expect, it } from 'vitest';
 import type { OIByStrikeResponse } from '../../types';
+import { buildOIByStrikeOption } from './OIByStrikeChart';
 
 const resp = (maxPain: number | null, strikes: number[]): OIByStrikeResponse => ({
   currency: 'BTC',

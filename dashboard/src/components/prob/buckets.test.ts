@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { buildBuckets } from './buckets';
+import { describe, expect, it } from 'vitest';
 import type { OptionType, ProbCurvePoint } from '../../types';
+import { buildBuckets } from './buckets';
 
 const pp = (strike: number, prob_above: number, option_type: OptionType = 'C'): ProbCurvePoint => ({
   expiry: '2026-07-31T08:00:00Z',

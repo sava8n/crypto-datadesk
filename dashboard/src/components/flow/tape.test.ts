@@ -1,7 +1,6 @@
-import { describe, it, expect } from 'vitest';
-
-import { instrumentLabel, tags } from './tape';
+import { describe, expect, it } from 'vitest';
 import type { TapePrint } from '../../types';
+import { instrumentLabel, tags } from './tape';
 
 const print = (over: Partial<TapePrint> = {}): TapePrint => ({
   trade_id: 'BTC-1',

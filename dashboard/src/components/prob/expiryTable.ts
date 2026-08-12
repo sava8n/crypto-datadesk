@@ -2,8 +2,8 @@
 // distribution's quantiles, both already served per expiry, plus the archived
 // implied-vs-realized outcome for recently settled expiries.
 
-import { dteOf } from '../../utils/dte';
 import type { ExpiryOutcomePoint, MaxPainResponse, ProbQuantilePoint } from '../../types';
+import { dteOf } from '../../utils/dte';
 
 export interface ExpiryRow {
   expiry: string;

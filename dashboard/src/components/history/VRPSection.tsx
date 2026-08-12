@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
 
 import { useVolHistory } from '../../api/queries';
-import Panel from '../panel/Panel';
-import { MIN_POINTS } from '../panel/minPoints';
-import { panelState } from '../panel/panelState';
 import { useCurrency } from '../../settings/store';
 import { useLookback } from '../controls/useLookback';
+import { MIN_POINTS } from '../panel/minPoints';
+import Panel from '../panel/Panel';
+import { panelState } from '../panel/panelState';
 import VRPChart from './VRPChart';
 import { pairForwardRealized } from './vrp';
 

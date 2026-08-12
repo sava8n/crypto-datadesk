@@ -83,7 +83,9 @@ def _drain(events) -> tuple[object, dict]:
                 elif "web_fetch" in item_type:
                     stats["fetches"] += 1
                 logger.debug("progress: %s", _describe(item))
-    raise OpenRouterError(f"stream ended without a completed response after {stats['events']} events")
+    raise OpenRouterError(
+        f"stream ended without a completed response after {stats['events']} events"
+    )
 
 
 def _output_text(result) -> str:

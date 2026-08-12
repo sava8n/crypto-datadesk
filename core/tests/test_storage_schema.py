@@ -50,7 +50,7 @@ def test_retention_predicates_are_indexed():
     assert ("ts",) in _indexed(schema.trade)
     assert ("expiry",) in _indexed(schema.expiry_outcome)
     # contracts are deleted by snapshot_id, which leads the primary key
-    assert list(schema.contract.primary_key.columns.keys())[0] == "snapshot_id"
+    assert next(iter(schema.contract.primary_key.columns.keys())) == "snapshot_id"
 
 
 def test_contract_carries_no_denormalized_as_of():
