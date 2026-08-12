@@ -1,19 +1,17 @@
-import { useMemo } from 'react';
 import type { EChartsOption, LineSeriesOption, ScatterSeriesOption } from 'echarts';
-
-import EChart from '../chart/EChart';
+import { useMemo } from 'react';
+import { ACCENT, AXIS_LINE, CYAN, MUTED, TEXT } from '../../theme/charts';
+import { axisTooltip, grid, legendBar, valueAxisX, valueAxisY } from '../../theme/options';
 import type { RVConePoint, RVConeResponse, TermStructurePoint } from '../../types';
 import { dteOf } from '../../utils/dte';
 import { dteLabel, pctWhole, volPct } from '../../utils/format';
-import { ACCENT, AXIS_LINE, CYAN, MUTED, TEXT } from '../../theme/charts';
-import { axisTooltip, grid, legendBar, valueAxisX, valueAxisY } from '../../theme/options';
+import EChart from '../chart/EChart';
 
 export interface RVConeChartData {
   cone: RVConeResponse;
   // current ATM IV term structure, overlaid at its own DTE - implied vs the RV cone
   implied: TermStructurePoint[];
 }
-
 
 const PERCENTILE_SERIES: { key: keyof RVConePoint; name: string; color: string }[] = [
   { key: 'p90', name: 'P90', color: AXIS_LINE },

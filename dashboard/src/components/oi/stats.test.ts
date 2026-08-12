@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { oiStats } from './stats';
+import { describe, expect, it } from 'vitest';
 import type { OIByStrikePoint, OIByStrikeResponse } from '../../types';
+import { oiStats } from './stats';
 
 const oiPoint = (o: Partial<OIByStrikePoint>): OIByStrikePoint => ({
   strike: 0,
@@ -12,7 +12,10 @@ const oiPoint = (o: Partial<OIByStrikePoint>): OIByStrikePoint => ({
   ...o,
 });
 
-function resp(points: OIByStrikePoint[], over: Partial<OIByStrikeResponse> = {}): OIByStrikeResponse {
+function resp(
+  points: OIByStrikePoint[],
+  over: Partial<OIByStrikeResponse> = {},
+): OIByStrikeResponse {
   return {
     currency: 'BTC',
     spot: 100,

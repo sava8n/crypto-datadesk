@@ -50,8 +50,10 @@ const sameCone = (a: Cone | null, b: Cone | null): boolean =>
 
 /** The implied expected move drawn forward from the last candle to the anchor expiry. */
 export class ExpectedMoveConePrimitive implements ISeriesPrimitive<Time> {
+  // biome-ignore-start lint/correctness/noUnusedPrivateClassMembers: read via `const { chart, series } = this` in draw()
   private chart: IChartApi | null = null;
   private series: ISeriesApi<SeriesType> | null = null;
+  // biome-ignore-end lint/correctness/noUnusedPrivateClassMembers: read in draw()
   private requestUpdate: (() => void) | null = null;
   private cone: Cone | null = null;
 
@@ -91,6 +93,7 @@ export class ExpectedMoveConePrimitive implements ISeriesPrimitive<Time> {
 
     const timeScale = chart.timeScale();
 
+    // biome-ignore lint/correctness/useHookAtTopLevel: lightweight-charts canvas API, not a React hook
     target.useMediaCoordinateSpace(({ context, mediaSize }) => {
       const y = (price: number | null): number | null =>
         price == null ? null : series.priceToCoordinate(price);
@@ -124,7 +127,7 @@ export class ExpectedMoveConePrimitive implements ISeriesPrimitive<Time> {
         context.fillStyle = CONE_FILL;
         context.beginPath();
         trace(hiPath, (s) => s.hi);
-        [...loPath].reverse().forEach((s) => context.lineTo(s.x, s.lo as number));
+        for (const s of [...loPath].reverse()) context.lineTo(s.x, s.lo as number);
         context.closePath();
         context.fill();
       }

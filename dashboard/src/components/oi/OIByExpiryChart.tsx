@@ -1,10 +1,9 @@
-import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
-
-import EChart from '../chart/EChart';
+import { useMemo } from 'react';
+import { axisTooltip, categoryAxisX, grid, legendBar, valueAxisY } from '../../theme/options';
 import type { OIByExpiryResponse } from '../../types';
 import { countShort, dateLabel } from '../../utils/format';
-import { axisTooltip, categoryAxisX, grid, legendBar, valueAxisY } from '../../theme/options';
+import EChart from '../chart/EChart';
 import { OI_SERIES, OI_SERIES_NAMES } from './series';
 
 export function buildOIByExpiryOption(data: OIByExpiryResponse): EChartsOption {
@@ -17,7 +16,10 @@ export function buildOIByExpiryOption(data: OIByExpiryResponse): EChartsOption {
     tooltip: axisTooltip({ shadow: true, value: countShort }),
     grid: grid('bars'),
     // interval 0: every expiry gets a label, the axis is short enough
-    xAxis: categoryAxisX(rows.map((p) => dateLabel(p.expiry)), { interval: 0 }),
+    xAxis: categoryAxisX(
+      rows.map((p) => dateLabel(p.expiry)),
+      { interval: 0 },
+    ),
     yAxis: valueAxisY({ name: 'OI', format: countShort }),
     series: OI_SERIES.map((s) => ({
       type: 'bar',

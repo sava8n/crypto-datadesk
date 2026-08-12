@@ -1,17 +1,17 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
+  countFull,
+  countShort,
   dateLabel,
+  dteLabel,
+  dvolFmt,
+  pctOne,
+  pctWhole,
+  priceWhole,
   strikeFmt,
   strikeFull,
-  countShort,
-  countFull,
-  usdShort,
   usdFull,
-  priceWhole,
-  pctWhole,
-  pctOne,
-  dvolFmt,
-  dteLabel,
+  usdShort,
 } from './format';
 
 describe('dateLabel', () => {

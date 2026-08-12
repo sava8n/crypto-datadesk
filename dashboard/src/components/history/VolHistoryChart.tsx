@@ -1,11 +1,10 @@
-import { useMemo } from 'react';
 import type { EChartsOption, LineSeriesOption } from 'echarts';
-
-import EChart from '../chart/EChart';
-import type { VolHistoryPoint, VolHistoryResponse } from '../../types';
-import { pctWhole, volPct } from '../../utils/format';
+import { useMemo } from 'react';
 import { ACCENT, DANGER, MUTED, PALETTE } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY } from '../../theme/options';
+import type { VolHistoryPoint, VolHistoryResponse } from '../../types';
+import { pctWhole, volPct } from '../../utils/format';
+import EChart from '../chart/EChart';
 
 // paired by tenor: each implied series sits next to the realized vol of the same horizon
 const SERIES: { key: keyof VolHistoryPoint; name: string; color: string }[] = [

@@ -27,8 +27,7 @@ export const countShort = (v: number) =>
     : `${Math.round(v)}`;
 
 // contract counts, full: 1234567 -> "1,234,567"
-export const countFull = (v: number) =>
-  v.toLocaleString(NUM_LOCALE, { maximumFractionDigits: 0 });
+export const countFull = (v: number) => v.toLocaleString(NUM_LOCALE, { maximumFractionDigits: 0 });
 
 // USD, abbreviated: 12_500_000 -> "$12.5M"
 export const usdShort = (v: number) => {
@@ -44,8 +43,7 @@ export const usdFull = (v: number) =>
   `$${v.toLocaleString(NUM_LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 // price, whole units, unprefixed for price axes: 61500.4 -> "61,500"
-export const priceWhole = (v: number) =>
-  v.toLocaleString(NUM_LOCALE, { maximumFractionDigits: 0 });
+export const priceWhole = (v: number) => v.toLocaleString(NUM_LOCALE, { maximumFractionDigits: 0 });
 
 // fraction as a whole percent: 0.42 -> "42%"
 export const pctWhole = (v: number) => `${Math.round(v * 100)}%`;

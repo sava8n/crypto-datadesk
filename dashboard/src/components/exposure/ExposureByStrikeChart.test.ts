@@ -1,8 +1,7 @@
-import { describe, it, expect } from 'vitest';
 import type { LineSeriesOption } from 'echarts';
-
+import { describe, expect, it } from 'vitest';
+import type { ExposureByStrikeResponse, ExposureGreek } from '../../types';
 import { buildExposureByStrikeOption } from './ExposureByStrikeChart';
-import type { ExposureGreek, ExposureByStrikeResponse } from '../../types';
 
 const resp = (
   gex_flip: number | null,

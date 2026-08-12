@@ -25,8 +25,8 @@
   --violet: #7c3aed;
 
   /* type */
-  --sans: 'IBM Plex Sans', -apple-system, 'Segoe UI', 'Helvetica Neue', sans-serif;
-  --mono: 'IBM Plex Mono', 'SF Mono', 'Menlo', 'Consolas', monospace;
+  --sans: "IBM Plex Sans", -apple-system, "Segoe UI", "Helvetica Neue", sans-serif;
+  --mono: "IBM Plex Mono", "SF Mono", "Menlo", "Consolas", monospace;
 
   /* layout scale */
   --gap: 24px;
@@ -190,14 +190,6 @@ body {
   margin: var(--gap) var(--edge);
 }
 
-.panels > .panel {
-  height: var(--panel-h);
-}
-
-.panels--mini > .panel {
-  height: var(--panel-h-mini);
-}
-
 /* ---- Panel ---- */
 .panel {
   display: flex;
@@ -206,6 +198,15 @@ body {
   padding-top: 12px;
   min-height: 0;
   min-width: 0;
+}
+
+/* after .panel, so the more specific row heights are not also the earlier rules */
+.panels > .panel {
+  height: var(--panel-h);
+}
+
+.panels--mini > .panel {
+  height: var(--panel-h-mini);
 }
 
 /* full-width standalone panel */
@@ -411,7 +412,11 @@ body {
 .settings__scrim {
   position: fixed;
   inset: 0;
+  /* it is a <button>, so the UA chrome has to come off */
+  border: 0;
+  padding: 0;
   background: rgba(17, 20, 24, 0.35);
+  cursor: default;
   z-index: 40;
 }
 
@@ -531,7 +536,7 @@ body {
   margin: 0;
 }
 
-.settings__input[type='number'] {
+.settings__input[type="number"] {
   appearance: textfield;
   -moz-appearance: textfield;
 }
@@ -573,7 +578,7 @@ body {
 }
 
 /* both inputs span the rail; only the thumbs catch the pointer */
-.range input[type='range'] {
+.range input[type="range"] {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -585,12 +590,12 @@ body {
   -webkit-appearance: none;
 }
 
-.range input[type='range']::-webkit-slider-runnable-track {
+.range input[type="range"]::-webkit-slider-runnable-track {
   height: 20px;
   background: none;
 }
 
-.range input[type='range']::-webkit-slider-thumb {
+.range input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   pointer-events: auto;
   width: 14px;
@@ -602,7 +607,7 @@ body {
   cursor: pointer;
 }
 
-.range input[type='range']::-moz-range-thumb {
+.range input[type="range"]::-moz-range-thumb {
   pointer-events: auto;
   width: 10px;
   height: 10px;

@@ -39,10 +39,22 @@ def _prior(date_str, headline):
             "standfirst": "the standfirst",
             "body_md": f"body of {headline}",
             "references": [
-                {"id": 1, "title": "Source", "url": "https://x.test/a", "note": "n", "role": "citation"}
+                {
+                    "id": 1,
+                    "title": "Source",
+                    "url": "https://x.test/a",
+                    "note": "n",
+                    "role": "citation",
+                }
             ],
             "calendar": [
-                {"date": date_str, "time_utc": None, "title": "stale", "note": "n", "importance": "low"}
+                {
+                    "date": date_str,
+                    "time_utc": None,
+                    "title": "stale",
+                    "note": "n",
+                    "importance": "low",
+                }
             ],
         },
     }

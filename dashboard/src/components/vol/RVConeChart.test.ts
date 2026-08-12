@@ -1,7 +1,6 @@
-import { describe, it, expect } from 'vitest';
-
-import { buildRVConeOption, type RVConeChartData } from './RVConeChart';
+import { describe, expect, it } from 'vitest';
 import type { RVConePoint, TermStructurePoint } from '../../types';
+import { buildRVConeOption, type RVConeChartData } from './RVConeChart';
 
 const point = (days: number, current: number | null = 0.5): RVConePoint => ({
   days,

@@ -40,11 +40,7 @@ const dayKey = (ms: number) => new Date(ms).toISOString().slice(0, 10);
  *
  * Empty when the expiry has already rolled past the last candle, or when spot is unusable.
  */
-export function buildCone(
-  spot: number,
-  anchor: ConeAnchor,
-  lastCandleDate: string,
-): ConePoint[] {
+export function buildCone(spot: number, anchor: ConeAnchor, lastCandleDate: string): ConePoint[] {
   if (!(spot > 0)) return [];
 
   const start = Date.parse(`${lastCandleDate}T00:00:00Z`);

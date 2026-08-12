@@ -1,11 +1,10 @@
-import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
-
-import EChart from '../chart/EChart';
-import type { FlowByStrikeResponse } from '../../types';
-import { countShort, strikeFmt, strikeFull, usdShort } from '../../utils/format';
+import { useMemo } from 'react';
 import { CALL, MUTED, PUT } from '../../theme/charts';
 import { axisTooltip, categoryAxisX, grid, legendBar, valueAxisY } from '../../theme/options';
+import type { FlowByStrikeResponse } from '../../types';
+import { countShort, strikeFmt, strikeFull, usdShort } from '../../utils/format';
+import EChart from '../chart/EChart';
 
 export function buildFlowByStrikeOption(data: FlowByStrikeResponse): EChartsOption {
   // signed net taker flow per strike, low strikes first; premium shown on hover

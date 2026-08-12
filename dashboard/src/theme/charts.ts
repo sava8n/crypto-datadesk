@@ -30,12 +30,23 @@ export const CYAN = '#0aa2c0';
 // categorical palette for multi-expiry line charts, one color per series.
 // Ordered so adjacent legend neighbors stay distinguishable on white.
 export const PALETTE = [
-  '#2f56d9', '#d9a441', '#188038', '#d93025', '#7c3aed',
-  '#0aa2c0', '#c2410c', '#b0398f', '#4d7c0f', '#155e9e',
-  '#a16207', '#8c5cf0', '#be123c', '#0d9f6e', '#8f5b1a',
+  '#2f56d9',
+  '#d9a441',
+  '#188038',
+  '#d93025',
+  '#7c3aed',
+  '#0aa2c0',
+  '#c2410c',
+  '#b0398f',
+  '#4d7c0f',
+  '#155e9e',
+  '#a16207',
+  '#8c5cf0',
+  '#be123c',
+  '#0d9f6e',
+  '#8f5b1a',
   '#d55181',
 ];
-
 
 // gamma-flip (zero-gamma) level
 export const FLIP = DANGER;
@@ -51,7 +62,6 @@ export const CONE_FILL = 'rgba(47, 86, 217, 0.06)';
 export const CONE_EDGE = 'rgba(47, 86, 217, 0.40)';
 export const CONE_MID = 'rgba(47, 86, 217, 0.65)';
 export const CONE_LABEL = 'rgba(26, 26, 30, 0.75)';
-
 
 export const axisLabelStyle = { color: MUTED, fontFamily: MONO, fontSize: 13 };
 export const axisNameStyle = { color: TEXT, fontFamily: MONO, fontSize: 15 };

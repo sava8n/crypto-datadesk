@@ -1,10 +1,9 @@
-import type { ArchiveWindow, Resolution } from '../../types';
 import { useSettings } from '../../settings/store';
+import type { ArchiveWindow, Resolution } from '../../types';
 
 // short windows read the hourly captures; longer ones the last capture per day,
 // keeping the payload bounded (90d at 1h would be ~2200 points per series)
-export const resolutionFor = (window: ArchiveWindow): Resolution =>
-  window === '7d' ? '1h' : '1d';
+export const resolutionFor = (window: ArchiveWindow): Resolution => (window === '7d' ? '1h' : '1d');
 
 /**
  * Archive window from settings.

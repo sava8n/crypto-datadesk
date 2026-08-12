@@ -12,6 +12,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+RUN useradd --system --uid 1001 app
+USER app
+
 EXPOSE 8000
 
 CMD ["uvicorn", "main:server", "--host", "0.0.0.0", "--port", "8000"]

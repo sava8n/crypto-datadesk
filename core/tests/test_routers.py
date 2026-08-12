@@ -212,7 +212,10 @@ def _dealers_long_everything(market_state):
     return [
         {"expiry": e, "strike": s, "option_type": t, "net_taker": -2.0 * oi}
         for e, s, t, oi in zip(
-            chain["expiry"], chain["strike"], chain["option_type"], chain["open_interest"],
+            chain["expiry"],
+            chain["strike"],
+            chain["option_type"],
+            chain["open_interest"],
             strict=True,
         )
     ]

@@ -1,8 +1,8 @@
 // Forward-looking vol risk premium: what selling 30d vol at iv30(t) actually earned,
 // measured by the realized vol observed 30 days later (rv30 at t+30d covers (t, t+30d]).
 
-import { MS_PER_DAY } from '../../utils/constants';
 import type { VolHistoryPoint } from '../../types';
+import { MS_PER_DAY } from '../../utils/constants';
 
 export interface VRPRow {
   asOf: string;

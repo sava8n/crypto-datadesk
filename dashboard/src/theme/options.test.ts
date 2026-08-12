@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { AXIS_LINE, GRID, MUTED } from './charts';
-import { GRID_INSETS, categoryAxisX, grid, tuple, valueAxisX, valueAxisY } from './options';
+import { categoryAxisX, GRID_INSETS, grid, tuple, valueAxisX, valueAxisY } from './options';
 
 describe('valueAxisY', () => {
   it('uses the shared line and gridline colours', () => {

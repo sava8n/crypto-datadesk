@@ -1,0 +1,9 @@
+line-length = 100
+
+# without this ruff treats `analytics`, `api`, `config`, `data` as third-party
+# and reports every import block as unsorted
+src = ["."]
+
+[lint.flake8-bugbear]
+# FastAPI's parameter markers are calls in argument defaults by design
+extend-immutable-calls = ["fastapi.Body", "fastapi.Depends", "fastapi.Path", "fastapi.Query"]

@@ -1,11 +1,10 @@
-import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
-
-import EChart from '../chart/EChart';
-import type { PositioningHistoryPoint, PositioningHistoryResponse } from '../../types';
-import { countShort } from '../../utils/format';
+import { useMemo } from 'react';
 import { CALL, PUT, VIOLET } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY, values } from '../../theme/options';
+import type { PositioningHistoryPoint, PositioningHistoryResponse } from '../../types';
+import { countShort } from '../../utils/format';
+import EChart from '../chart/EChart';
 
 // put/call OI ratio; null while either side is unknown or the call side is empty
 export function pcRatio(p: PositioningHistoryPoint): number | null {

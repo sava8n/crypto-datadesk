@@ -38,8 +38,12 @@ def test_pivot_empty_is_empty():
 
 def test_dealer_inputs_returns_per_contract_rows_and_the_tape_start(monkeypatch):
     ts = datetime(2026, 7, 26, tzinfo=UTC)
-    row = {"expiry": datetime(2026, 8, 7, 8, tzinfo=UTC), "strike": 64_000.0,
-           "option_type": "C", "net_taker": 5.0}
+    row = {
+        "expiry": datetime(2026, 8, 7, 8, tzinfo=UTC),
+        "strike": 64_000.0,
+        "option_type": "C",
+        "net_taker": 5.0,
+    }
     results = iter([[row], [{"ts": ts}]])
     monkeypatch.setattr(db, "rows", lambda stmt, what: next(results))
 

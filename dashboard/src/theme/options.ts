@@ -2,15 +2,15 @@
 // literal, which is what lets an option be annotated EChartsOption with no cast.
 
 import type {
-  DefaultLabelFormatterCallbackParams as ItemParams,
   GridComponentOption,
+  DefaultLabelFormatterCallbackParams as ItemParams,
   LegendComponentOption,
   TooltipComponentOption,
   XAXisComponentOption,
   YAXisComponentOption,
 } from 'echarts';
 
-import { ACCENT, AXIS_LINE, GRID, MONO, MUTED, TEXT, axisLabelStyle, tooltipStyle } from './charts';
+import { ACCENT, AXIS_LINE, axisLabelStyle, GRID, MONO, MUTED, TEXT, tooltipStyle } from './charts';
 
 export interface AxisOpts {
   name?: string;

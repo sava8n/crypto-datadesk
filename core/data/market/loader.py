@@ -82,6 +82,6 @@ def warm_up() -> None:
     for ccy in settings.supported_currency_list:
         try:
             load_market_state(ccy)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001, warm-up must never block boot
             logger.warning("warm-up failed for currency=%s, %s", ccy, exc)
     logger.info("warm-up complete in %.0f ms", (time.perf_counter() - start) * 1000)

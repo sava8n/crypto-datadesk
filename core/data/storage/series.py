@@ -151,9 +151,7 @@ def baseline_snapshot(currency: str, target: datetime) -> tuple[int, datetime, f
     return int(rows[0]["id"]), rows[0]["as_of"], float(rows[0]["spot"])
 
 
-def baseline_oi_by_strike(
-    snapshot_id: int, expiry: datetime | None, now: datetime
-) -> list[dict]:
+def baseline_oi_by_strike(snapshot_id: int, expiry: datetime | None, now: datetime) -> list[dict]:
     """Per-(strike, option_type) open interest of one archived book.
 
     Expiries at or before ``now`` are excluded: they have rolled off since capture, and

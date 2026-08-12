@@ -1,7 +1,6 @@
-import { describe, it, expect } from 'vitest';
-
-import { buildOIChangeByStrikeOption } from './OIChangeByStrikeChart';
+import { describe, expect, it } from 'vitest';
 import type { OIChangeByStrikeResponse } from '../../types';
+import { buildOIChangeByStrikeOption } from './OIChangeByStrikeChart';
 
 const resp = (points: OIChangeByStrikeResponse['points']): OIChangeByStrikeResponse => ({
   currency: 'BTC',

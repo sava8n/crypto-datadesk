@@ -1,9 +1,9 @@
 import { usePositioningHistory } from '../../api/queries';
-import Panel from '../panel/Panel';
-import { MIN_POINTS } from '../panel/minPoints';
-import { panelState } from '../panel/panelState';
 import { useCurrency } from '../../settings/store';
 import { useLookback } from '../controls/useLookback';
+import { MIN_POINTS } from '../panel/minPoints';
+import Panel from '../panel/Panel';
+import { panelState } from '../panel/panelState';
 import OIHistoryChart from './OIHistoryChart';
 
 export default function OIHistorySection() {

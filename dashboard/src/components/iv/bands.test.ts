@@ -1,7 +1,6 @@
-import { describe, it, expect } from 'vitest';
-
-import { bandRows, bandSeries } from './bands';
+import { describe, expect, it } from 'vitest';
 import type { CMBandPoint } from '../../types';
+import { bandRows, bandSeries } from './bands';
 
 const band = (tenor: number, mid: number | null): CMBandPoint => ({
   tenor_days: tenor,
@@ -19,7 +18,11 @@ const band = (tenor: number, mid: number | null): CMBandPoint => ({
 
 describe('bandRows', () => {
   it('clips tenors far past the shown range and drops null percentiles', () => {
-    const rows = bandRows([band(7, 0.3), band(30, 0.32), band(60, null), band(180, 0.35)], 'atm_iv', 30);
+    const rows = bandRows(
+      [band(7, 0.3), band(30, 0.32), band(60, null), band(180, 0.35)],
+      'atm_iv',
+      30,
+    );
     expect(rows.map((r) => r.x)).toEqual([7, 30]);
     expect(rows[0].lo).toBeCloseTo(0.28);
     expect(rows[0].mid).toBeCloseTo(0.3);

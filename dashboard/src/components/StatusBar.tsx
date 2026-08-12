@@ -1,8 +1,8 @@
 import { useIsFetching } from '@tanstack/react-query';
 
 import { useStats } from '../api/queries';
-import { timeLabel } from '../utils/format';
 import { useCurrency, useRefreshMs } from '../settings/store';
+import { timeLabel } from '../utils/format';
 
 export default function StatusBar() {
   const { data, isError } = useStats(useCurrency());

@@ -33,9 +33,7 @@ def build(closes: list[float]) -> pd.DataFrame:
     for window in CONE_WINDOWS:
         if rets.size < window + 1:  # fewer than two rolling observations
             continue
-        rv = sliding_window_view(rets, window).std(axis=1, ddof=1) * np.sqrt(
-            TRADING_DAYS_PER_YEAR
-        )
+        rv = sliding_window_view(rets, window).std(axis=1, ddof=1) * np.sqrt(TRADING_DAYS_PER_YEAR)
         finite_rv = rv[np.isfinite(rv)]
         if finite_rv.size < 2:
             continue

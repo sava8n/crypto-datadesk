@@ -4,11 +4,9 @@
 // matching reference still split - the model sometimes emits more markers than
 // references.
 export function splitMarkers(text: string): (string | number)[] {
-  const marker = /\[(\d+)\]/g;
   const parts: (string | number)[] = [];
   let last = 0;
-  let match: RegExpExecArray | null;
-  while ((match = marker.exec(text)) !== null) {
+  for (const match of text.matchAll(/\[(\d+)\]/g)) {
     if (match.index > last) parts.push(text.slice(last, match.index));
     parts.push(Number(match[1]));
     last = match.index + match[0].length;

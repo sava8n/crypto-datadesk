@@ -1,13 +1,11 @@
-import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
-
-import EChart from '../chart/EChart';
-import type { TermStructureResponse } from '../../types';
-import { dteLabel, dateLabel, usdFull, volPct } from '../../utils/format';
+import { useMemo } from 'react';
 import { ACCENT, MUTED } from '../../theme/charts';
 import { axisTooltip, grid, valueAxisX, valueAxisY } from '../../theme/options';
+import type { TermStructureResponse } from '../../types';
+import { dateLabel, dteLabel, usdFull, volPct } from '../../utils/format';
+import EChart from '../chart/EChart';
 import { buildBasisRows } from './basis';
-
 
 export function buildBasisOption(data: TermStructureResponse): EChartsOption {
   const rows = buildBasisRows(data);

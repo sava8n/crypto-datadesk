@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -27,6 +27,7 @@ function renderString(text: string, known: ReadonlySet<number>): ReactNode {
   const parts = groupMarkers(dropUnknownMarkers(splitMarkers(text), known));
   return parts.map((part, i) =>
     Array.isArray(part) ? (
+      // biome-ignore lint/suspicious/noArrayIndexKey: fragments of one immutable string, never reordered
       <sup key={i} className="ref-mark">
         {part.join(',')}
       </sup>
@@ -41,7 +42,12 @@ function withMarkers(children: ReactNode, known: ReadonlySet<number>): ReactNode
   if (typeof children === 'string') return renderString(children, known);
   if (Array.isArray(children)) {
     return children.map((child, i) =>
-      typeof child === 'string' ? <span key={i}>{renderString(child, known)}</span> : child,
+      typeof child === 'string' ? (
+        // biome-ignore lint/suspicious/noArrayIndexKey: positional children of one rendered markdown node
+        <span key={i}>{renderString(child, known)}</span>
+      ) : (
+        child
+      ),
     );
   }
   return children;

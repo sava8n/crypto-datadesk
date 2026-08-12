@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { MS_PER_DAY } from './constants';
 import { resolveExpiry, resolveFrontExpiry, tenorOf } from './expiry';
 

@@ -1,9 +1,9 @@
 import { useOIByStrike } from '../../api/queries';
-import Panel from '../panel/Panel';
-import { MIN_POINTS } from '../panel/minPoints';
-import { panelState } from '../panel/panelState';
 import { useCurrency } from '../../settings/store';
 import { useExpiry } from '../controls/useExpiry';
+import { MIN_POINTS } from '../panel/minPoints';
+import Panel from '../panel/Panel';
+import { panelState } from '../panel/panelState';
 import OIByStrikeChart from './OIByStrikeChart';
 import OIStatTiles from './OIStatTiles';
 

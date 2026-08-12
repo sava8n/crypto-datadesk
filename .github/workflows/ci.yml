@@ -11,12 +11,48 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint-core:
+    name: Lint core (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+          cache: pip
+          cache-dependency-path: core/requirements-dev.txt
+      - name: Install ruff
+        run: pip install -r core/requirements-dev.txt
+      - name: ruff check
+        working-directory: core
+        run: ruff check --output-format=github .
+      - name: ruff format
+        working-directory: core
+        run: ruff format --check .
+
+  lint-dashboard:
+    name: Lint dashboard (biome)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+      - name: Install dependencies
+        working-directory: dashboard
+        run: npm ci
+      - name: biome ci
+        working-directory: dashboard
+        run: npx biome ci src
+
   test-core:
     name: Test core (pytest)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.14'
           cache: pip
@@ -33,8 +69,8 @@ jobs:
     name: Test dashboard (vitest)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -46,41 +82,24 @@ jobs:
         working-directory: dashboard
         run: npm test
 
-  build-and-push:
-    name: Build & push ${{ matrix.service }} image
-    needs: [test-core, test-dashboard]
-    if: github.event_name == 'push'
+  build:
+    name: Build ${{ matrix.service }} image
+    needs: [lint-core, lint-dashboard, test-core, test-dashboard]
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
     strategy:
       matrix:
         service: [core, dashboard]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Set up Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}/${{ matrix.service }}
-          tags: |
-            type=sha,prefix=
-            type=raw,value=latest,enable={{is_default_branch}}
-      - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/setup-buildx-action@v4
+      - name: Build image
+        uses: docker/build-push-action@v7
         with:
           context: ./${{ matrix.service }}
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          push: false
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # only main writes the cache, so PR branches cannot evict its layers
+          cache-to: ${{ github.ref == 'refs/heads/main' && 'type=gha,mode=max' || '' }}

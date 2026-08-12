@@ -1,12 +1,10 @@
-import { useMemo } from 'react';
 import type { EChartsOption, LineSeriesOption } from 'echarts';
-
-import EChart from '../chart/EChart';
-import type { VolHistoryPoint, VolHistoryResponse } from '../../types';
-import { volPct } from '../../utils/format';
+import { useMemo } from 'react';
 import { ACCENT, CYAN, MUTED, PALETTE } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY } from '../../theme/options';
-
+import type { VolHistoryPoint, VolHistoryResponse } from '../../types';
+import { volPct } from '../../utils/format';
+import EChart from '../chart/EChart';
 
 const SERIES: { key: keyof VolHistoryPoint; name: string; color: string }[] = [
   { key: 'rr25_7', name: 'RR 25Δ 7D', color: ACCENT },

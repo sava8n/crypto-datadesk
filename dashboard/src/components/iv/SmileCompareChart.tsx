@@ -1,12 +1,11 @@
-import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
-
-import EChart from '../chart/EChart';
+import { useMemo } from 'react';
+import { ACCENT, MUTED } from '../../theme/charts';
+import { grid, itemTooltip, legendBar, tuple, valueAxisX, valueAxisY } from '../../theme/options';
 import type { IVCurvePoint } from '../../types';
 import { averageByStrike } from '../../utils/curves';
 import { pctOne, pctWhole, strikeFmt, strikeFull } from '../../utils/format';
-import { ACCENT, MUTED } from '../../theme/charts';
-import { grid, itemTooltip, legendBar, tuple, valueAxisX, valueAxisY } from '../../theme/options';
+import EChart from '../chart/EChart';
 
 export interface SmileCompareData {
   current: IVCurvePoint[];

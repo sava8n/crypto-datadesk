@@ -35,8 +35,7 @@ export const MAX_DTE_LIMIT = 365;
 export const MIN_REFRESH_SECONDS = 10;
 
 // poll period in ms, clamped to the service cache floor
-export const refreshMs = (seconds: number): number =>
-  Math.max(MIN_REFRESH_SECONDS, seconds) * 1000;
+export const refreshMs = (seconds: number): number => Math.max(MIN_REFRESH_SECONDS, seconds) * 1000;
 
 // user-tunable inputs
 // the settings drawer overrides these and persists the overrides to localStorage

@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { createElement, type ReactNode } from 'react';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { SettingsProvider, useSettingsControl } from '../../settings/store';
 import { EXPIRY_ALL } from '../../utils/expiry';

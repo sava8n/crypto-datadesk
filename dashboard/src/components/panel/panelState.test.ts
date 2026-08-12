@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { panelState } from './panelState';
 
 const idle = { isLoading: false, isError: false, error: null };
@@ -11,9 +11,9 @@ describe('panelState', () => {
   });
 
   it('prefers loading over error', () => {
-    expect(panelState({ ...loading, isError: true, error: new Error('x') }, undefined, 0, 1)).toEqual(
-      { kind: 'loading' },
-    );
+    expect(
+      panelState({ ...loading, isError: true, error: new Error('x') }, undefined, 0, 1),
+    ).toEqual({ kind: 'loading' });
   });
 
   it('surfaces the error message', () => {

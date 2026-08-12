@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as client from './client';
 
 // minimal Response stand-in for the fetch mock
@@ -82,7 +82,9 @@ describe('URL building', () => {
 
   it('sends the archive window as a duration token, not a day count', async () => {
     await client.fetchVolHistory('BTC', '90d', '1d');
-    expect(fetchMock).toHaveBeenCalledWith('/api/history/vol?currency=BTC&window=90d&resolution=1d');
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/history/vol?currency=BTC&window=90d&resolution=1d',
+    );
 
     await client.fetchCMBands('BTC', '1y');
     expect(fetchMock).toHaveBeenCalledWith('/api/history/cm-bands?currency=BTC&window=1y');

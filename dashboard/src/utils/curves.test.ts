@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { averageByStrike, groupByExpiry } from './curves';
 
 const pt = (expiry: string, tte_years: number, strike: number, value: number) => ({
@@ -37,13 +37,16 @@ describe('averageByStrike', () => {
 
 describe('groupByExpiry', () => {
   it('builds one curve per expiry, near-dated first', () => {
-    const points = [
-      pt('FAR', 0.5, 100, 1),
-      pt('NEAR', 0.1, 100, 2),
-      pt('NEAR', 0.1, 110, 3),
-    ];
+    const points = [pt('FAR', 0.5, 100, 1), pt('NEAR', 0.1, 100, 2), pt('NEAR', 0.1, 110, 3)];
     expect(groupByExpiry(points, (p) => p.value)).toEqual([
-      { expiry: 'NEAR', tte: 0.1, points: [[100, 2], [110, 3]] },
+      {
+        expiry: 'NEAR',
+        tte: 0.1,
+        points: [
+          [100, 2],
+          [110, 3],
+        ],
+      },
       { expiry: 'FAR', tte: 0.5, points: [[100, 1]] },
     ]);
   });

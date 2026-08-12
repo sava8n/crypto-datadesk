@@ -1,7 +1,7 @@
 // Tape presentation helpers, kept pure for testing.
 
-import { dateLabel, strikeFmt } from '../../utils/format';
 import type { TapePrint } from '../../types';
+import { dateLabel, strikeFmt } from '../../utils/format';
 
 // "07AUG26 64k C"
 export function instrumentLabel(print: TapePrint): string {

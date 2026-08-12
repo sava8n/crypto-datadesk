@@ -1,11 +1,10 @@
-import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
-
-import EChart from '../chart/EChart';
-import type { ProbCurvePoint } from '../../types';
-import { pctWhole, volPct } from '../../utils/format';
+import { useMemo } from 'react';
 import { ACCENT, MONO, MUTED, TAIL } from '../../theme/charts';
 import { axisTooltip, categoryAxisX, grid, valueAxisY } from '../../theme/options';
+import type { ProbCurvePoint } from '../../types';
+import { pctWhole, volPct } from '../../utils/format';
+import EChart from '../chart/EChart';
 import { buildBuckets } from './buckets';
 
 interface Props {
@@ -49,5 +48,7 @@ export function buildProbDistributionOption(points: ProbCurvePoint[], spot: numb
 }
 
 export default function ProbDistributionChart({ points, spot }: Props) {
-  return <EChart option={useMemo(() => buildProbDistributionOption(points, spot), [points, spot])} />;
+  return (
+    <EChart option={useMemo(() => buildProbDistributionOption(points, spot), [points, spot])} />
+  );
 }

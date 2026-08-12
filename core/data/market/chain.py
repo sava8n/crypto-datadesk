@@ -53,9 +53,9 @@ def _parse_instrument_fields(book: pd.DataFrame) -> pd.DataFrame:
     Unparseable strikes become ``NaN`` for the caller to drop.
     """
     parts = book["instrument_name"].str.split("-", expand=True)
-    book["expiry"] = pd.to_datetime(
-        parts[1], format=EXPIRY_DATE_FORMAT, utc=True
-    ) + pd.Timedelta(hours=SETTLEMENT_HOUR_UTC)
+    book["expiry"] = pd.to_datetime(parts[1], format=EXPIRY_DATE_FORMAT, utc=True) + pd.Timedelta(
+        hours=SETTLEMENT_HOUR_UTC
+    )
     book["strike"] = pd.to_numeric(parts[2], errors="coerce")
     book["option_type"] = parts[3]
 

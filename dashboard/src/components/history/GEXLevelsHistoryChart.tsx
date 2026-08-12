@@ -1,11 +1,10 @@
-import { useMemo } from 'react';
 import type { EChartsOption } from 'echarts';
-
-import EChart from '../chart/EChart';
-import type { PositioningHistoryResponse } from '../../types';
-import { priceWhole, usdShort } from '../../utils/format';
+import { useMemo } from 'react';
 import { ACCENT, FLIP, MAX_PAIN, MUTED } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY, values } from '../../theme/options';
+import type { PositioningHistoryResponse } from '../../types';
+import { priceWhole, usdShort } from '../../utils/format';
+import EChart from '../chart/EChart';
 
 export function buildGEXLevelsHistoryOption(data: PositioningHistoryResponse): EChartsOption {
   const level = (

@@ -1,17 +1,12 @@
 import { useMemo } from 'react';
 
 import { useExpiryOutcomes, useMaxPain, useProbCurves } from '../../api/queries';
-import Panel from '../panel/Panel';
-import { MIN_POINTS } from '../panel/minPoints';
-import { panelState } from '../panel/panelState';
 import { useCurrency } from '../../settings/store';
-import { dteLabel, dateLabel, priceWhole } from '../../utils/format';
-import {
-  buildExpiryRows,
-  buildSettledRows,
-  type ExpiryRow,
-  type SettledRow,
-} from './expiryTable';
+import { dateLabel, dteLabel, priceWhole } from '../../utils/format';
+import { MIN_POINTS } from '../panel/minPoints';
+import Panel from '../panel/Panel';
+import { panelState } from '../panel/panelState';
+import { buildExpiryRows, buildSettledRows, type ExpiryRow, type SettledRow } from './expiryTable';
 
 const signedPct = (v: number) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}%`;
 
