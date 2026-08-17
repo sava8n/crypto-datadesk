@@ -8,6 +8,8 @@
 #
 set -euo pipefail
 
+source "$(dirname "${BASH_SOURCE[0]}")/shared/lib.sh"
+
 readonly BRANCH="main"
 readonly SERVICES=(db core dashboard)
 # the dashboard image runs npm ci + vite build, which is slow
@@ -15,13 +17,6 @@ readonly HEALTH_TIMEOUT_SECONDS=300
 readonly BUILD_CACHE_MAX_AGE="168h"
 
 # --- helpers ---
-
-log() { printf '[deploy] %s\n' "$*"; }
-
-die() {
-  printf '[deploy] error: %s\n' "$*" >&2
-  exit 1
-}
 
 container_state() {
   docker inspect --format \
@@ -55,7 +50,7 @@ wait_healthy() {
 
 # --- preflight ---
 
-cd "$(dirname "${BASH_SOURCE[0]}")/.."
+cd_repo_root
 
 force=false
 case "${1:-}" in
@@ -64,12 +59,9 @@ case "${1:-}" in
   *) die "unknown argument '$1' (expected --force)" ;;
 esac
 
-command -v git >/dev/null || die "git is not installed"
-command -v docker >/dev/null || die "docker is not installed"
-docker compose version >/dev/null 2>&1 || die "'docker compose' is unavailable - install the compose plugin"
-docker info >/dev/null 2>&1 || die "cannot reach the docker daemon - is it running, and is this user in the docker group?"
-
-[[ -f .env ]] || die ".env is missing - copy .env.example and fill it in before deploying"
+require_commands git
+require_docker
+require_env_file
 
 branch="$(git symbolic-ref --quiet --short HEAD || true)"
 [[ "$branch" == "$BRANCH" ]] || die "HEAD is on '${branch:-a detached commit}', expected '$BRANCH'"
