@@ -49,7 +49,7 @@ services:
     container_name: datadesk-dashboard
     logging: *logging
     ports:
-      - "8080:80"
+      - "${DASHBOARD_PORT:-8080}:80"
     depends_on:
       core:
         condition: service_healthy
