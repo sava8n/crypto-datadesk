@@ -2,8 +2,6 @@
 
 Crypto Datadesk is an analytics desk meant as a fast, opinionated read on where the options market is priced and how it is positioned.
 
-![Dashboard](docs/dashboard.png)
-
 See [CHANGELOG.md](CHANGELOG.md) for the full list of views and what each one computes.
 
 ## Getting started
