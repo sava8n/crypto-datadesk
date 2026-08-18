@@ -40,3 +40,12 @@ require_docker() {
 require_env_file() {
   [[ -f .env ]] || die ".env is missing - copy .env.example and fill it in first"
 }
+
+# call after cd_repo_root
+load_env_file() {
+  require_env_file
+  set -a
+  # shellcheck disable=SC1091
+  source .env
+  set +a
+}
