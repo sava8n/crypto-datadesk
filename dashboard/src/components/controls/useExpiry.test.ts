@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import { createElement, type ReactNode } from 'react';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { SettingsProvider, useSettingsControl } from '../../settings/store';
+import { SettingsProvider, useChartScope } from '../../settings/store';
 import { EXPIRY_ALL } from '../../utils/expiry';
 import { useExpiry } from './useExpiry';
 
@@ -14,8 +14,10 @@ const WEEK1 = '2026-07-31T08:00:00Z';
 const WEEK2 = '2026-08-07T08:00:00Z';
 const MONTHLY2 = '2026-08-28T08:00:00Z'; // last Friday of August
 
+const CHART = 'testChart';
+
 function useHarness(expiries: string[], opts?: { allowAll?: boolean }) {
-  return { selected: useExpiry(expiries, opts), control: useSettingsControl() };
+  return { selected: useExpiry(CHART, expiries, opts), control: useChartScope(CHART) };
 }
 
 beforeEach(() => localStorage.clear());
@@ -28,7 +30,8 @@ describe('useExpiry', () => {
 
   it('tracks the tenor of an auto pick', () => {
     const { result } = renderHook(() => useHarness([WEEK2, MONTHLY2]), { wrapper });
-    expect(result.current.selected).toBe(MONTHLY2); // 'monthly' default
+    // no allowAll, so the default EXPIRY_ALL resolves through its monthly tenor
+    expect(result.current.selected).toBe(MONTHLY2);
     act(() => result.current.control.update({ expiry: 'weekly' }));
     expect(result.current.selected).toBe(WEEK2);
   });
@@ -61,11 +64,19 @@ describe('useExpiry', () => {
       expect(result.current.selected).toBe('');
     });
 
-    it('still defaults to the front expiry', () => {
+    it('selects every expiry by default', () => {
       const { result } = renderHook(() => useHarness([WEEK1, WEEK2], { allowAll: true }), {
         wrapper,
       });
-      expect(result.current.selected).toBe(WEEK1);
+      expect(result.current.selected).toBe('');
+    });
+
+    it('still falls back to a front expiry once a concrete pick is made', () => {
+      const { result } = renderHook(() => useHarness([WEEK1, WEEK2], { allowAll: true }), {
+        wrapper,
+      });
+      act(() => result.current.control.update({ expiry: WEEK2 }));
+      expect(result.current.selected).toBe(WEEK2);
     });
 
     it('selects all when the chain is empty', () => {

@@ -1,7 +1,14 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { ACCENT, CYAN, MUTED } from '../../theme/charts';
-import { axisTooltip, grid, legendBar, valueAxisX, valueAxisY } from '../../theme/options';
+import { C } from '../../theme/charts';
+import {
+  axisTooltip,
+  grid,
+  legendBar,
+  valueAxisX,
+  valueAxisY,
+  zeroLine,
+} from '../../theme/options';
 import type { CMBandPoint, SkewResponse } from '../../types';
 import { dteOf } from '../../utils/dte';
 import { dateLabel, dteLabel, volPct } from '../../utils/format';
@@ -10,14 +17,19 @@ import { bandRows, bandSeries } from './bands';
 
 const SERIES_NAMES = ['RR 25Δ', 'BF 25Δ'];
 
-// RR/BF live in single vol points, so one decimal: 0.042 -> "4.2%"
-
 export function buildSkewOption(data: SkewResponse, bands: CMBandPoint[] = []): EChartsOption {
-  // one RR/BF pair per expiry, plotted time-proportionally by days-to-expiry
   const rows = data.points
     .map((p) => ({ dte: dteOf(p), rr: p.rr, bf: p.bf, expiry: p.expiry }))
     .sort((a, b) => a.dte - b.dte);
   const maxDte = rows[rows.length - 1]?.dte ?? 0;
+
+  // shaded p25-p75 of the archived CM risk reversal, under the live curves. Neutral, so it
+  // cannot be read as a side of its own. Empty when there is no archive to draw, which is why
+  // the RR line's index has to be counted rather than assumed.
+  const band = bandSeries(bandRows(bands, 'rr25', maxDte), C.label);
+
+  // widest |RR| on the chart, so the two visualMap pieces between them cover every point
+  const rrSpan = Math.max(1e-6, ...rows.map((r) => Math.abs(r.rr)));
 
   return {
     backgroundColor: 'transparent',
@@ -30,28 +42,38 @@ export function buildSkewOption(data: SkewResponse, bands: CMBandPoint[] = []): 
       },
     }),
     grid: grid('series'),
+    // The risk reversal is call vol minus put vol, so it is a direction, not a level: above
+    // zero the line takes the call side, below it the put side.
+    //
+    // Both pieces have to be bounded. An open-ended piece leaves echarts with no colour stop
+    // inside the axis range when it builds the line's gradient, and it throws mid-render -
+    // taking this series and every later one off the chart.
+    visualMap: {
+      show: false,
+      seriesIndex: band.length,
+      dimension: 1,
+      pieces: [
+        { gte: -rrSpan, lt: 0, color: C.put },
+        { gte: 0, lte: rrSpan, color: C.call },
+      ],
+    },
     xAxis: valueAxisX({ name: 'DTE', scale: true, min: 0, format: dteLabel }),
     yAxis: valueAxisY({ name: 'ΔIV', scale: true, format: volPct }),
     series: [
-      // shaded p25-p75 of the archived CM risk reversal, under the live curves
-      ...bandSeries(bandRows(bands, 'rr25', maxDte), ACCENT),
+      ...band,
       {
         type: 'line',
         name: 'RR 25Δ',
         data: rows.map((r) => [r.dte, r.rr]),
         showSymbol: true,
         symbolSize: 6,
-        itemStyle: { color: ACCENT },
-        lineStyle: { width: 1.5, color: ACCENT },
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
-        // zero line: RR above = calls richer, below = puts richer
-        markLine: {
-          symbol: 'none',
-          silent: true,
-          lineStyle: { color: MUTED, type: 'dashed', width: 1.5 },
-          label: { show: false },
-          data: [{ yAxis: 0 }],
-        },
+        // The visualMap paints the line itself, but the legend swatch reads the series colour -
+        // and without one echarts hands it a slot from its own default palette, so the entry
+        // came out green. Pin it to the call side, which is what a positive RR means.
+        itemStyle: { color: C.call },
+        lineStyle: { width: 1.5 },
+        markLine: zeroLine(),
       },
       {
         type: 'line',
@@ -59,8 +81,9 @@ export function buildSkewOption(data: SkewResponse, bands: CMBandPoint[] = []): 
         data: rows.map((r) => [r.dte, r.bf]),
         showSymbol: true,
         symbolSize: 6,
-        itemStyle: { color: CYAN },
-        lineStyle: { width: 1.5, color: CYAN },
+        // the butterfly has no side to it, so it takes the reference hue
+        itemStyle: { color: C.ref },
+        lineStyle: { width: 1.5, color: C.ref },
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
       },
     ],

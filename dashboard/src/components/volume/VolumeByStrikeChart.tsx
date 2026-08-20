@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { CALL, PUT } from '../../theme/charts';
+import { C } from '../../theme/charts';
 import { axisTooltip, categoryAxisX, grid, legendBar, valueAxisY } from '../../theme/options';
 import type { VolumeByStrikeResponse } from '../../types';
 import { countShort, strikeFmt } from '../../utils/format';
@@ -24,7 +24,7 @@ export function buildVolumeByStrikeOption(data: VolumeByStrikeResponse): ECharts
         name: 'Call Volume',
         barMaxWidth: 22,
         data: rows.map((p) => p.call_volume),
-        itemStyle: { color: CALL },
+        itemStyle: { color: C.call },
         emphasis: { focus: 'series' },
       },
       {
@@ -32,7 +32,7 @@ export function buildVolumeByStrikeOption(data: VolumeByStrikeResponse): ECharts
         name: 'Put Volume',
         barMaxWidth: 22,
         data: rows.map((p) => p.put_volume),
-        itemStyle: { color: PUT },
+        itemStyle: { color: C.put },
         emphasis: { focus: 'series' },
       },
     ],

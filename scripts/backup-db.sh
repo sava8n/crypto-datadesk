@@ -14,7 +14,7 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/shared/lib.sh"
 
 readonly DB_SERVICE="db"
-readonly LOCK_FILE="/var/tmp/datadesk-backup.lock"
+readonly LOCK_FILE="/var/tmp/crypto-datadesk-backup.lock"
 
 # taking credentials from the container's own environment, so nothing has to be read
 # out of .env or kept in sync with it
@@ -27,7 +27,7 @@ usage() {
   cat >&2 <<'EOF'
 usage: backup-db.sh [--s3-uri URI] [--out FILE]
 
-  --s3-uri URI    destination prefix, e.g. s3://my-bucket/datadesk
+  --s3-uri URI    destination prefix, e.g. s3://my-bucket/backups
                   (default: BACKUP_S3_URI from .env)
   --out FILE      write the dump to FILE and skip the upload
 EOF
@@ -90,7 +90,7 @@ start=$SECONDS
 if [[ -n "$out" ]]; then
   dump="$out"
 else
-  dump="$(mktemp -t datadesk-backup.XXXXXX)"
+  dump="$(mktemp -t crypto-datadesk-backup.XXXXXX)"
   trap 'rm -f "$dump"' EXIT
 fi
 
@@ -112,7 +112,7 @@ fi
 # --- upload ---
 
 # the timestamp sorts lexicographically, so `aws s3 ls` on the prefix lists in order
-name="datadesk-$(date -u +%Y%m%dT%H%M%SZ).dump"
+name="$(date -u +%Y%m%dT%H%M%SZ).dump"
 
 log "uploading $name ($size) to $s3_uri"
 aws s3 cp "$dump" "$s3_uri/$name" --only-show-errors

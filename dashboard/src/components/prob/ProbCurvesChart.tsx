@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { MONO, MUTED, PALETTE } from '../../theme/charts';
+import { C, MONO } from '../../theme/charts';
 import {
   grid,
   itemTooltip,
@@ -23,7 +23,7 @@ export function buildProbCurvesOption(data: ProbCurvesResponse): EChartsOption {
 
   return {
     backgroundColor: 'transparent',
-    color: PALETTE,
+    color: C.palette,
     tooltip: itemTooltip((p) => {
       const [k, prob] = tuple(p.value);
       if (k === undefined) return '';
@@ -48,8 +48,8 @@ export function buildProbCurvesOption(data: ProbCurvesResponse): EChartsOption {
         markLine: {
           silent: true,
           symbol: 'none',
-          lineStyle: { color: MUTED, type: 'dashed', width: 1 },
-          label: { color: MUTED, fontFamily: MONO, fontSize: 10, formatter: 'SPOT' },
+          lineStyle: { color: C.label, type: 'dashed', width: 1 },
+          label: { color: C.label, fontFamily: MONO, fontSize: 10, formatter: 'SPOT' },
           data: [{ xAxis: data.spot }],
         },
       }),

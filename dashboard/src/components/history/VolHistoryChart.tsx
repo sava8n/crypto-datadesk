@@ -1,22 +1,31 @@
 import type { EChartsOption, LineSeriesOption } from 'echarts';
 import { useMemo } from 'react';
-import { ACCENT, DANGER, MUTED, PALETTE } from '../../theme/charts';
+import { C } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY } from '../../theme/options';
 import type { VolHistoryPoint, VolHistoryResponse } from '../../types';
 import { pctWhole, volPct } from '../../utils/format';
 import EChart from '../chart/EChart';
 
-// paired by tenor: each implied series sits next to the realized vol of the same horizon
-const SERIES: { key: keyof VolHistoryPoint; name: string; color: string }[] = [
-  { key: 'iv30', name: 'IV30', color: ACCENT },
-  { key: 'rv30', name: 'RV30', color: DANGER },
-  { key: 'iv7', name: 'IV7', color: PALETTE[1] },
-  { key: 'rv7', name: 'RV7', color: PALETTE[10] },
-  { key: 'dvol', name: 'DVOL', color: MUTED },
+interface Series {
+  key: keyof VolHistoryPoint;
+  name: string;
+  color: string;
+}
+
+const SERIES_NAMES = ['IV30', 'RV30', 'IV7', 'RV7', 'DVOL'];
+
+// Named metrics rather than expiries, so each keeps a fixed ramp slot, paired by tenor.
+// A factory, so the colours follow the theme.
+const series = (): Series[] => [
+  { key: 'iv30', name: 'IV30', color: C.s1 },
+  { key: 'rv30', name: 'RV30', color: C.s2 },
+  { key: 'iv7', name: 'IV7', color: C.s3 },
+  { key: 'rv7', name: 'RV7', color: C.s5 },
+  { key: 'dvol', name: 'DVOL', color: C.label },
 ];
 
 export function buildVolHistoryOption(data: VolHistoryResponse): EChartsOption {
-  const line = (s: (typeof SERIES)[number]): LineSeriesOption => ({
+  const line = (s: Series): LineSeriesOption => ({
     type: 'line',
     name: s.name,
     showSymbol: false,
@@ -29,12 +38,12 @@ export function buildVolHistoryOption(data: VolHistoryResponse): EChartsOption {
 
   return {
     backgroundColor: 'transparent',
-    legend: legendBar(SERIES.map((s) => s.name)),
+    legend: legendBar(SERIES_NAMES),
     tooltip: axisTooltip({ value: volPct }),
     grid: grid('series'),
     xAxis: timeAxisX(),
     yAxis: valueAxisY({ name: 'VOL', scale: true, format: pctWhole }),
-    series: SERIES.map(line),
+    series: series().map(line),
   };
 }
 

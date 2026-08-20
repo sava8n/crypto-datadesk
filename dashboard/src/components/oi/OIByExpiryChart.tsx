@@ -4,10 +4,9 @@ import { axisTooltip, categoryAxisX, grid, legendBar, valueAxisY } from '../../t
 import type { OIByExpiryResponse } from '../../types';
 import { countShort, dateLabel } from '../../utils/format';
 import EChart from '../chart/EChart';
-import { OI_SERIES, OI_SERIES_NAMES } from './series';
+import { OI_SERIES_NAMES, oiSeries } from './series';
 
 export function buildOIByExpiryOption(data: OIByExpiryResponse): EChartsOption {
-  // one stacked bar per expiry, near-dated first
   const rows = [...data.points].sort((a, b) => a.tte_years - b.tte_years);
 
   return {
@@ -21,7 +20,7 @@ export function buildOIByExpiryOption(data: OIByExpiryResponse): EChartsOption {
       { interval: 0 },
     ),
     yAxis: valueAxisY({ name: 'OI', format: countShort }),
-    series: OI_SERIES.map((s) => ({
+    series: oiSeries().map((s) => ({
       type: 'bar',
       name: s.name,
       stack: s.stack,

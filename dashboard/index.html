@@ -7,6 +7,15 @@
     <title>Crypto Datadesk</title>
   </head>
   <body>
+    <!-- stamp the stored theme before first paint, or a dark session opens on a white flash -->
+    <script>
+      try {
+        var s = JSON.parse(localStorage.getItem('datadesk.settings.v3') || '{}');
+        if (s.theme === 'dark') document.documentElement.dataset.theme = 'dark';
+      } catch (e) {
+        /* unparseable blob or storage blocked: light is the default */
+      }
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

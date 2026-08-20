@@ -5,12 +5,13 @@ import type {
   GridComponentOption,
   DefaultLabelFormatterCallbackParams as ItemParams,
   LegendComponentOption,
+  MarkLineComponentOption,
   TooltipComponentOption,
   XAXisComponentOption,
   YAXisComponentOption,
 } from 'echarts';
 
-import { ACCENT, AXIS_LINE, axisLabelStyle, GRID, MONO, MUTED, TEXT, tooltipStyle } from './charts';
+import { axisLabelStyle, C, MONO, tooltipStyle } from './charts';
 
 export interface AxisOpts {
   name?: string;
@@ -19,20 +20,16 @@ export interface AxisOpts {
   scale?: boolean;
   min?: number;
   max?: number;
-  // mini-panel type sizes
-  compact?: boolean;
   // paint line, ticks, labels and name in one accent colour
   accent?: string;
   position?: 'right';
   splitLine?: boolean;
 }
 
-const labelSize = (o: AxisOpts) => (o.compact ? 12 : 13);
-const nameSize = (o: AxisOpts) => (o.compact ? 14 : 15);
 const nameStyle = (o: AxisOpts) => ({
-  color: o.accent ?? TEXT,
+  color: o.accent ?? C.text,
   fontFamily: MONO,
-  fontSize: nameSize(o),
+  fontSize: 13,
 });
 
 function valueBase(o: AxisOpts) {
@@ -41,15 +38,17 @@ function valueBase(o: AxisOpts) {
     ...(o.scale && { scale: true }),
     ...(o.min !== undefined && { min: o.min }),
     ...(o.max !== undefined && { max: o.max }),
-    axisLine: { lineStyle: { color: o.accent ?? AXIS_LINE } },
-    axisTick: { lineStyle: { color: o.accent ?? AXIS_LINE } },
+    axisLine: { lineStyle: { color: o.accent ?? C.axis } },
+    axisTick: { lineStyle: { color: o.accent ?? C.axis } },
     axisLabel: {
-      color: o.accent ?? MUTED,
-      fontFamily: MONO,
-      fontSize: labelSize(o),
+      ...axisLabelStyle(),
+      ...(o.accent && { color: o.accent }),
       ...(o.format && { formatter: o.format }),
     },
-    splitLine: o.splitLine === false ? { show: false } : { lineStyle: { color: GRID } },
+    splitLine:
+      o.splitLine === false
+        ? { show: false }
+        : { lineStyle: { color: C.grid, type: 'dashed' as const } },
   };
 }
 
@@ -74,44 +73,36 @@ export const valueAxisX = (o: AxisOpts = {}): XAXisComponentOption => ({
 });
 
 // history panels: ISO timestamps plotted proportionally in time
-export const timeAxisX = (o: { compact?: boolean } = {}): XAXisComponentOption => ({
+export const timeAxisX = (): XAXisComponentOption => ({
   type: 'time',
-  axisLine: { lineStyle: { color: AXIS_LINE } },
-  axisTick: { lineStyle: { color: AXIS_LINE } },
-  axisLabel: { color: MUTED, fontFamily: MONO, fontSize: o.compact ? 12 : 13 },
-  splitLine: { lineStyle: { color: GRID } },
+  axisLine: { lineStyle: { color: C.axis } },
+  axisTick: { lineStyle: { color: C.axis } },
+  axisLabel: axisLabelStyle(),
+  splitLine: { lineStyle: { color: C.grid, type: 'dashed' as const } },
 });
 
 export const categoryAxisX = (
   data: string[],
-  o: { rotate?: number; interval?: number | 'auto'; compact?: boolean } = {},
+  o: { rotate?: number; interval?: number | 'auto' } = {},
 ): XAXisComponentOption => ({
   type: 'category',
   data,
-  axisLine: { lineStyle: { color: AXIS_LINE } },
-  axisTick: { lineStyle: { color: AXIS_LINE } },
+  axisLine: { lineStyle: { color: C.axis } },
+  axisTick: { lineStyle: { color: C.axis } },
   axisLabel: {
-    color: MUTED,
-    fontFamily: MONO,
-    fontSize: o.compact ? 12 : 13,
+    ...axisLabelStyle(),
     rotate: o.rotate ?? 45,
     interval: o.interval ?? 'auto',
   },
 });
 
-// Grid insets. The differences are load-bearing: wide currency labels need a deeper
-// left gutter and a legend-less chart reclaims the headroom.
+// Grid insets. The differences are load-bearing: currency-labelled axes need a deeper left
+// gutter and a scrolling per-expiry legend needs two rows of headroom.
 export const GRID_INSETS = {
   bars: { left: 56, right: 18, top: 40, bottom: 60 },
-  // wider gutter where the y labels are full currency amounts
   barsWide: { left: 68, right: 18, top: 40, bottom: 60 },
-  // no legend, so the headroom comes back
-  noLegend: { left: 56, right: 18, top: 30, bottom: 60 },
-  // a scrolling per-expiry legend needs two rows
   curves: { left: 56, right: 18, top: 66, bottom: 44 },
   series: { left: 56, right: 18, top: 40, bottom: 44 },
-  mini: { left: 56, right: 16, top: 16, bottom: 40 },
-  miniWide: { left: 68, right: 16, top: 16, bottom: 40 },
 } as const;
 
 export const grid = (
@@ -124,7 +115,8 @@ export const legendBar = (data: string[]): LegendComponentOption => ({
   top: 4,
   itemWidth: 10,
   itemHeight: 10,
-  textStyle: axisLabelStyle,
+  inactiveColor: C.zero,
+  textStyle: axisLabelStyle(),
 });
 
 // one entry per expiry, so it has to page rather than wrap
@@ -137,10 +129,20 @@ export const legendScroll = (data: string[]): LegendComponentOption => ({
   itemWidth: 18,
   itemHeight: 2,
   itemGap: 12,
-  textStyle: { color: TEXT, fontFamily: MONO, fontSize: 12 },
-  pageTextStyle: { color: ACCENT, fontFamily: MONO },
-  pageIconColor: ACCENT,
-  pageIconInactiveColor: AXIS_LINE,
+  inactiveColor: C.zero,
+  textStyle: { ...axisLabelStyle(), fontSize: 11 },
+  pageTextStyle: { color: C.text, fontFamily: MONO },
+  pageIconColor: C.text,
+  pageIconInactiveColor: C.axis,
+});
+
+// dashed rule at y = 0 under a signed series
+export const zeroLine = (): MarkLineComponentOption => ({
+  symbol: 'none',
+  silent: true,
+  lineStyle: { color: C.zero, type: 'dashed', width: 1.5 },
+  label: { show: false },
+  data: [{ yAxis: 0 }],
 });
 
 // echarts types formatter params as an item/axis union and values as unknown, both
@@ -162,7 +164,7 @@ export const values =
     fmt(Number(v));
 
 export const itemTooltip = (fn: (p: ItemParams) => string): TooltipComponentOption => ({
-  ...tooltipStyle,
+  ...tooltipStyle(),
   trigger: 'item',
   formatter: render(fn),
 });
@@ -170,9 +172,12 @@ export const itemTooltip = (fn: (p: ItemParams) => string): TooltipComponentOpti
 export const axisTooltip = (
   o: { shadow?: boolean; value?: (v: number) => string; render?: (p: ItemParams) => string } = {},
 ): TooltipComponentOption => ({
-  ...tooltipStyle,
+  ...tooltipStyle(),
   trigger: 'axis',
-  ...(o.shadow && { axisPointer: { type: 'shadow' } }),
+  // echarts' own pointer colour is fixed for a light page
+  axisPointer: o.shadow
+    ? { type: 'shadow' }
+    : { type: 'line', lineStyle: { color: C.label, type: 'dashed' } },
   ...(o.value && { valueFormatter: values(o.value) }),
   ...(o.render && { formatter: render(o.render) }),
 });

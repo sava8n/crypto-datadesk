@@ -1,7 +1,7 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { ACCENT, MUTED } from '../../theme/charts';
-import { axisTooltip, grid, valueAxisX, valueAxisY } from '../../theme/options';
+import { C } from '../../theme/charts';
+import { axisTooltip, grid, valueAxisX, valueAxisY, zeroLine } from '../../theme/options';
 import type { TermStructureResponse } from '../../types';
 import { dateLabel, dteLabel, usdFull, volPct } from '../../utils/format';
 import EChart from '../chart/EChart';
@@ -29,17 +29,12 @@ export function buildBasisOption(data: TermStructureResponse): EChartsOption {
         data: rows.map((r) => [r.dte, r.basisAnn]),
         showSymbol: true,
         symbolSize: 6,
-        itemStyle: { color: ACCENT },
-        lineStyle: { width: 1.5, color: ACCENT },
+        // basis has no side to it, so it takes the reference axis rather than a direction pair
+        itemStyle: { color: C.ref },
+        lineStyle: { width: 1.5, color: C.ref },
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
-        // zero line: above = contango (forwards over spot), below = backwardation
-        markLine: {
-          symbol: 'none',
-          silent: true,
-          lineStyle: { color: MUTED, type: 'dashed', width: 1.5 },
-          label: { show: false },
-          data: [{ yAxis: 0 }],
-        },
+        // above = contango (forwards over spot), below = backwardation
+        markLine: zeroLine(),
       },
     ],
   };

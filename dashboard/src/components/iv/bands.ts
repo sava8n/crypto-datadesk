@@ -1,7 +1,4 @@
-// CM percentile bands -> the stacked-line series that draw a shaded p25-p75 range
-// with a dashed median, clipped to the x-range a chart is actually showing.
-
-import type { LineSeriesOption } from 'echarts';
+import type { CustomSeriesOption, LineSeriesOption } from 'echarts';
 
 import type { CMBandPoint } from '../../types';
 
@@ -30,26 +27,45 @@ export function bandRows(points: CMBandPoint[], metric: BandMetric, maxX: number
     .sort((a, b) => a.x - b.x);
 }
 
+export type BandSeries = CustomSeriesOption | LineSeriesOption;
+
 /**
- * Three silent series: an invisible base line at p25, a stacked filler whose area
- * shades up to p75, and a dashed median. Callers spread them under the live series.
+ * Two silent series: a shaded p25-p75 ribbon and a dashed median. Callers spread them under
+ * the live series.
+ *
+ * The ribbon is drawn as explicit polygons rather than the usual stacked-area trick. These
+ * charts put DTE on a *value* axis, and echarts only stacks along a category axis - given
+ * [x, y] pairs it leaves the filler unstacked and closes the area against a baseline tens of
+ * thousands of pixels off-canvas, which paints as a slab over the whole plot.
  */
-export function bandSeries(rows: BandRow[], color: string): LineSeriesOption[] {
+export function bandSeries(rows: BandRow[], color: string): BandSeries[] {
   if (rows.length < 2) return [];
-  const base: LineSeriesOption = {
-    type: 'line',
+  const ribbon: CustomSeriesOption = {
+    type: 'custom',
     name: 'BAND',
     silent: true,
-    stack: 'cm-band',
-    showSymbol: false,
-    data: rows.map((r) => [r.x, r.lo]),
-    lineStyle: { opacity: 0 },
+    clip: true,
     tooltip: { show: false },
-  };
-  const fill: LineSeriesOption = {
-    ...base,
-    data: rows.map((r) => [r.x, r.hi - r.lo]),
-    areaStyle: { color, opacity: 0.1 },
+    data: rows.map((r) => [r.x, r.lo, r.hi]),
+    // one quad per adjacent pair, so irregular tenor spacing stays honest
+    renderItem: (params, api) => {
+      const i = params.dataIndex;
+      if (i === 0) return;
+      const a = rows[i - 1];
+      const b = rows[i];
+      return {
+        type: 'polygon',
+        shape: {
+          points: [
+            api.coord([a.x, a.hi]),
+            api.coord([b.x, b.hi]),
+            api.coord([b.x, b.lo]),
+            api.coord([a.x, a.lo]),
+          ],
+        },
+        style: { fill: color, opacity: 0.1 },
+      };
+    },
   };
   const median: LineSeriesOption = {
     type: 'line',
@@ -61,5 +77,5 @@ export function bandSeries(rows: BandRow[], color: string): LineSeriesOption[] {
     itemStyle: { color, opacity: 0.5 },
     tooltip: { show: false },
   };
-  return [base, fill, median];
+  return [ribbon, median];
 }

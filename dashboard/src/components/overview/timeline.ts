@@ -1,4 +1,4 @@
-// Pure helpers for the timeline's labels.
+import { dateLabel } from '../../utils/format';
 
 // ISO-8601 week number via the Thursday rule: a week belongs to the year holding its
 // Thursday, which is what naive day-count implementations get wrong at year boundaries
@@ -10,6 +10,7 @@ export function isoWeek(iso: string): number {
   return Math.ceil(((thursday.getTime() - yearStart) / 86_400_000 + 1) / 7);
 }
 
-export function timelineLabel(iso: string): string {
-  return `WEEKLY · W${isoWeek(iso)} REPORT`;
+// picker trigger and rows: "W32 · 09AUG26"
+export function editionLabel(iso: string): string {
+  return `W${isoWeek(iso)} · ${dateLabel(iso)}`;
 }

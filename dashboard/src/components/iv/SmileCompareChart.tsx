@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { ACCENT, MUTED } from '../../theme/charts';
+import { C } from '../../theme/charts';
 import { grid, itemTooltip, legendBar, tuple, valueAxisX, valueAxisY } from '../../theme/options';
 import type { IVCurvePoint } from '../../types';
 import { averageByStrike } from '../../utils/curves';
@@ -37,8 +37,8 @@ export function buildSmileCompareOption(data: SmileCompareData): EChartsOption {
         data: current,
         showSymbol: false,
         smooth: true,
-        itemStyle: { color: ACCENT },
-        lineStyle: { width: 1.5, color: ACCENT },
+        itemStyle: { color: C.ref },
+        lineStyle: { width: 1.5, color: C.ref },
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
       },
       ...(previous.length >= 2
@@ -49,8 +49,11 @@ export function buildSmileCompareOption(data: SmileCompareData): EChartsOption {
               data: previous,
               showSymbol: false,
               smooth: true,
-              itemStyle: { color: MUTED },
-              lineStyle: { width: 1.5, color: MUTED, type: 'dashed' as const },
+              // now against prior: neither reading is a direction, so both take the reference
+              // axis - violet for now, teal for the older snapshot, and dashed as well as
+              // different in hue
+              itemStyle: { color: C.s2 },
+              lineStyle: { width: 1.5, color: C.s2, type: 'dashed' as const },
               emphasis: { focus: 'series' as const, lineStyle: { width: 3 } },
             },
           ]

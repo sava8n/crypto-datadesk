@@ -58,11 +58,11 @@ echo 'BACKUP_S3_URI=s3://BUCKET/PREFIX' >> .env
 ### Cron job
 
 Schedule it as the same user that runs the stack - it needs to be in the `docker` group. Open the
-crontab with `crontab -e` and add, for a weekly backup every Sunday at 02:00:
+crontab with `crontab -e` and add, for a weekly backup every Monday at 01:00:
 
 ```
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin
-0 2 * * 0 cd /path/to/crypto-datadesk && ./scripts/backup-db.sh >> ~/datadesk-backup.log 2>&1
+0 1 * * 1 cd /path/to/crypto-datadesk && ./scripts/backup-db.sh >> ~/crypto-datadesk-backup.log 2>&1
 ```
 
 The `PATH` line matters: cron's default does not include `/snap/bin`, where the aws cli lands and
@@ -72,7 +72,7 @@ Times are in the system timezone.
 Confirm it took with `crontab -l`, and check after the first run:
 
 ```sh
-tail ~/datadesk-backup.log
+tail ~/crypto-datadesk-backup.log
 aws s3 ls s3://BUCKET/PREFIX/
 ```
 
@@ -81,7 +81,7 @@ Each run writes two lines to that log, so it grows slowly; there is no rotation 
 ### Restoring
 
 ```sh
-aws s3 cp s3://BUCKET/PREFIX/datadesk-20260817T020000Z.dump /tmp/restore.dump
+aws s3 cp s3://BUCKET/PREFIX/20260817T020000Z.dump /tmp/restore.dump
 docker compose exec -T db sh -c \
   'PGPASSWORD=$POSTGRES_PASSWORD pg_restore -U $POSTGRES_USER -d $POSTGRES_DB --clean --if-exists' \
   < /tmp/restore.dump

@@ -77,11 +77,8 @@ describe('Panel', () => {
     expect(tiles.closest('.panel__body')).toBeNull();
   });
 
-  it('adds the full modifier only when asked', () => {
+  it('renders one panel frame, no variants', () => {
     const { container } = renderPanel({ kind: 'loading' });
     expect(container.querySelector('section')?.className).toBe('panel');
-
-    const wide = renderPanel({ kind: 'loading' }, { full: true });
-    expect(wide.container.querySelector('section')?.className).toBe('panel panel--full');
   });
 });

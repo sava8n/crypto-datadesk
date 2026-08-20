@@ -42,6 +42,11 @@ export const usdShort = (v: number) => {
 export const usdFull = (v: number) =>
   `$${v.toLocaleString(NUM_LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
+// USD, whole dollars: 5_313_252_564.05 -> "$5,313,252,564". For totals large enough that cents
+// are noise rather than precision.
+export const usdWhole = (v: number) =>
+  `$${v.toLocaleString(NUM_LOCALE, { maximumFractionDigits: 0 })}`;
+
 // price, whole units, unprefixed for price axes: 61500.4 -> "61,500"
 export const priceWhole = (v: number) => v.toLocaleString(NUM_LOCALE, { maximumFractionDigits: 0 });
 

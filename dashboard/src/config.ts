@@ -1,4 +1,6 @@
+import { DEFAULT_THEME, type ThemeMode } from './theme/mode';
 import type { ArchiveWindow, ExposureConvention, RecentWindow } from './types';
+import { EXPIRY_ALL, type FrontExpiry } from './utils/expiry';
 
 export const CURRENCIES = ['BTC'] as const;
 
@@ -19,14 +21,6 @@ export const CONVENTIONS: readonly { value: ExposureConvention; label: string }[
   { value: 'flow', label: 'FLOW' },
 ];
 
-// spot chart initial visible windows, days of daily candles
-export const SPOT_LOOKBACKS: readonly { value: number; label: string }[] = [
-  { value: 30, label: '30D' },
-  { value: 90, label: '90D' },
-  { value: 180, label: '180D' },
-  { value: 365, label: '1Y' },
-];
-
 // DTE slider bound, covers the longest quoted chain
 export const MAX_DTE_LIMIT = 365;
 
@@ -34,27 +28,37 @@ export const MAX_DTE_LIMIT = 365;
 // so a shorter poll period only re-serves the same snapshot
 export const MIN_REFRESH_SECONDS = 10;
 
-// poll period in ms, clamped to the service cache floor
 export const refreshMs = (seconds: number): number => Math.max(MIN_REFRESH_SECONDS, seconds) * 1000;
 
-// user-tunable inputs
-// the settings drawer overrides these and persists the overrides to localStorage
+// Global preferences: set once, apply everywhere. Everything a chart can scope - expiry,
+// DTE, window, lookback, sign convention, premium floor - lives per chart in ChartScope
+// instead, so two charts can sit on different scopes and each keeps its own across reloads.
 export interface Settings {
   currency: Currency;
 
   refreshSeconds: number;
 
+  // which tenor the market strip's IV/RV pair and its per-expiry readouts follow
+  stripTenor: FrontExpiry;
+
+  theme: ThemeMode;
+}
+
+export const DEFAULT_SETTINGS: Settings = {
+  currency: 'BTC',
+  refreshSeconds: 60,
+  stripTenor: 'monthly',
+  theme: DEFAULT_THEME,
+};
+
+export interface ChartScope {
+  // EXPIRY_ALL selects every expiry where a chart supports it, anything else is a
+  // concrete ISO pick. The 'weekly'/'monthly' sentinels still resolve for stored blobs.
+  expiry: string;
+
   minDte: number;
   maxDte: number;
 
-  // expiry shown on the per-expiry charts: 'weekly'/'monthly' track the front
-  // expiry of that tenor, EXPIRY_ALL selects every expiry where a chart
-  // supports it, anything else is a concrete ISO pick
-  expiry: string;
-
-  spotLookbackDays: number;
-
-  // the single source for every chart; panels have no local overrides
   historyWindow: ArchiveWindow;
 
   exposureConvention: ExposureConvention;
@@ -65,13 +69,10 @@ export interface Settings {
   tapeMinPremium: number;
 }
 
-export const DEFAULT_SETTINGS: Settings = {
-  currency: 'BTC',
-  refreshSeconds: 60,
+export const DEFAULT_SCOPE: ChartScope = {
+  expiry: EXPIRY_ALL,
   minDte: 0,
   maxDte: 30,
-  expiry: 'monthly',
-  spotLookbackDays: 180,
   historyWindow: '30d',
   exposureConvention: 'assumption',
   flowWindow: '7d',

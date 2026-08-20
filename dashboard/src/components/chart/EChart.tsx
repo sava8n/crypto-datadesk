@@ -11,7 +11,8 @@ export default function EChart({ option }: { option: EChartsOption }) {
   const { option: shown, hold, release } = useChartOption(option);
 
   return (
-    <div onPointerEnter={hold} onPointerLeave={release}>
+    // the wrapper must carry a height of its own: outside a panel body nothing else gives it one
+    <div style={{ width: '100%', height: '100%' }} onPointerEnter={hold} onPointerLeave={release}>
       <ReactECharts
         option={shown}
         replaceMerge={REPLACE}

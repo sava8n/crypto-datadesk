@@ -12,6 +12,7 @@ import {
   strikeFull,
   usdFull,
   usdShort,
+  usdWhole,
 } from './format';
 
 describe('dateLabel', () => {
@@ -84,6 +85,14 @@ describe('usdFull', () => {
     expect(usdFull(61500)).toBe('$61,500.00');
     expect(usdFull(61500.4)).toBe('$61,500.40');
     expect(usdFull(-100)).toBe('$-100.00');
+  });
+});
+
+describe('usdWhole', () => {
+  it('drops the cents and keeps the grouping', () => {
+    expect(usdWhole(5_313_252_564.05)).toBe('$5,313,252,564');
+    expect(usdWhole(61500)).toBe('$61,500');
+    expect(usdWhole(-100.6)).toBe('$-101');
   });
 });
 

@@ -1,7 +1,7 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { ACCENT, CYAN, DANGER, MUTED } from '../../theme/charts';
-import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY } from '../../theme/options';
+import { C } from '../../theme/charts';
+import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY, zeroLine } from '../../theme/options';
 import { volPct } from '../../utils/format';
 import EChart from '../chart/EChart';
 import type { VRPRow } from './vrp';
@@ -25,18 +25,14 @@ export function buildVRPOption(rows: VRPRow[]): EChartsOption {
     xAxis: timeAxisX(),
     yAxis: valueAxisY({ name: 'VOL', scale: true, format: volPct }),
     series: [
-      line('IV30', (r) => r.iv30, ACCENT),
-      line('RV30 +30D', (r) => r.rv30Fwd, DANGER, true),
+      // implied against realised has no side to it: the reference axis, violet then teal, and
+      // a third slot for the spread itself
+      line('IV30', (r) => r.iv30, C.ref),
+      line('RV30 +30D', (r) => r.rv30Fwd, C.s2, true),
       {
-        ...line('VRP', (r) => r.vrp, CYAN),
-        // zero line: above = implied paid more than was realized
-        markLine: {
-          symbol: 'none',
-          silent: true,
-          lineStyle: { color: MUTED, type: 'dashed', width: 1.5 },
-          label: { show: false },
-          data: [{ yAxis: 0 }],
-        },
+        ...line('VRP', (r) => r.vrp, C.s3),
+        // above = implied paid more than was realized
+        markLine: zeroLine(),
       },
     ],
   };

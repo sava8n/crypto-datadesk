@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { PALETTE } from '../../theme/charts';
+import { C } from '../../theme/charts';
 import {
   grid,
   itemTooltip,
@@ -23,7 +23,7 @@ export function buildIVCurvesOption(data: IVCurvesResponse): EChartsOption {
 
   return {
     backgroundColor: 'transparent',
-    color: PALETTE,
+    color: C.palette,
     tooltip: itemTooltip((p) => {
       const [k, iv] = tuple(p.value);
       if (k === undefined) return '';

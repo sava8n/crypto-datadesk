@@ -5,7 +5,6 @@ import { panelState } from '../panel/panelState';
 import CalendarPanel from './CalendarPanel';
 import ReferencesPanel from './ReferencesPanel';
 import ReportPanel from './ReportPanel';
-import TimelinePanel from './TimelinePanel';
 
 export default function OverviewTab() {
   const list = useReports();
@@ -23,16 +22,12 @@ export default function OverviewTab() {
 
   return (
     <div className="overview">
-      <TimelinePanel
-        state={
-          noReports
-            ? empty
-            : panelState(list, list.data?.reports, list.data?.reports.length ?? 0, 1)
-        }
+      <ReportPanel
+        state={detailState}
+        reports={list.data?.reports ?? []}
         selectedId={selectedId}
         onSelect={setSelectedId}
       />
-      <ReportPanel state={detailState} />
       <div className="overview__side">
         <ReferencesPanel state={detailState} />
         <CalendarPanel state={detailState} />
