@@ -1,21 +1,17 @@
 # Changelog
 
 
-## [Unreleased] - 2026-08-20
+## [0.5.0] - 2026-08-21
 
 ### Added
 
-- **Dark theme** - selectable in preferences alongside the light theme, stamped before first paint
+- **Dark and light theme** - selectable in preferences
 - **Sidebar navigation** - sections and views replace the tab bar; each view closes with a description of what it shows, how to read it and what its controls do
-- **Per-chart scopes** - expiry, DTE window, lookback, sign convention and tape premium floor are set in each chart's header and kept per chart across reloads
-- **Market strip** - spot, sparkline, DVOL, IV/RV, net GEX, flip, P/C and max pain across the top of every view
-- **Preferences modal** - currency, theme, refresh interval and strip tenor, replacing the settings drawer
 
 ### Removed
 
-- **Spot history chart and expected-move cone** - the candlestick panel is gone; spot survives as the strip sparkline
+- **Spot history chart** - the candlestick panel is gone; spot survives as the strip sparkline
 - **Report timeline panel** - editions are picked from a dropdown in the report header
-- **Global panel defaults** - superseded by per-chart scopes
 
 
 ## [0.4.2] - 2026-08-12

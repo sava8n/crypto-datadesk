@@ -1,6 +1,6 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { type ChartColors, THEMES } from './charts';
+import css from './dashboard.css?raw';
 
 // Measured, not eyeballed: colours sharing a chart stay apart (20 dE is "clearly different"),
 // the structural pair survives red-green deficiency, and the ordered ramps stay ordered. Both
@@ -141,12 +141,13 @@ describe('the sequential ramp stays ordered', () => {
 });
 
 // the chrome values canvas needs are restated from dashboard.css; this keeps the two copies one
-const css = readFileSync(new URL('./dashboard.css', import.meta.url), 'utf8');
-
 const cssToken = (selector: string, name: string): string | undefined => {
   const start = css.indexOf(`${selector} {`);
   const block = css.slice(start, css.indexOf('\n}', start));
-  return block.match(new RegExp(`${name}:\\s*([^;]+);`))?.[1].trim().toLowerCase();
+  return block
+    .match(new RegExp(`${name}:\\s*([^;]+);`))?.[1]
+    .trim()
+    .toLowerCase();
 };
 
 const SHARED: [keyof ChartColors, string][] = [
