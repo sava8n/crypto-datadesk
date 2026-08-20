@@ -1,7 +1,3 @@
-// Per-expiry settlement/expected-move summary: max pain joined with the implied
-// distribution's quantiles, both already served per expiry, plus the archived
-// implied-vs-realized outcome for recently settled expiries.
-
 import type { ExpiryOutcomePoint, MaxPainResponse, ProbQuantilePoint } from '../../types';
 import { dteOf } from '../../utils/dte';
 
@@ -25,7 +21,6 @@ export interface SettledRow {
   realizedPct: number | null;
 }
 
-// newest-settled first, as served
 export function buildSettledRows(outcomes: ExpiryOutcomePoint[]): SettledRow[] {
   return outcomes.map((o) => ({
     expiry: o.expiry,

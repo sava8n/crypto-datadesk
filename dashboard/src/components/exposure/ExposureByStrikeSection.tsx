@@ -16,7 +16,6 @@ const UNITS: Record<ExposureGreek, string> = {
 };
 
 export default function ExposureByStrikeSection({ greek }: { greek: ExposureGreek }) {
-  // each greek is its own chart, so each keeps its own scope
   const chartId = `${greek}Exposure`;
   const { scope } = useChartScope(chartId);
   const query = useExposureByStrike(useCurrency(), greek, scope.exposureConvention);

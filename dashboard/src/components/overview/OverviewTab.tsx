@@ -8,7 +8,7 @@ import ReportPanel from './ReportPanel';
 
 export default function OverviewTab() {
   const list = useReports();
-  // selection is deliberate; until the user makes one, follow the newest report
+  // no selection yet: follow the newest report
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const newest = list.data?.reports[0]?.id ?? null;
   useEffect(() => {

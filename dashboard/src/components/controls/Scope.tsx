@@ -13,7 +13,6 @@ interface SegmentedProps<T extends string> {
   onSelect: (v: T) => void;
 }
 
-/** Two to four mutually exclusive choices, shown in full. */
 export function ScopeSegmented<T extends string>({
   label,
   value,
@@ -46,7 +45,6 @@ interface PopoverProps {
   children: (close: () => void) => ReactNode;
 }
 
-/** A choice too long or too continuous to show inline: opens into a menu. */
 export function ScopePopover({ label, value, width, children }: PopoverProps) {
   const { open, ref, toggle, close } = usePopover<HTMLDivElement>();
 

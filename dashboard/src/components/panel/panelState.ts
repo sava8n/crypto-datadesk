@@ -13,11 +13,8 @@ export interface QueryStatus {
 }
 
 /**
- * Which of the four things a panel body shows.
- *
- * `value` is what the panel renders, which for most sections is a derived shape
- * (DTE-windowed, expiry-filtered) rather than the raw response. `count` is the
- * point count `min` applies to; thresholds differ per chart kind, see minPoints.ts.
+ * `value` is the derived shape the panel renders; `count` is what `min` applies to, see
+ * minPoints.ts.
  */
 export function panelState<T>(
   query: QueryStatus,

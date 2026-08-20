@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { C } from '../../theme/charts';
+import { colors } from '../../theme/charts';
 import {
   axisTooltip,
   categoryAxisX,
@@ -40,7 +40,7 @@ export function buildFlowByStrikeOption(data: FlowByStrikeResponse): EChartsOpti
         name: 'Call Flow',
         barMaxWidth: 22,
         data: rows.map((p) => p.call_contracts),
-        itemStyle: { color: C.call },
+        itemStyle: { color: colors.call },
         emphasis: { focus: 'series' },
         markLine: zeroLine(),
       },
@@ -49,7 +49,7 @@ export function buildFlowByStrikeOption(data: FlowByStrikeResponse): EChartsOpti
         name: 'Put Flow',
         barMaxWidth: 22,
         data: rows.map((p) => p.put_contracts),
-        itemStyle: { color: C.put },
+        itemStyle: { color: colors.put },
         emphasis: { focus: 'series' },
       },
     ],

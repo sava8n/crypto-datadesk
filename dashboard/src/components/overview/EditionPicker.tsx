@@ -8,7 +8,6 @@ interface Props {
   onSelect: (id: number) => void;
 }
 
-/** Edition dropdown for the weekly note; rows carry the headline so the list still reads. */
 export default function EditionPicker({ reports, selectedId, onSelect }: Props) {
   const selected = reports.find((r) => r.id === selectedId) ?? reports[0];
   if (!selected) return null;

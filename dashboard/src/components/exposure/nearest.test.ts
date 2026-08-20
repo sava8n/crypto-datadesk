@@ -9,8 +9,8 @@ describe('nearestIdx', () => {
   });
 
   it('finds the closest strike for a level in between', () => {
-    expect(nearestIdx(strikes, 104)).toBe(1); // closer to 100
-    expect(nearestIdx(strikes, 106)).toBe(2); // closer to 110
+    expect(nearestIdx(strikes, 104)).toBe(1);
+    expect(nearestIdx(strikes, 106)).toBe(2);
   });
 
   it('resolves a tie to the first (lowest-index) strike', () => {

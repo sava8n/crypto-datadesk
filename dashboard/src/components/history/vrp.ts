@@ -1,5 +1,4 @@
-// Forward-looking vol risk premium: what selling 30d vol at iv30(t) actually earned,
-// measured by the realized vol observed 30 days later (rv30 at t+30d covers (t, t+30d]).
+// iv30(t) against the rv30 observed at t+30d, which covers (t, t+30d]
 
 import type { VolHistoryPoint } from '../../types';
 import { MS_PER_DAY } from '../../utils/constants';

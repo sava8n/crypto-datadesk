@@ -1,5 +1,3 @@
-// Units and locales shared across formatting and time math
-
 // the backend annualises with 365.25, so DTE <-> tte_years must use the same divisor
 export const DAYS_PER_YEAR = 365.25;
 

@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { C, MONO } from '../../theme/charts';
+import { colors, MONO } from '../../theme/charts';
 import {
   grid,
   itemTooltip,
@@ -15,7 +15,6 @@ import { dateLabel, pctOne, pctWhole, strikeFmt, strikeFull } from '../../utils/
 import EChart from '../chart/EChart';
 
 export function buildProbCurvesOption(data: ProbCurvesResponse): EChartsOption {
-  // near-dated first, so legend and z-order are chronological
   const curves = groupByExpiry(data.points, (p) => p.prob_above).map((c) => ({
     ...c,
     label: dateLabel(c.expiry),
@@ -23,7 +22,7 @@ export function buildProbCurvesOption(data: ProbCurvesResponse): EChartsOption {
 
   return {
     backgroundColor: 'transparent',
-    color: C.palette,
+    color: colors.palette,
     tooltip: itemTooltip((p) => {
       const [k, prob] = tuple(p.value);
       if (k === undefined) return '';
@@ -48,8 +47,8 @@ export function buildProbCurvesOption(data: ProbCurvesResponse): EChartsOption {
         markLine: {
           silent: true,
           symbol: 'none',
-          lineStyle: { color: C.label, type: 'dashed', width: 1 },
-          label: { color: C.label, fontFamily: MONO, fontSize: 10, formatter: 'SPOT' },
+          lineStyle: { color: colors.label, type: 'dashed', width: 1 },
+          label: { color: colors.label, fontFamily: MONO, fontSize: 10, formatter: 'SPOT' },
           data: [{ xAxis: data.spot }],
         },
       }),

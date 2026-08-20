@@ -6,7 +6,7 @@ interface Props {
   onCommit: (min: number, max: number) => void;
 }
 
-/** Dual-thumb DTE range: two stacked native ranges, thumbs alone catch the pointer. */
+/** Two stacked native ranges; only the thumbs catch the pointer. */
 export default function DteSlider({ min, max, onCommit }: Props) {
   const lo = Math.min(min, MAX_DTE_LIMIT);
   const hi = Math.min(max, MAX_DTE_LIMIT);

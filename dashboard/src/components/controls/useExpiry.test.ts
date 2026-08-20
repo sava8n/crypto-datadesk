@@ -12,7 +12,7 @@ const wrapper = ({ children }: { children: ReactNode }) =>
 // Fridays; the first is a month-end, matching the monthly default
 const WEEK1 = '2026-07-31T08:00:00Z';
 const WEEK2 = '2026-08-07T08:00:00Z';
-const MONTHLY2 = '2026-08-28T08:00:00Z'; // last Friday of August
+const MONTHLY2 = '2026-08-28T08:00:00Z';
 
 const CHART = 'testChart';
 

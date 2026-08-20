@@ -14,7 +14,6 @@ export function buildOIByExpiryOption(data: OIByExpiryResponse): EChartsOption {
     legend: legendBar([...OI_SERIES_NAMES]),
     tooltip: axisTooltip({ shadow: true, value: countShort }),
     grid: grid('bars'),
-    // interval 0: every expiry gets a label, the axis is short enough
     xAxis: categoryAxisX(
       rows.map((p) => dateLabel(p.expiry)),
       { interval: 0 },

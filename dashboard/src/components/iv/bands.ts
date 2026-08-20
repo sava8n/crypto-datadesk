@@ -30,13 +30,9 @@ export function bandRows(points: CMBandPoint[], metric: BandMetric, maxX: number
 export type BandSeries = CustomSeriesOption | LineSeriesOption;
 
 /**
- * Two silent series: a shaded p25-p75 ribbon and a dashed median. Callers spread them under
- * the live series.
- *
- * The ribbon is drawn as explicit polygons rather than the usual stacked-area trick. These
- * charts put DTE on a *value* axis, and echarts only stacks along a category axis - given
- * [x, y] pairs it leaves the filler unstacked and closes the area against a baseline tens of
- * thousands of pixels off-canvas, which paints as a slab over the whole plot.
+ * A shaded p25-p75 ribbon and a dashed median, drawn as explicit polygons: DTE sits on a value
+ * axis and echarts stacks only along a category axis - given [x, y] pairs it closes the area
+ * against a baseline far off-canvas and paints a slab over the plot.
  */
 export function bandSeries(rows: BandRow[], color: string): BandSeries[] {
   if (rows.length < 2) return [];

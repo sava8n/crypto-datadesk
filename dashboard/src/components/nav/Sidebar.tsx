@@ -38,7 +38,6 @@ function Footer() {
 
 export default function Sidebar({ section, view, onSelect, onOpenSettings }: Props) {
   const currency = useCurrency();
-  // expansion is independent of selection: opening one section leaves the others as they are
   const [expanded, setExpanded] = useState<string[]>([section]);
 
   const toggle = (id: string) =>

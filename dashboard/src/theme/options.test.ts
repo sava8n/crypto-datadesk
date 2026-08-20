@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { C, setChartTheme, THEMES } from './charts';
+import { colors, setChartTheme, THEMES } from './charts';
 import {
   axisTooltip,
   categoryAxisX,
@@ -18,9 +18,9 @@ describe('valueAxisY', () => {
     const axis = valueAxisY() as Record<string, never>;
     expect(axis).toMatchObject({
       type: 'value',
-      axisLine: { lineStyle: { color: C.axis } },
-      axisTick: { lineStyle: { color: C.axis } },
-      splitLine: { lineStyle: { color: C.grid } },
+      axisLine: { lineStyle: { color: colors.axis } },
+      axisTick: { lineStyle: { color: colors.axis } },
+      splitLine: { lineStyle: { color: colors.grid } },
     });
   });
 
@@ -76,7 +76,7 @@ describe('categoryAxisX', () => {
   it('carries the labels and rotates them by default', () => {
     const axis = categoryAxisX(['a', 'b']) as Record<string, never>;
     expect(axis).toMatchObject({ type: 'category', data: ['a', 'b'] });
-    expect(axis.axisLabel).toMatchObject({ rotate: 45, interval: 'auto', color: C.label });
+    expect(axis.axisLabel).toMatchObject({ rotate: 45, interval: 'auto', color: colors.label });
   });
 
   it('can force a label on every category', () => {

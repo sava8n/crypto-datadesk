@@ -6,16 +6,12 @@ import { MIN_PREMIUMS } from '../flow/tape';
 import DteSlider from './DteSlider';
 import { ScopePopover, ScopeRow, ScopeSegmented } from './Scope';
 
-// Every scope reads and writes the calling chart's own slice of the scope store, keyed by
-// chartId, so two charts can sit on different selections and each survives a reload.
-
 const LOOKBACKS = ARCHIVE_WINDOWS.map((w) => ({ value: w, label: w.toUpperCase() }));
 
 interface ScopeProps {
   chartId: string;
 }
 
-/** Dealer-inventory sign: the calls+/puts- assumption or cumulative taker flow. */
 export function ConventionScope({ chartId }: ScopeProps) {
   const { scope, update } = useChartScope(chartId);
 
@@ -107,11 +103,8 @@ export function PremiumScope({ chartId }: ScopeProps) {
 }
 
 /**
- * Expiry, offered as concrete dates only.
- *
- * The trigger shows what the chart is actually plotting, not the raw scope: a stored pick
- * that has rolled off the chain resolves to a quoted one, so the label always matches the
- * chart. ALL is offered only where the chart can plot every expiry at once.
+ * The trigger shows the resolved expiry, not the raw scope: a stored pick that has rolled off
+ * the chain resolves to a quoted one. ALL is offered only where the chart can plot every expiry.
  */
 export function ExpiryScope({
   chartId,

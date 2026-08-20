@@ -24,11 +24,7 @@ export default function Dashboard() {
         onOpenSettings={() => setSettingsOpen(true)}
       />
 
-      {/*
-       * Charts hold their colours as plain strings baked into a memoised option, so a theme
-       * switch remounts them rather than threading the mode through every dependency array.
-       * Legend toggles reset with it - acceptable for an explicit, infrequent action.
-       */}
+      {/* options bake colours in as strings, so a theme switch remounts the charts */}
       <div className="shell" key={theme}>
         <MarketStrip />
         <main className="shell__body">

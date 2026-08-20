@@ -11,7 +11,6 @@ export interface BasisRow {
   expiry: string;
 }
 
-// annualized basis of each per-expiry forward against spot, near-dated first
 export function buildBasisRows(data: TermStructureResponse): BasisRow[] {
   if (data.spot <= 0) return [];
   return data.points

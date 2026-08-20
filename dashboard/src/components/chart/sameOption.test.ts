@@ -12,12 +12,10 @@ describe('sameOption', () => {
     expect(sameOption({ series: [{ data: [1, 2] }] }, { series: [{ data: [1, 2] }] })).toBe(true);
   });
 
-  // formatters are rebuilt on every build; the values they render are in the option beside them
   it('treats two functions as equal', () => {
     expect(sameOption({ formatter: () => 'a' }, { formatter: () => 'b' })).toBe(true);
   });
 
-  // the surface mesh uses NaN for cells the chain could not fill
   it('treats NaN as equal to NaN', () => {
     expect(sameOption([1, NaN], [1, NaN])).toBe(true);
     expect(sameOption([1, NaN], [1, 2])).toBe(false);

@@ -13,7 +13,7 @@ const CHART = 'skew';
 export default function SkewSection() {
   const currency = useCurrency();
   const query = useSkew(currency);
-  // best-effort context: an unreachable archive just leaves the band off
+  // best-effort: an unreachable archive leaves the band off
   const bands = useCMBands(currency);
   const { windowed, count } = useDteWindowed(CHART, query.data);
   const state = panelState(query, windowed, count, MIN_POINTS.series);

@@ -30,7 +30,6 @@ interface PickProps<T extends string | number> {
   label: string;
 }
 
-/** A chromeless select wearing the value pill as its box. */
 function Pick<T extends string | number>({ value, options, onSelect, label }: PickProps<T>) {
   return (
     <div className="prefs__pill">

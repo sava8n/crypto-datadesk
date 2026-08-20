@@ -1,24 +1,20 @@
-// Chart tokens, in both modes - the canvas half of the colour system. dashboard.css owns the
-// chrome as custom properties; canvas cannot resolve var(), so the values a chart draws are
-// restated here, and charts.test.ts holds the shared ones to the stylesheet.
+// Chart colours, both modes - the canvas half of the colour system. Canvas cannot resolve
+// var(), so chrome values are restated from dashboard.css; charts.test.ts holds them in step.
 //
-// Three axes, and no chart takes more than two of them:
-//   - STRUCTURAL, blue/tangerine: what the chain *is* - calls, puts, dealer gamma, skew. The
-//     pair survives red-green deficiency and greyscale; charts.test.ts measures both.
-//   - OUTCOME, green/red: what *happened* - a taker buy or sell, a gain, a failed request.
-//     Chrome only (--pos/--neg in dashboard.css); it reaches canvas solely as levelKey.
-//   - REFERENCE, violet/teal: anything with no side to it - implied vol, basis, a prior
-//     snapshot. warn (ochre) is emphasis without a direction.
+// Three axes, no chart takes more than two:
+//   - STRUCTURAL, blue/tangerine: what the chain is - calls, puts, dealer gamma, skew
+//   - OUTCOME, green/red: what happened; chrome only (--pos/--neg), on canvas only as levelKey
+//   - REFERENCE, violet/teal: anything with no side - implied vol, basis, a prior snapshot;
+//     warn (ochre) is emphasis without direction
 //
-// Colour is never the only cue: sign also lives in bar direction or position about zero.
-// s1..s8 are assigned by expiry index within a chart.
+// Colour is never the only cue; s1..s8 are assigned by expiry index within a chart.
 
 import type { ThemeMode } from './mode';
 
 export const MONO = "'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
 
 interface Base {
-  // chrome: everything that is not data, held deliberately low-contrast
+  // chrome, held low-contrast
   grid: string;
   axis: string;
   label: string;
@@ -27,11 +23,10 @@ interface Base {
   tooltipBg: string;
   tooltipBorder: string;
   tooltipShadow: string;
-  // wash under the strip sparkline; alpha is per mode, since a step the eye catches on white
-  // vanishes near black
+  // sparkline wash; alpha per mode, a step visible on white vanishes near black
   sparkFill: string;
 
-  // structural axis - soft is the reduced-weight partner for a stacked ITM segment
+  // structural axis; soft is the lighter partner for a stacked ITM segment
   call: string;
   callSoft: string;
   put: string;
@@ -54,7 +49,7 @@ type Slots = {
   s8: string;
 };
 
-export type ChartTokens = Base &
+export type ChartColors = Base &
   Slots & {
     palette: string[];
     // ordered magnitude, single hue
@@ -63,7 +58,7 @@ export type ChartTokens = Base &
 
 type Ramp = readonly [string, string, string, string, string, string, string, string];
 
-// one source for the eight hues: the named slots and the palette array cannot drift apart
+// named slots and the palette array from one ramp, so they cannot drift
 const slots = (r: Ramp): Slots & { palette: string[] } => ({
   s1: r[0],
   s2: r[1],
@@ -76,7 +71,7 @@ const slots = (r: Ramp): Slots & { palette: string[] } => ({
   palette: [...r],
 });
 
-const LIGHT: ChartTokens = {
+const LIGHT: ChartColors = {
   grid: '#EDEDEB',
   axis: '#DCDCD9',
   label: '#8C8C86',
@@ -109,10 +104,9 @@ const LIGHT: ChartTokens = {
   sequential: ['#E4F0EE', '#BEDDD8', '#93C7BF', '#63AB9F', '#318A7C', '#0E6B5F'],
 };
 
-// Not the light values lightened: a hue lightened toward a dark surface goes pastel, so each
-// accent gains saturation as it gains luminance, and the neutrals turn cool because warm greys
-// go brown on black.
-const DARK: ChartTokens = {
+// not the light values lightened: accents gain saturation with luminance, neutrals go cool
+// because warm greys turn brown on black
+const DARK: ChartColors = {
   grid: '#202026',
   axis: '#33333C',
   label: '#7A7A85',
@@ -145,25 +139,24 @@ const DARK: ChartTokens = {
   sequential: ['#102A28', '#164A44', '#1C6B60', '#248C7E', '#3AAD9C', '#6FD2C0'],
 };
 
-export const THEMES: Record<ThemeMode, ChartTokens> = { light: LIGHT, dark: DARK };
+export const THEMES: Record<ThemeMode, ChartColors> = { light: LIGHT, dark: DARK };
 
 /**
- * The live token bag. Read it at render time - `C.call`, never `const { call } = C` at module
- * scope, or the value freezes at import and stops following the theme.
+ * The live colours. Read them at render time - `colors.call`, never `const { call } = colors` at
+ * module scope, or the value freezes at import and stops following the theme.
  */
-export const C: ChartTokens = { ...LIGHT };
+export const colors: ChartColors = { ...LIGHT };
 
 export function setChartTheme(mode: ThemeMode): void {
-  Object.assign(C, THEMES[mode]);
+  Object.assign(colors, THEMES[mode]);
 }
 
-export const axisLabelStyle = () => ({ color: C.label, fontFamily: MONO, fontSize: 12 });
+export const axisLabelStyle = () => ({ color: colors.label, fontFamily: MONO, fontSize: 12 });
 
-// base tooltip box; panels add trigger/formatter
 export const tooltipStyle = () => ({
-  backgroundColor: C.tooltipBg,
-  borderColor: C.tooltipBorder,
+  backgroundColor: colors.tooltipBg,
+  borderColor: colors.tooltipBorder,
   borderWidth: 1,
-  extraCssText: `box-shadow: 0 4px 16px ${C.tooltipShadow}; border-radius: 6px;`,
-  textStyle: { color: C.text, fontFamily: MONO, fontSize: 13 },
+  extraCssText: `box-shadow: 0 4px 16px ${colors.tooltipShadow}; border-radius: 6px;`,
+  textStyle: { color: colors.text, fontFamily: MONO, fontSize: 13 },
 });

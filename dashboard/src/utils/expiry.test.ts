@@ -7,7 +7,7 @@ const WED = '2026-01-07T08:00:00Z';
 const THU = '2026-01-08T08:00:00Z';
 const FRI_1 = '2026-01-09T08:00:00Z';
 const FRI_2 = '2026-01-23T08:00:00Z';
-const FRI_LAST = '2026-01-30T08:00:00Z'; // last Friday of January
+const FRI_LAST = '2026-01-30T08:00:00Z';
 
 describe('resolveFrontExpiry', () => {
   it('picks the first Friday in weekly mode', () => {

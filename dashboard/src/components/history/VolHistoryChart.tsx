@@ -1,6 +1,6 @@
 import type { EChartsOption, LineSeriesOption } from 'echarts';
 import { useMemo } from 'react';
-import { C } from '../../theme/charts';
+import { colors } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY } from '../../theme/options';
 import type { VolHistoryPoint, VolHistoryResponse } from '../../types';
 import { pctWhole, volPct } from '../../utils/format';
@@ -14,14 +14,13 @@ interface Series {
 
 const SERIES_NAMES = ['IV30', 'RV30', 'IV7', 'RV7', 'DVOL'];
 
-// Named metrics rather than expiries, so each keeps a fixed ramp slot, paired by tenor.
-// A factory, so the colours follow the theme.
+// named metrics keep fixed ramp slots, paired by tenor; a factory so the colours follow the theme
 const series = (): Series[] => [
-  { key: 'iv30', name: 'IV30', color: C.s1 },
-  { key: 'rv30', name: 'RV30', color: C.s2 },
-  { key: 'iv7', name: 'IV7', color: C.s3 },
-  { key: 'rv7', name: 'RV7', color: C.s5 },
-  { key: 'dvol', name: 'DVOL', color: C.label },
+  { key: 'iv30', name: 'IV30', color: colors.s1 },
+  { key: 'rv30', name: 'RV30', color: colors.s2 },
+  { key: 'iv7', name: 'IV7', color: colors.s3 },
+  { key: 'rv7', name: 'RV7', color: colors.s5 },
+  { key: 'dvol', name: 'DVOL', color: colors.label },
 ];
 
 export function buildVolHistoryOption(data: VolHistoryResponse): EChartsOption {
@@ -29,7 +28,7 @@ export function buildVolHistoryOption(data: VolHistoryResponse): EChartsOption {
     type: 'line',
     name: s.name,
     showSymbol: false,
-    // null values break the line rather than draw through the gap
+    // null breaks the line
     data: data.points.map((p) => [p.as_of, p[s.key] as number | null]),
     itemStyle: { color: s.color },
     lineStyle: { width: 1.5, color: s.color },

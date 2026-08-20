@@ -8,7 +8,6 @@ import RVConeChart, { type RVConeChartData } from './RVConeChart';
 export default function RVConeSection() {
   const currency = useCurrency();
   const cone = useRVCone(currency);
-  // the overlay rides the term-structure query the TERM STRUCTURE panel already polls
   const term = useTermStructure(currency);
 
   const value: RVConeChartData | undefined = cone.data

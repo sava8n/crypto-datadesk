@@ -14,7 +14,7 @@ import ProbDistributionChart from './ProbDistributionChart';
 const CHART = 'probDistribution';
 
 export default function ProbDistributionSection() {
-  // same query key as the curves section, so the response is fetched once per currency
+  // same query key as the curves section
   const query = useProbCurves(useCurrency());
 
   const expiries = useMemo(() => expiriesOf(query.data?.points), [query.data]);

@@ -1,9 +1,8 @@
 import { DAYS_PER_YEAR } from './constants';
 
-// days to expiry of a point carrying tte_years
 export const dteOf = (point: { tte_years: number }) => point.tte_years * DAYS_PER_YEAR;
 
-// window a point list by days-to-expiry (points carry tte_years); both bounds inclusive
+// inclusive bounds
 export function filterByDte<T extends { tte_years: number }>(
   points: T[],
   minDte: number,

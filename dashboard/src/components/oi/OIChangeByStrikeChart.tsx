@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { C } from '../../theme/charts';
+import { colors } from '../../theme/charts';
 import {
   axisTooltip,
   categoryAxisX,
@@ -31,7 +31,7 @@ export function buildOIChangeByStrikeOption(data: OIChangeByStrikeResponse): ECh
         name: 'Call ΔOI',
         barMaxWidth: 22,
         data: rows.map((p) => p.call_oi_change),
-        itemStyle: { color: C.call },
+        itemStyle: { color: colors.call },
         emphasis: { focus: 'series' },
         markLine: zeroLine(),
       },
@@ -40,7 +40,7 @@ export function buildOIChangeByStrikeOption(data: OIChangeByStrikeResponse): ECh
         name: 'Put ΔOI',
         barMaxWidth: 22,
         data: rows.map((p) => p.put_oi_change),
-        itemStyle: { color: C.put },
+        itemStyle: { color: colors.put },
         emphasis: { focus: 'series' },
       },
     ],

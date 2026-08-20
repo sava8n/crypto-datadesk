@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as client from './client';
 
-// minimal Response stand-in for the fetch mock
 function res(body: unknown, { ok = true, status = 200, jsonThrows = false } = {}): Response {
   return {
     ok,

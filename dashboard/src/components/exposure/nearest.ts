@@ -1,5 +1,4 @@
-// index of the strike nearest a price level (for a level that falls between
-// strikes); ties resolve to the first (lowest-index) strike, -1 for an empty list
+// ties resolve to the lowest index; -1 for an empty list
 export function nearestIdx(strikes: number[], level: number): number {
   let best = -1;
   let bestDist = Infinity;

@@ -23,17 +23,16 @@ const SCOPES_KEY = 'datadesk.scopes.v1';
 
 type ScopeMap = Record<string, Partial<ChartScope>>;
 
-// stored overrides spread over the defaults, so a field added to config.ts later
-// still shows up for a browser holding an older blob
+// spread over the defaults, so an older blob still picks up fields added later
 function load(): Settings {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return DEFAULT_SETTINGS;
     const stored = { ...DEFAULT_SETTINGS, ...(JSON.parse(raw) as Partial<Settings>) };
-    // a bad theme would land on <html data-theme>, where no token block matches it
+    // an unknown theme would leave <html data-theme> unstyled
     return isThemeMode(stored.theme) ? stored : { ...stored, theme: DEFAULT_THEME };
   } catch {
-    return DEFAULT_SETTINGS; // unparseable blob or storage blocked
+    return DEFAULT_SETTINGS;
   }
 }
 
@@ -67,8 +66,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState(load);
   const [scopes, setScopes] = useState(loadScopes);
 
-  // charts read their colours as plain strings, so the token bag has to be switched before
-  // anything below re-renders - an effect would leave them a frame behind
+  // charts read their colours as plain strings, so they have to be switched before anything
+  // below re-renders - an effect would leave them a frame behind
   applyTheme(settings.theme);
 
   // persist here rather than in the setState updater, which StrictMode double-invokes

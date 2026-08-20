@@ -8,8 +8,7 @@ import { dateLabel, dvolFmt, pctOne, pctWhole, priceWhole, usdShort } from '../u
 import MarketSparkline from './MarketSparkline';
 import { oiStats } from './oi/stats';
 
-// pos/neg are the outcome axis - something that happened. long/short are the structural one:
-// which side of gamma dealers are on is what the chain is, not an outcome.
+// pos/neg is the outcome axis; long/short the structural one (which side of gamma dealers hold)
 type Outcome = 'pos' | 'neg';
 type Regime = 'long' | 'short';
 
@@ -36,7 +35,6 @@ export default function MarketStrip() {
   const { data } = useStats(currency);
   const candles = useSpotHistory(currency).data?.candles;
 
-  // the headline vol pair tracks the tenor the rest of the dashboard is anchored to
   const weekly = stripTenor === 'weekly';
   const iv = weekly ? data?.iv7 : data?.iv30;
   const rv = weekly ? data?.rv7 : data?.rv30;
@@ -45,16 +43,13 @@ export default function MarketStrip() {
   const pctl = data?.iv30_percentile;
   const rank = pctl ?? data?.dvol_rank;
 
-  // P/C and max pain are per-expiry, so they follow the strip's own tenor rather than any
-  // chart's scope. The unfiltered call carries the expiry list and is already in cache.
+  // per-expiry, so they follow the strip's tenor; the unfiltered call carries the expiry list
   const chain = useOIByStrike(currency);
   const oiExpiry = resolveFrontExpiry(chain.data?.expiries ?? [], stripTenor) ?? null;
   const slice = useOIByStrike(currency, oiExpiry, { enabled: oiExpiry != null });
   const oi = slice.data ? oiStats(slice.data) : null;
 
-  // net gamma and the flip level are properties of the whole book, not of one expiry: the
-  // exposure route aggregates every expiry. Signed by the default convention, since the sign
-  // toggle is per chart and there is no global one.
+  // book-wide (every expiry), signed by the default convention since the sign toggle is per chart
   const gex = useExposureByStrike(currency, 'gamma', DEFAULT_SCOPE.exposureConvention).data;
   const netGex = gex ? gex.points.reduce((sum, p) => sum + p.net_exposure, 0) : null;
   const flip = gex?.gex_flip ?? null;

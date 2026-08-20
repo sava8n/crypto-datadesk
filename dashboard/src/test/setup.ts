@@ -1,12 +1,9 @@
 import { cleanup } from '@testing-library/react';
 import { afterEach } from 'vitest';
 
-// unmount React trees between tests so renders don't leak across cases
 afterEach(cleanup);
 
-// `localStorage` slot is taken by Node 22's built-in Web Storage and it shadows
-// jsdom's own localStorage. Install a minimal in-memory storage over that slot
-// up front, so Node's warning getter is never triggered.
+// Node 22's built-in localStorage shadows jsdom's; install an in-memory one first
 const desc = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
 const hasStorage =
   !!desc && 'value' in desc && !!desc.value && typeof desc.value.getItem === 'function';

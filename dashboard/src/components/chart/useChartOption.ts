@@ -3,15 +3,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { sameOption } from './sameOption';
 
 /**
- * The option a chart should render.
- *
- * An option equivalent to the one on screen is dropped rather than shown, so the wrapper
- * hands echarts the same reference and it skips the update: a poll that brings back the
- * same market redraws nothing. Options arriving during a hold are not queued - the last
- * one lands when the hold lifts.
- *
- * `animation` is on for the first paint only. The wrappers replace the series and axes, so
- * echarts reads every later update as an insert and would replay the entry animation.
+ * An option equal to the one on screen is dropped, so echarts gets the same reference and skips
+ * the update. Options arriving during a hold are not queued; the last one lands on release.
+ * `animation` is on for the first paint only: the wrappers replace series and axes, so echarts
+ * would replay the entry animation on every update.
  */
 export function useChartOption<T extends object>(option: T) {
   const [held, setHeld] = useState(false);

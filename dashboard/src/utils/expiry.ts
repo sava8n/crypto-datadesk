@@ -2,14 +2,13 @@ import { MS_PER_DAY } from './constants';
 
 export type FrontExpiry = 'weekly' | 'monthly';
 
-// expiry scope sentinel: every expiry, where a chart supports it; the tenor
-// literals track the front expiry, anything else is a concrete ISO expiry
+// EXPIRY_ALL: every expiry where a chart supports it; the tenor literals track the front
+// expiry; anything else is a concrete ISO expiry
 export const EXPIRY_ALL = 'all';
 
 // a concrete pick nearer than this resolves as weekly once it rolls off the chain
 const WEEKLY_DTE_CUTOFF = 10;
 
-// selector list for a response that carries no expiry list of its own, near-dated first
 export function expiriesOf(points: { expiry: string; tte_years: number }[] | undefined): string[] {
   if (!points) return [];
   const tte = new Map<string, number>();
@@ -27,7 +26,6 @@ function isMonthly(d: Date): boolean {
   return new Date(d.getTime() + 7 * MS_PER_DAY).getUTCMonth() !== d.getUTCMonth();
 }
 
-// falls back to the nearest expiry when the chain lists no match
 export function resolveFrontExpiry(expiries: string[], mode: FrontExpiry): string | undefined {
   const match = mode === 'monthly' ? isMonthly : isWeekly;
   return expiries.find((iso) => match(new Date(iso))) ?? expiries[0];
@@ -41,8 +39,7 @@ export function tenorOf(setting: string): FrontExpiry {
   return dte <= WEEKLY_DTE_CUTOFF ? 'weekly' : 'monthly';
 }
 
-// resolves an expiry scope against a quoted chain: a concrete pick holds while
-// quoted, otherwise the front expiry of the scope's tenor
+// a concrete pick holds while quoted, otherwise the front expiry of the scope's tenor
 export function resolveExpiry(setting: string, expiries: string[]): string | undefined {
   if (expiries.includes(setting)) return setting;
   return resolveFrontExpiry(expiries, tenorOf(setting));

@@ -1,5 +1,4 @@
-// Typed ECharts fragments. Charts compose these instead of hand-rolling an untyped
-// literal, which is what lets an option be annotated EChartsOption with no cast.
+// Typed ECharts fragments, so an option can be annotated EChartsOption with no cast.
 
 import type {
   GridComponentOption,
@@ -11,7 +10,7 @@ import type {
   YAXisComponentOption,
 } from 'echarts';
 
-import { axisLabelStyle, C, MONO, tooltipStyle } from './charts';
+import { axisLabelStyle, colors, MONO, tooltipStyle } from './charts';
 
 export interface AxisOpts {
   name?: string;
@@ -20,14 +19,13 @@ export interface AxisOpts {
   scale?: boolean;
   min?: number;
   max?: number;
-  // paint line, ticks, labels and name in one accent colour
   accent?: string;
   position?: 'right';
   splitLine?: boolean;
 }
 
 const nameStyle = (o: AxisOpts) => ({
-  color: o.accent ?? C.text,
+  color: o.accent ?? colors.text,
   fontFamily: MONO,
   fontSize: 13,
 });
@@ -38,8 +36,8 @@ function valueBase(o: AxisOpts) {
     ...(o.scale && { scale: true }),
     ...(o.min !== undefined && { min: o.min }),
     ...(o.max !== undefined && { max: o.max }),
-    axisLine: { lineStyle: { color: o.accent ?? C.axis } },
-    axisTick: { lineStyle: { color: o.accent ?? C.axis } },
+    axisLine: { lineStyle: { color: o.accent ?? colors.axis } },
+    axisTick: { lineStyle: { color: o.accent ?? colors.axis } },
     axisLabel: {
       ...axisLabelStyle(),
       ...(o.accent && { color: o.accent }),
@@ -48,7 +46,7 @@ function valueBase(o: AxisOpts) {
     splitLine:
       o.splitLine === false
         ? { show: false }
-        : { lineStyle: { color: C.grid, type: 'dashed' as const } },
+        : { lineStyle: { color: colors.grid, type: 'dashed' as const } },
   };
 }
 
@@ -72,13 +70,12 @@ export const valueAxisX = (o: AxisOpts = {}): XAXisComponentOption => ({
   }),
 });
 
-// history panels: ISO timestamps plotted proportionally in time
 export const timeAxisX = (): XAXisComponentOption => ({
   type: 'time',
-  axisLine: { lineStyle: { color: C.axis } },
-  axisTick: { lineStyle: { color: C.axis } },
+  axisLine: { lineStyle: { color: colors.axis } },
+  axisTick: { lineStyle: { color: colors.axis } },
   axisLabel: axisLabelStyle(),
-  splitLine: { lineStyle: { color: C.grid, type: 'dashed' as const } },
+  splitLine: { lineStyle: { color: colors.grid, type: 'dashed' as const } },
 });
 
 export const categoryAxisX = (
@@ -87,8 +84,8 @@ export const categoryAxisX = (
 ): XAXisComponentOption => ({
   type: 'category',
   data,
-  axisLine: { lineStyle: { color: C.axis } },
-  axisTick: { lineStyle: { color: C.axis } },
+  axisLine: { lineStyle: { color: colors.axis } },
+  axisTick: { lineStyle: { color: colors.axis } },
   axisLabel: {
     ...axisLabelStyle(),
     rotate: o.rotate ?? 45,
@@ -96,8 +93,7 @@ export const categoryAxisX = (
   },
 });
 
-// Grid insets. The differences are load-bearing: currency-labelled axes need a deeper left
-// gutter and a scrolling per-expiry legend needs two rows of headroom.
+// grid insets; currency axes need a deeper left gutter, a scrolling legend two rows of headroom
 export const GRID_INSETS = {
   bars: { left: 56, right: 18, top: 40, bottom: 60 },
   barsWide: { left: 68, right: 18, top: 40, bottom: 60 },
@@ -115,7 +111,7 @@ export const legendBar = (data: string[]): LegendComponentOption => ({
   top: 4,
   itemWidth: 10,
   itemHeight: 10,
-  inactiveColor: C.zero,
+  inactiveColor: colors.zero,
   textStyle: axisLabelStyle(),
 });
 
@@ -129,26 +125,23 @@ export const legendScroll = (data: string[]): LegendComponentOption => ({
   itemWidth: 18,
   itemHeight: 2,
   itemGap: 12,
-  inactiveColor: C.zero,
+  inactiveColor: colors.zero,
   textStyle: { ...axisLabelStyle(), fontSize: 11 },
-  pageTextStyle: { color: C.text, fontFamily: MONO },
-  pageIconColor: C.text,
-  pageIconInactiveColor: C.axis,
+  pageTextStyle: { color: colors.text, fontFamily: MONO },
+  pageIconColor: colors.text,
+  pageIconInactiveColor: colors.axis,
 });
 
-// dashed rule at y = 0 under a signed series
 export const zeroLine = (): MarkLineComponentOption => ({
   symbol: 'none',
   silent: true,
-  lineStyle: { color: C.zero, type: 'dashed', width: 1.5 },
+  lineStyle: { color: colors.zero, type: 'dashed', width: 1.5 },
   label: { show: false },
   data: [{ yAxis: 0 }],
 });
 
-// echarts types formatter params as an item/axis union and values as unknown, both
-// wider than any chart needs; these adapters narrow once instead of per chart.
+// echarts types formatter params as an item/axis union and values as unknown; narrow once here
 
-// the numeric tuple a series datum carries, or [] when echarts hands back something else
 export const tuple = (v: unknown): number[] => (Array.isArray(v) ? v.map(Number) : []);
 
 export const render =
@@ -177,7 +170,7 @@ export const axisTooltip = (
   // echarts' own pointer colour is fixed for a light page
   axisPointer: o.shadow
     ? { type: 'shadow' }
-    : { type: 'line', lineStyle: { color: C.label, type: 'dashed' } },
+    : { type: 'line', lineStyle: { color: colors.label, type: 'dashed' } },
   ...(o.value && { valueFormatter: values(o.value) }),
   ...(o.render && { formatter: render(o.render) }),
 });

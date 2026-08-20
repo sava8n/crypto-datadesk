@@ -6,19 +6,15 @@ interface Props<T> {
   title: string;
   subtitle?: ReactNode;
   state: PanelState<T>;
-  // section-local controls; `.scopes` right-aligns itself in the title row
   controls?: ReactNode;
-  // rendered below the body, outside its absolute-positioned box
+  // rendered outside the body's absolute-positioned box
   footer?: (data: T) => ReactNode;
   children: (data: T) => ReactNode;
 }
 
 /**
- * The panel frame and its body states.
- *
- * `.panel__body > *` is `position: absolute; inset: 0`, so the body must contain
- * exactly one element - neither this component nor `children` may add a wrapper,
- * or the centred messages collapse into the corner.
+ * `.panel__body > *` is `position: absolute; inset: 0`, so the body must contain exactly one
+ * element: neither this component nor `children` may add a wrapper.
  */
 export default function Panel<T>({ title, subtitle, state, controls, footer, children }: Props<T>) {
   return (

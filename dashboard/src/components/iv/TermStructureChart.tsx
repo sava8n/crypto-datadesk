@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { C } from '../../theme/charts';
+import { colors } from '../../theme/charts';
 import { grid, itemTooltip, valueAxisX, valueAxisY } from '../../theme/options';
 import type { CMBandPoint, TermStructureResponse } from '../../types';
 import { dteOf } from '../../utils/dte';
@@ -28,16 +28,15 @@ export function buildTermStructureOption(
     xAxis: valueAxisX({ name: 'DTE', scale: true, min: 0, format: dteLabel }),
     yAxis: valueAxisY({ name: 'IV', scale: true, format: pctWhole }),
     series: [
-      ...bandSeries(bandRows(bands, 'atm_iv', maxDte), C.ref),
+      ...bandSeries(bandRows(bands, 'atm_iv', maxDte), colors.ref),
       {
         type: 'line',
         name: 'ATM IV',
         data: rows.map((r) => [r.dte, r.iv]),
         showSymbol: true,
         symbolSize: 6,
-        // one curve across expiries with no side to it, so it takes the reference axis
-        itemStyle: { color: C.ref },
-        lineStyle: { width: 1.5, color: C.ref },
+        itemStyle: { color: colors.ref },
+        lineStyle: { width: 1.5, color: colors.ref },
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
       },
     ],

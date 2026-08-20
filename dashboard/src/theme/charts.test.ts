@@ -1,14 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { type ChartTokens, THEMES } from './charts';
+import { type ChartColors, THEMES } from './charts';
 
-// Three things have to hold, and all three are measured rather than asserted by eye:
-//   - colours sharing one chart can be told apart. 20 dE is roughly "clearly a different
-//     colour" rather than "a shade of the same one";
-//   - the structural pair keeps its separation for the ~1 in 12 men with a red-green
-//     deficiency, which is the whole reason calls and puts are blue/tangerine;
-//   - the ordered ramps really are ordered, so a mid-tone never reads brighter than an extreme.
-// Both themes are checked: dark is not the light palette lightened.
+// Measured, not eyeballed: colours sharing a chart stay apart (20 dE is "clearly different"),
+// the structural pair survives red-green deficiency, and the ordered ramps stay ordered. Both
+// themes are checked.
 
 const rgb = (hex: string) =>
   [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16) / 255) as [number, number, number];
@@ -47,22 +43,14 @@ const protan = (h: string) => {
   return hex([0.567 * r + 0.433 * g, 0.558 * r + 0.442 * g, 0.242 * g + 0.758 * b]);
 };
 
-// The tokens that share one chart, so they are the pairs that must stay apart. Which axis each
-// chart takes is the system's chart-assignment table: structural for what the chain is, outcome
-// for what happened, reference for what has no side to it.
-// The flow and OI-change charts look like outcome charts but are not: their two series are
-// calls and puts, and whether flow was bought or OI was built is the sign of the bar. So they
-// take the structural pair, like the OI and volume charts they sit beside.
-const CHARTS: Record<string, (keyof ChartTokens)[]> = {
+// Tokens that share one chart, so they must stay apart. Flow and OI-change look like outcome
+// charts but their series are calls and puts; the sign is the bar direction.
+const CHARTS: Record<string, (keyof ChartColors)[]> = {
   volHistory: ['s1', 's2', 's3', 's5', 'label'],
-  // the same vocabulary as the live skew panel, so RR stays blue and BF violet across both
   skewHistory: ['call', 'callSoft', 'ref', 'zero'],
   vrp: ['ref', 's2', 's3', 'zero'],
-  // three level lines over the signed net-gamma bars, so the structural pair is on it too
   gexLevelsHistory: ['text', 'levelKey', 'ref', 'call', 'put'],
-  // levelKey is in these two now: it used to *be* the put colour, so a flip or max-pain rule
-  // could only separate itself by dashing. On the structural pair it is a third hue and has to
-  // measure up like one.
+  // levelKey used to be the put colour; on the structural pair it is a third hue
   exposureByStrike: ['call', 'put', 'text', 'levelKey'],
   oiByStrike: ['callSoft', 'call', 'putSoft', 'put', 'levelKey'],
   oiHistory: ['call', 'put', 'ref'],
@@ -92,12 +80,9 @@ describe('separation inside one chart', () => {
 });
 
 describe('categorical palette', () => {
-  // What the ramp promises is that *adjacent* entries never share a neighbourhood, which is
-  // what matters when curves are assigned by expiry index. With blue, tangerine, green and red
-  // all reserved by the three axes, the eight remaining hues are crowded: s3 (plum) and s6
-  // (mulberry) sit 10.8 dE apart in light and 8.0 in dark, the ramp's worst pair by some way. A
-  // chart that picks slots by hand rather than by index must not put those two together, and
-  // CHARTS above does not.
+  // adjacent entries never share a neighbourhood, which is what expiry-index assignment needs.
+  // s3 (plum) and s6 (mulberry) are the worst pair (10.8 dE light, 8.0 dark); CHARTS above
+  // never puts them together.
   it.each(Object.entries(THEMES))('%s separates neighbouring slots', (_mode, tokens) => {
     for (let i = 1; i < tokens.palette.length; i++) {
       expect(distance(tokens.palette[i - 1], tokens.palette[i])).toBeGreaterThanOrEqual(25);
@@ -155,8 +140,7 @@ describe('the sequential ramp stays ordered', () => {
   });
 });
 
-// the chrome values canvas needs are restated from dashboard.css; this is what keeps the two
-// copies one
+// the chrome values canvas needs are restated from dashboard.css; this keeps the two copies one
 const css = readFileSync(new URL('./dashboard.css', import.meta.url), 'utf8');
 
 const cssToken = (selector: string, name: string): string | undefined => {
@@ -165,7 +149,7 @@ const cssToken = (selector: string, name: string): string | undefined => {
   return block.match(new RegExp(`${name}:\\s*([^;]+);`))?.[1].trim().toLowerCase();
 };
 
-const SHARED: [keyof ChartTokens, string][] = [
+const SHARED: [keyof ChartColors, string][] = [
   ['text', '--ink'],
   ['label', '--label'],
   ['axis', '--rule-strong'],
@@ -202,9 +186,8 @@ describe('the two modes stay in step', () => {
     }
   });
 
-  // the reference hue is a ramp slot wearing a semantic name. warn is no longer a slot: ochre
-  // would sit too close to the umber the ramp already carries, so emphasis holds its own hue
-  // outside the eight, and so does levelKey.
+  // ref is a ramp slot with a semantic name; warn and levelKey sit outside the eight, ochre
+  // being too close to umber
   it('aliases ref to s1', () => {
     for (const t of Object.values(THEMES)) {
       expect(t.ref).toBe(t.s1);

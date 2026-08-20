@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { C, THEMES } from './charts';
+import { colors, THEMES } from './charts';
 import { applyTheme, DEFAULT_THEME, isThemeMode } from './mode';
 
 afterEach(() => applyTheme(DEFAULT_THEME));
@@ -8,16 +8,16 @@ describe('applyTheme', () => {
   it('moves both halves of the system together', () => {
     applyTheme('dark');
     expect(document.documentElement.dataset.theme).toBe('dark');
-    expect(C.call).toBe(THEMES.dark.call);
+    expect(colors.call).toBe(THEMES.dark.call);
 
     applyTheme('light');
     expect(document.documentElement.dataset.theme).toBe('light');
-    expect(C.call).toBe(THEMES.light.call);
+    expect(colors.call).toBe(THEMES.light.call);
   });
 
   it('leaves no token behind on a switch', () => {
     applyTheme('dark');
-    expect({ ...C }).toEqual(THEMES.dark);
+    expect({ ...colors }).toEqual(THEMES.dark);
   });
 });
 

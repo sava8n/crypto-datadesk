@@ -1,5 +1,4 @@
-// Mirrors the response models in core/api/schemas/, so a response is used as it arrives.
-// Field-level meaning lives there; do not restate it here.
+// Mirrors the response models in core/api/schemas/; field meaning lives there.
 
 export type OptionType = 'C' | 'P';
 
@@ -115,7 +114,6 @@ export interface OIByExpiryResponse extends MarketEnvelope {
   points: OIByExpiryPoint[];
 }
 
-// how dealer inventory is signed: the classic calls+/puts- assumption or cumulative taker flow
 export type ExposureConvention = 'assumption' | 'flow';
 
 export interface ExposureEnvelope extends MarketEnvelope {
@@ -150,7 +148,6 @@ export interface OIByStrikeResponse extends MarketEnvelope {
   points: OIByStrikePoint[];
 }
 
-// live tape / intraday archive spans; and the daily-series spans
 export type RecentWindow = '24h' | '7d';
 export type ArchiveWindow = '7d' | '30d' | '90d' | '1y';
 
@@ -210,13 +207,12 @@ export interface RVConeResponse extends MarketEnvelope {
   points: RVConePoint[];
 }
 
-// tape-backed aggregates over a trailing window; no live-market dependency
 export interface FlowEnvelope extends SpanEnvelope {
   window: RecentWindow;
   tape_start: string | null;
 }
 
-// net taker flow: buys - sells, in contracts and USD premium
+// buys - sells
 export interface FlowByStrikePoint {
   strike: number;
   call_contracts: number;
@@ -276,7 +272,6 @@ export interface ExpiryOutcomesResponse extends CurrencyEnvelope {
 
 export type Resolution = '1h' | '1d';
 
-// archive-backed series: the queried window, no live spot, no upstream dependency
 export interface HistoryEnvelope extends SpanEnvelope {
   resolution: Resolution;
 }

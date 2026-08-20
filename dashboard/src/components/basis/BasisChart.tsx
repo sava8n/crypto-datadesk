@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { C } from '../../theme/charts';
+import { colors } from '../../theme/charts';
 import { axisTooltip, grid, valueAxisX, valueAxisY, zeroLine } from '../../theme/options';
 import type { TermStructureResponse } from '../../types';
 import { dateLabel, dteLabel, usdFull, volPct } from '../../utils/format';
@@ -29,9 +29,8 @@ export function buildBasisOption(data: TermStructureResponse): EChartsOption {
         data: rows.map((r) => [r.dte, r.basisAnn]),
         showSymbol: true,
         symbolSize: 6,
-        // basis has no side to it, so it takes the reference axis rather than a direction pair
-        itemStyle: { color: C.ref },
-        lineStyle: { width: 1.5, color: C.ref },
+        itemStyle: { color: colors.ref },
+        lineStyle: { width: 1.5, color: colors.ref },
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
         // above = contango (forwards over spot), below = backwardation
         markLine: zeroLine(),

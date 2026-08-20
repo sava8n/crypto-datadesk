@@ -1,4 +1,3 @@
-// paths below api/, one entry per consumed backend route
 export const ENDPOINTS = {
   ivCurves: 'iv/curves',
   termStructure: 'iv/term-structure',

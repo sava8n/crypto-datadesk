@@ -1,11 +1,10 @@
 /*
- * The chrome half of the colour system; the data colours live in theme/charts.ts, which also
- * restates the chrome values canvas needs (charts.test.ts holds the two in step).
+ * The chrome half of the colour system; data colours live in theme/charts.ts, which restates
+ * the chrome values canvas needs (charts.test.ts holds the two in step).
  *
- * Chrome never takes an accent, in either theme: the neutral ramp carries every surface, rule
- * and text weight, so a series line is always the brightest thing on screen. Of the three data
- * axes only the OUTCOME pair reaches the chrome: --pos/--neg for things that happened - a taker
- * buy, a gain, a failed request. The chain itself is never green or red.
+ * Chrome never takes an accent: the neutral ramp carries every surface, rule and text weight.
+ * Only the OUTCOME pair reaches it, --pos/--neg for things that happened; the chain itself is
+ * never green or red.
  */
 :root {
   color-scheme: light;
@@ -24,14 +23,12 @@
   --secondary: #6f6f68; /* secondary text at 13px+ */
   --label: #8c8c86; /* mono micro-labels, 10-11px uppercase */
 
-  /* ---- outcome axis: jade / brick, the CVD-safe reading of green-red ---- */
+  /* ---- outcome axis ---- */
   --pos: #0e8168; /* what went well: taker buy, gains, OI builds */
   --neg: #a63a14; /* what went badly: taker sell, losses, key levels, errors */
   --warn: #8a6d00; /* emphasis, no direction: MED badge, syncing dot */
 
-  /* ---- structural axis, the only slice of it chrome draws ---- */
-  /* dealer gamma regime is what the chain *is*, not something that happened, so it takes the
-     structural blue/tangerine rather than green/red. The rest of the pair lives in charts.ts. */
+  /* ---- structural axis, the only slice chrome draws; the rest lives in charts.ts ---- */
   --regime-long: #0f6ba8;
   --regime-short: #c4700a;
 
@@ -67,9 +64,8 @@
 }
 
 /*
- * Cool-leaning, because warm greys go brown on black, and four surface steps instead of
- * shadows - on dark, depth comes from luminance. Text tops out below pure white to stop 11px
- * mono from halating. The outcome pair lifts to mint/coral so chroma survives the surface.
+ * Cool greys (warm ones go brown on black), depth from four surface steps rather than shadows,
+ * text below pure white so 11px mono does not halate.
  */
 :root[data-theme="dark"] {
   color-scheme: dark;
@@ -692,11 +688,8 @@ td.tape-side--sell {
   align-items: start;
 }
 
-/*
- * Overview panels are sized by their content, so they step out of the panel's fixed-height
- * contract: the body stops being a positioning context and the single child returns to normal
- * flow. Prose needs no box to draw into; the centred messages need a height of their own.
- */
+/* overview panels are content-sized: the body stops being a positioning context and its child
+   returns to normal flow */
 .overview .panel {
   margin-bottom: 0;
 }
@@ -852,7 +845,7 @@ td.tape-side--sell {
   line-height: 1.68;
 }
 
-/* both kickers are ink; the level reads from weight, not colour */
+/* both kickers are ink; the level reads from weight */
 .report-body h2,
 .report-body h3 {
   margin: 22px 0 8px;
@@ -1262,7 +1255,6 @@ sup.ref-mark {
   cursor: pointer;
 }
 
-/* the one primary button */
 .modal__done {
   margin-left: auto;
   flex-shrink: 0;

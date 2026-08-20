@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { C } from '../../theme/charts';
+import { colors } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY, zeroLine } from '../../theme/options';
 import { volPct } from '../../utils/format';
 import EChart from '../chart/EChart';
@@ -25,12 +25,10 @@ export function buildVRPOption(rows: VRPRow[]): EChartsOption {
     xAxis: timeAxisX(),
     yAxis: valueAxisY({ name: 'VOL', scale: true, format: volPct }),
     series: [
-      // implied against realised has no side to it: the reference axis, violet then teal, and
-      // a third slot for the spread itself
-      line('IV30', (r) => r.iv30, C.ref),
-      line('RV30 +30D', (r) => r.rv30Fwd, C.s2, true),
+      line('IV30', (r) => r.iv30, colors.ref),
+      line('RV30 +30D', (r) => r.rv30Fwd, colors.s2, true),
       {
-        ...line('VRP', (r) => r.vrp, C.s3),
+        ...line('VRP', (r) => r.vrp, colors.s3),
         // above = implied paid more than was realized
         markLine: zeroLine(),
       },

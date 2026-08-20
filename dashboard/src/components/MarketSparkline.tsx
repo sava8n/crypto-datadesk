@@ -1,18 +1,15 @@
 import type { EChartsOption } from 'echarts';
 
-import { C } from '../theme/charts';
+import { colors } from '../theme/charts';
 import type { SpotCandle } from '../types';
 import EChart from './chart/EChart';
 
-// candles are daily, so this is the trailing window in days
+// trailing days; candles are daily
 const SPARK_DAYS = 90;
 
-/** Closing price only, no axes and no tooltip - it is a shape, not a chart. */
 export default function MarketSparkline({ candles }: { candles: SpotCandle[] }) {
   const shown = candles.slice(-SPARK_DAYS);
 
-  // deliberately neutral: the shape reads as context, and the move percent beside it
-  // is the only thing carrying direction
   const option: EChartsOption = {
     backgroundColor: 'transparent',
     grid: { left: 0, right: 0, top: 4, bottom: 2 },
@@ -23,8 +20,8 @@ export default function MarketSparkline({ candles }: { candles: SpotCandle[] }) 
         type: 'line',
         data: shown.map((c) => c.close),
         symbol: 'none',
-        lineStyle: { color: C.text, width: 1.5 },
-        areaStyle: { color: C.sparkFill },
+        lineStyle: { color: colors.text, width: 1.5 },
+        areaStyle: { color: colors.sparkFill },
       },
     ],
   };

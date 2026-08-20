@@ -13,7 +13,7 @@ const CHART = 'termStructure';
 export default function TermStructureSection() {
   const currency = useCurrency();
   const query = useTermStructure(currency);
-  // best-effort context: an unreachable archive just leaves the band off
+  // best-effort: an unreachable archive leaves the band off
   const bands = useCMBands(currency);
   const { windowed, count } = useDteWindowed(CHART, query.data);
   const state = panelState(query, windowed, count, MIN_POINTS.series);

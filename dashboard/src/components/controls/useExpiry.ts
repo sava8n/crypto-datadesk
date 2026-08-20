@@ -2,11 +2,8 @@ import { useChartScope } from '../../settings/store';
 import { EXPIRY_ALL, resolveExpiry } from '../../utils/expiry';
 
 /**
- * Resolves one chart's expiry scope against the chain it quotes.
- *
- * EXPIRY_ALL maps to the empty string ("every expiry") where the section supports it and
- * falls back to the front expiry where it does not. A concrete pick holds only while it is
- * still quoted; off the chain, the front expiry of its tenor takes over.
+ * EXPIRY_ALL resolves to '' (every expiry) where the section supports it, else to the front
+ * expiry. A concrete pick holds while quoted; off the chain, the front expiry of its tenor.
  */
 export function useExpiry(
   chartId: string,

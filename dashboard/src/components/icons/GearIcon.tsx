@@ -1,4 +1,3 @@
-/** Feather gear; the stroke follows the caller's text color. */
 export default function GearIcon({ className, size = 13 }: { className?: string; size?: number }) {
   return (
     <svg

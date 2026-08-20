@@ -3,8 +3,8 @@ import ReactECharts from 'echarts-for-react';
 
 import { useChartOption } from './useChartOption';
 
-// Merging keeps legend toggles and the legend page across an update. These four vary in
-// count between builds, so they are replaced or the ones that vanish would linger.
+// merge keeps legend state across updates; these four vary in count between builds, so they
+// are replaced or vanished ones would linger
 const REPLACE = ['series', 'xAxis', 'yAxis', 'grid'];
 
 export default function EChart({ option }: { option: EChartsOption }) {

@@ -2,7 +2,7 @@ import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_SCOPE, DEFAULT_SETTINGS, MIN_REFRESH_SECONDS } from '../config';
-import { C, THEMES } from '../theme/charts';
+import { colors, THEMES } from '../theme/charts';
 import { applyTheme, DEFAULT_THEME } from '../theme/mode';
 import {
   SettingsProvider,
@@ -33,7 +33,7 @@ describe('load (via SettingsProvider)', () => {
     const { result } = renderHook(() => useSettings(), { wrapper });
 
     expect(result.current.currency).toBe('ETH');
-    expect(result.current.refreshSeconds).toBe(DEFAULT_SETTINGS.refreshSeconds); // untouched
+    expect(result.current.refreshSeconds).toBe(DEFAULT_SETTINGS.refreshSeconds);
   });
 
   it('ignores an older blob rather than carrying its dropped fields forward', () => {
@@ -61,7 +61,7 @@ describe('theme', () => {
     renderHook(() => useSettings(), { wrapper });
 
     expect(document.documentElement.dataset.theme).toBe('dark');
-    expect(C.call).toBe(THEMES.dark.call);
+    expect(colors.call).toBe(THEMES.dark.call);
   });
 
   it('switches both halves before the charts below re-render', () => {
@@ -71,7 +71,7 @@ describe('theme', () => {
 
     expect(result.current.settings.theme).toBe('dark');
     expect(document.documentElement.dataset.theme).toBe('dark');
-    expect(C.call).toBe(THEMES.dark.call);
+    expect(colors.call).toBe(THEMES.dark.call);
     expect(JSON.parse(localStorage.getItem(KEY) ?? '{}').theme).toBe('dark');
   });
 
@@ -81,13 +81,12 @@ describe('theme', () => {
     expect(result.current.theme).toBe('light');
   });
 
-  // a mode with no token block behind it would leave the page unstyled
   it('rejects a stored mode it cannot render', () => {
     localStorage.setItem(KEY, JSON.stringify({ theme: 'solarized', refreshSeconds: 45 }));
     const { result } = renderHook(() => useSettings(), { wrapper });
 
     expect(result.current.theme).toBe('light');
-    expect(result.current.refreshSeconds).toBe(45); // the rest of the blob still applies
+    expect(result.current.refreshSeconds).toBe(45);
   });
 });
 
@@ -159,8 +158,7 @@ describe('update', () => {
 
 describe('useSettings guard', () => {
   it('throws when used outside a SettingsProvider', () => {
-    // React (dev) re-throws the render error through a synthetic DOM event that jsdom
-    // would report as uncaught; swallow both channels so the expected throw is quiet.
+    // React (dev) re-throws render errors through a DOM event jsdom reports as uncaught
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
     const swallow = (e: ErrorEvent) => e.preventDefault();
     window.addEventListener('error', swallow);

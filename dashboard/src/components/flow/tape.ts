@@ -1,5 +1,3 @@
-// Tape presentation helpers, kept pure for testing.
-
 import type { TapePrint } from '../../types';
 import { dateLabel, strikeFmt } from '../../utils/format';
 

@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { C } from '../../theme/charts';
+import { colors } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY, values } from '../../theme/options';
 import type { PositioningHistoryPoint, PositioningHistoryResponse } from '../../types';
 import { countShort } from '../../utils/format';
@@ -22,7 +22,7 @@ export function buildOIHistoryOption(data: PositioningHistoryResponse): EChartsO
       valueAxisY({ name: 'OI', format: countShort }),
       valueAxisY({
         name: 'P/C',
-        accent: C.ref,
+        accent: colors.ref,
         position: 'right',
         splitLine: false,
         format: (v: number) => v.toFixed(2),
@@ -35,8 +35,8 @@ export function buildOIHistoryOption(data: PositioningHistoryResponse): EChartsO
         showSymbol: false,
         areaStyle: { opacity: 0.15 },
         data: data.points.map((p) => [p.as_of, p.oi_total_calls]),
-        itemStyle: { color: C.call },
-        lineStyle: { width: 1.5, color: C.call },
+        itemStyle: { color: colors.call },
+        lineStyle: { width: 1.5, color: colors.call },
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
       },
       {
@@ -45,8 +45,8 @@ export function buildOIHistoryOption(data: PositioningHistoryResponse): EChartsO
         showSymbol: false,
         areaStyle: { opacity: 0.15 },
         data: data.points.map((p) => [p.as_of, p.oi_total_puts]),
-        itemStyle: { color: C.put },
-        lineStyle: { width: 1.5, color: C.put },
+        itemStyle: { color: colors.put },
+        lineStyle: { width: 1.5, color: colors.put },
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
       },
       {
@@ -55,8 +55,8 @@ export function buildOIHistoryOption(data: PositioningHistoryResponse): EChartsO
         yAxisIndex: 1,
         showSymbol: false,
         data: data.points.map((p) => [p.as_of, pcRatio(p)]),
-        itemStyle: { color: C.ref },
-        lineStyle: { width: 1.5, color: C.ref, type: 'dashed' },
+        itemStyle: { color: colors.ref },
+        lineStyle: { width: 1.5, color: colors.ref, type: 'dashed' },
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
         tooltip: { valueFormatter: values((v) => v.toFixed(2)) },
       },

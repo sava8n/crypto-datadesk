@@ -25,7 +25,6 @@ describe('buildOIChangeByStrikeOption', () => {
     const series = option.series as { type: string; data: number[] }[];
     expect(series).toHaveLength(2);
     expect(series.every((s) => s.type === 'bar')).toBe(true);
-    // sorted by strike: 90 first
     expect(series[0].data).toEqual([5, -3]);
     expect(series[1].data).toEqual([-2, 1]);
     expect((option.xAxis as { data: string[] }).data).toEqual(['90k', '110k']);

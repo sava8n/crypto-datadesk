@@ -25,17 +25,13 @@ import RVConeSection from '../vol/RVConeSection';
 import VolumeByStrikeSection from '../volume/VolumeByStrikeSection';
 
 /**
- * The navigation tree, as data.
- *
- * A view is a reading unit, not a chart: it holds several charts when they answer one
- * question from different angles, and one chart when that chart stands on its own.
- * The sidebar and the routing both read this single source; each chart titles itself.
+ * The navigation tree as data: a view groups the charts that answer one question. The sidebar
+ * and the routing both read it.
  */
 export interface View {
   id: string;
   label: string;
-  // paragraphs rendered under the charts: what it shows, why it matters, how to read it, what
-  // the controls do; omitted for the editorial view, which explains itself
+  // rendered under the charts; omitted for the editorial view
   desc?: string[];
   render: () => ReactNode;
 }
@@ -357,7 +353,6 @@ export const SECTIONS: Section[] = [
   },
 ];
 
-// a session opens on the overview, which reads as an orientation before any chart
 export const DEFAULT_SECTION = 'overview';
 export const DEFAULT_VIEW = 'note';
 

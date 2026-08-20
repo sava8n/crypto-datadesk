@@ -14,8 +14,8 @@ const CHART = 'oiByStrike';
 export default function OIByStrikeSection() {
   const currency = useCurrency();
 
-  // the unfiltered call is what carries the expiry list; the selected slice is the
-  // only one the backend gives max_pain and intrinsic value for
+  // the unfiltered call carries the expiry list; max_pain and intrinsic exist only for the
+  // selected slice
   const chain = useOIByStrike(currency);
   const selected = useExpiry(CHART, chain.data?.expiries ?? [], { allowAll: true });
 

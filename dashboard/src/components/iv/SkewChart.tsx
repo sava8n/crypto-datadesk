@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { C } from '../../theme/charts';
+import { colors } from '../../theme/charts';
 import {
   axisTooltip,
   grid,
@@ -23,10 +23,9 @@ export function buildSkewOption(data: SkewResponse, bands: CMBandPoint[] = []): 
     .sort((a, b) => a.dte - b.dte);
   const maxDte = rows[rows.length - 1]?.dte ?? 0;
 
-  // shaded p25-p75 of the archived CM risk reversal, under the live curves. Neutral, so it
-  // cannot be read as a side of its own. Empty when there is no archive to draw, which is why
-  // the RR line's index has to be counted rather than assumed.
-  const band = bandSeries(bandRows(bands, 'rr25', maxDte), C.label);
+  // archived CM risk-reversal band, neutral, under the live curves; empty without an archive,
+  // which is why the RR series index is counted
+  const band = bandSeries(bandRows(bands, 'rr25', maxDte), colors.label);
 
   // widest |RR| on the chart, so the two visualMap pieces between them cover every point
   const rrSpan = Math.max(1e-6, ...rows.map((r) => Math.abs(r.rr)));
@@ -42,19 +41,16 @@ export function buildSkewOption(data: SkewResponse, bands: CMBandPoint[] = []): 
       },
     }),
     grid: grid('series'),
-    // The risk reversal is call vol minus put vol, so it is a direction, not a level: above
-    // zero the line takes the call side, below it the put side.
-    //
-    // Both pieces have to be bounded. An open-ended piece leaves echarts with no colour stop
-    // inside the axis range when it builds the line's gradient, and it throws mid-render -
-    // taking this series and every later one off the chart.
+    // RR is call vol minus put vol: call side above zero, put side below. Both pieces must be
+    // bounded - an open-ended piece leaves no colour stop inside the axis range and echarts
+    // throws mid-render, taking every later series with it.
     visualMap: {
       show: false,
       seriesIndex: band.length,
       dimension: 1,
       pieces: [
-        { gte: -rrSpan, lt: 0, color: C.put },
-        { gte: 0, lte: rrSpan, color: C.call },
+        { gte: -rrSpan, lt: 0, color: colors.put },
+        { gte: 0, lte: rrSpan, color: colors.call },
       ],
     },
     xAxis: valueAxisX({ name: 'DTE', scale: true, min: 0, format: dteLabel }),
@@ -68,10 +64,9 @@ export function buildSkewOption(data: SkewResponse, bands: CMBandPoint[] = []): 
         showSymbol: true,
         symbolSize: 6,
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
-        // The visualMap paints the line itself, but the legend swatch reads the series colour -
-        // and without one echarts hands it a slot from its own default palette, so the entry
-        // came out green. Pin it to the call side, which is what a positive RR means.
-        itemStyle: { color: C.call },
+        // the legend swatch reads the series colour, not the visualMap; without one echarts picks
+        // from its default palette
+        itemStyle: { color: colors.call },
         lineStyle: { width: 1.5 },
         markLine: zeroLine(),
       },
@@ -81,9 +76,8 @@ export function buildSkewOption(data: SkewResponse, bands: CMBandPoint[] = []): 
         data: rows.map((r) => [r.dte, r.bf]),
         showSymbol: true,
         symbolSize: 6,
-        // the butterfly has no side to it, so it takes the reference hue
-        itemStyle: { color: C.ref },
-        lineStyle: { width: 1.5, color: C.ref },
+        itemStyle: { color: colors.ref },
+        lineStyle: { width: 1.5, color: colors.ref },
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
       },
     ],

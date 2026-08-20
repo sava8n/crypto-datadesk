@@ -1,6 +1,6 @@
 import type { EChartsOption, LineSeriesOption } from 'echarts';
 import { useMemo } from 'react';
-import { C } from '../../theme/charts';
+import { colors } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY, zeroLine } from '../../theme/options';
 import type { VolHistoryPoint, VolHistoryResponse } from '../../types';
 import { volPct } from '../../utils/format';
@@ -14,15 +14,12 @@ interface Series {
 
 const SERIES_NAMES = ['RR 25Δ 7D', 'RR 25Δ 30D', 'BF 25Δ 30D'];
 
-// Not the categorical ramp: a metric keeps its hue across the desk, so these match the 25Δ skew
-// panel - the risk reversal (call vol minus put vol) takes the structural blue, the butterfly
-// has no side to it and takes reference violet. The two RR tenors separate by weight rather
-// than by hue, since they are one quantity read at two points on the curve.
-// A factory, so the colours follow the theme.
+// matches the skew panel: RR takes structural blue (tenors separate by weight), BF reference
+// violet; a factory so the colours follow the theme
 const series = (): Series[] => [
-  { key: 'rr25_7', name: 'RR 25Δ 7D', color: C.call },
-  { key: 'rr25_30', name: 'RR 25Δ 30D', color: C.callSoft },
-  { key: 'bf25_30', name: 'BF 25Δ 30D', color: C.ref },
+  { key: 'rr25_7', name: 'RR 25Δ 7D', color: colors.call },
+  { key: 'rr25_30', name: 'RR 25Δ 30D', color: colors.callSoft },
+  { key: 'bf25_30', name: 'BF 25Δ 30D', color: colors.ref },
 ];
 
 export function buildSkewHistoryOption(data: VolHistoryResponse): EChartsOption {
