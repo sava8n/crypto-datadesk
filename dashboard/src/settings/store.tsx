@@ -15,13 +15,20 @@ import {
   refreshMs,
   type Settings,
 } from '../config';
-import { applyTheme, DEFAULT_THEME, isThemeMode, type ThemeMode } from '../theme/mode';
+import { setChartTheme } from '../theme/charts';
+import { DEFAULT_THEME, isThemeMode, type ThemeMode } from '../theme/mode';
 
-// also read by the inline script in index.html, which stamps the theme before first paint
 const KEY = 'datadesk.settings.v3';
 const SCOPES_KEY = 'datadesk.scopes.v1';
 
 type ScopeMap = Record<string, Partial<ChartScope>>;
+
+// the stylesheet keys off <html data-theme>
+// canvas reads its colours as strings, so both move together
+export function applyTheme(mode: ThemeMode): void {
+  setChartTheme(mode);
+  document.documentElement.dataset.theme = mode;
+}
 
 // spread over the defaults, so an older blob still picks up fields added later
 function load(): Settings {
@@ -58,6 +65,7 @@ interface SettingsControl {
   update: (patch: Partial<Settings>) => void;
   scopes: ScopeMap;
   updateScope: (chartId: string, patch: Partial<ChartScope>) => void;
+  reset: () => void;
 }
 
 const SettingsContext = createContext<SettingsControl | null>(null);
@@ -87,9 +95,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setScopes((prev) => ({ ...prev, [chartId]: { ...prev[chartId], ...patch } }));
   }, []);
 
+  const reset = useCallback(() => {
+    setSettings(DEFAULT_SETTINGS);
+    setScopes({});
+  }, []);
+
   const value = useMemo(
-    () => ({ settings, update, scopes, updateScope }),
-    [settings, update, scopes, updateScope],
+    () => ({ settings, update, scopes, updateScope, reset }),
+    [settings, update, scopes, updateScope, reset],
   );
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;

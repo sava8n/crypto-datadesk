@@ -9,8 +9,9 @@ export type PanelState<T> =
 export interface QueryStatus {
   isLoading: boolean;
   isError: boolean;
-  error: Error | null;
 }
+
+const FAILED = 'SOMETHING WENT WRONG';
 
 /**
  * `value` is the derived shape the panel renders; `count` is what `min` applies to, see
@@ -24,7 +25,7 @@ export function panelState<T>(
 ): PanelState<T> {
   if (query.isLoading) return { kind: 'loading' };
   if (value === undefined) {
-    if (query.isError) return { kind: 'error', message: query.error?.message ?? 'REQUEST FAILED' };
+    if (query.isError) return { kind: 'error', message: FAILED };
     return { kind: 'loading' };
   }
   if (count < min) return { kind: 'sparse', count };

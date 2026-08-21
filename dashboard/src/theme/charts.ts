@@ -9,7 +9,7 @@
 //
 // Colour is never the only cue; s1..s8 are assigned by expiry index within a chart.
 
-import type { ThemeMode } from './mode';
+import { DEFAULT_THEME, type ThemeMode } from './mode';
 
 export const MONO = "'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
 
@@ -145,7 +145,7 @@ export const THEMES: Record<ThemeMode, ChartColors> = { light: LIGHT, dark: DARK
  * The live colours. Read them at render time - `colors.call`, never `const { call } = colors` at
  * module scope, or the value freezes at import and stops following the theme.
  */
-export const colors: ChartColors = { ...LIGHT };
+export const colors: ChartColors = { ...THEMES[DEFAULT_THEME] };
 
 export function setChartTheme(mode: ThemeMode): void {
   Object.assign(colors, THEMES[mode]);

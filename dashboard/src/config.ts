@@ -40,7 +40,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   currency: 'BTC',
   refreshSeconds: 60,
-  stripTenor: 'monthly',
+  stripTenor: 'weekly',
   theme: DEFAULT_THEME,
 };
 

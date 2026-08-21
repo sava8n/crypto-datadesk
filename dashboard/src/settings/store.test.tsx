@@ -1,10 +1,12 @@
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import html from '../../index.html?raw';
 import { DEFAULT_SCOPE, DEFAULT_SETTINGS, MIN_REFRESH_SECONDS } from '../config';
 import { colors, THEMES } from '../theme/charts';
-import { applyTheme, DEFAULT_THEME } from '../theme/mode';
+import { DEFAULT_THEME, type ThemeMode } from '../theme/mode';
 import {
+  applyTheme,
   SettingsProvider,
   useChartScope,
   useRefreshMs,
@@ -14,6 +16,7 @@ import {
 
 const KEY = 'datadesk.settings.v3';
 const SCOPES_KEY = 'datadesk.scopes.v1';
+const OTHER: ThemeMode = DEFAULT_THEME === 'dark' ? 'light' : 'dark';
 
 const wrapper = ({ children }: { children: ReactNode }) => (
   <SettingsProvider>{children}</SettingsProvider>
@@ -55,37 +58,66 @@ describe('load (via SettingsProvider)', () => {
   });
 });
 
+describe('applyTheme', () => {
+  it('moves both halves of the system together', () => {
+    applyTheme(OTHER);
+    expect(document.documentElement.dataset.theme).toBe(OTHER);
+    expect(colors.call).toBe(THEMES[OTHER].call);
+
+    applyTheme(DEFAULT_THEME);
+    expect(document.documentElement.dataset.theme).toBe(DEFAULT_THEME);
+    expect(colors.call).toBe(THEMES[DEFAULT_THEME].call);
+  });
+
+  it('leaves no token behind on a switch', () => {
+    applyTheme(OTHER);
+    expect({ ...colors }).toEqual(THEMES[OTHER]);
+  });
+});
+
 describe('theme', () => {
+  it('starts on the default before anything is stored', () => {
+    expect(colors).toEqual(THEMES[DEFAULT_THEME]);
+    renderHook(() => useSettings(), { wrapper });
+    expect(document.documentElement.dataset.theme).toBe(DEFAULT_THEME);
+  });
+
+  // the inline script cannot import, so it restates the key and the default
+  it('is stamped by index.html before first paint with the same key and default', () => {
+    expect(html).toContain(`localStorage.getItem('${KEY}')`);
+    expect(html).toContain(`s.theme === '${OTHER}' ? '${OTHER}' : '${DEFAULT_THEME}'`);
+  });
+
   it('applies the stored mode to the document and the chart tokens', () => {
-    localStorage.setItem(KEY, JSON.stringify({ theme: 'dark' }));
+    localStorage.setItem(KEY, JSON.stringify({ theme: OTHER }));
     renderHook(() => useSettings(), { wrapper });
 
-    expect(document.documentElement.dataset.theme).toBe('dark');
-    expect(colors.call).toBe(THEMES.dark.call);
+    expect(document.documentElement.dataset.theme).toBe(OTHER);
+    expect(colors.call).toBe(THEMES[OTHER].call);
   });
 
   it('switches both halves before the charts below re-render', () => {
     const { result } = renderHook(() => useSettingsControl(), { wrapper });
 
-    act(() => result.current.update({ theme: 'dark' }));
+    act(() => result.current.update({ theme: OTHER }));
 
-    expect(result.current.settings.theme).toBe('dark');
-    expect(document.documentElement.dataset.theme).toBe('dark');
-    expect(colors.call).toBe(THEMES.dark.call);
-    expect(JSON.parse(localStorage.getItem(KEY) ?? '{}').theme).toBe('dark');
+    expect(result.current.settings.theme).toBe(OTHER);
+    expect(document.documentElement.dataset.theme).toBe(OTHER);
+    expect(colors.call).toBe(THEMES[OTHER].call);
+    expect(JSON.parse(localStorage.getItem(KEY) ?? '{}').theme).toBe(OTHER);
   });
 
-  it('lands a blob that predates the field on light', () => {
+  it('lands a blob that predates the field on the default', () => {
     localStorage.setItem(KEY, JSON.stringify({ currency: 'BTC' }));
     const { result } = renderHook(() => useSettings(), { wrapper });
-    expect(result.current.theme).toBe('light');
+    expect(result.current.theme).toBe(DEFAULT_THEME);
   });
 
   it('rejects a stored mode it cannot render', () => {
     localStorage.setItem(KEY, JSON.stringify({ theme: 'solarized', refreshSeconds: 45 }));
     const { result } = renderHook(() => useSettings(), { wrapper });
 
-    expect(result.current.theme).toBe('light');
+    expect(result.current.theme).toBe(DEFAULT_THEME);
     expect(result.current.refreshSeconds).toBe(45);
   });
 });
@@ -153,6 +185,27 @@ describe('update', () => {
 
     expect(result.current.settings.refreshSeconds).toBe(90);
     expect(JSON.parse(localStorage.getItem(KEY) ?? '{}').refreshSeconds).toBe(90);
+  });
+});
+
+describe('reset', () => {
+  it('restores both blobs to the defaults', () => {
+    const { result } = renderHook(
+      () => ({ control: useSettingsControl(), tape: useChartScope('tape') }),
+      { wrapper },
+    );
+    act(() => {
+      result.current.control.update({ theme: OTHER, refreshSeconds: 300 });
+      result.current.tape.update({ tapeMinPremium: 5000 });
+    });
+
+    act(() => result.current.control.reset());
+
+    expect(result.current.control.settings).toEqual(DEFAULT_SETTINGS);
+    expect(result.current.tape.scope).toEqual(DEFAULT_SCOPE);
+    expect(document.documentElement.dataset.theme).toBe(DEFAULT_THEME);
+    expect(JSON.parse(localStorage.getItem(KEY) ?? '{}')).toEqual(DEFAULT_SETTINGS);
+    expect(localStorage.getItem(SCOPES_KEY)).toBe('{}');
   });
 });
 

@@ -1,11 +1,3 @@
-/*
- * The chrome half of the colour system; data colours live in theme/charts.ts, which restates
- * the chrome values canvas needs (charts.test.ts holds the two in step).
- *
- * Chrome never takes an accent: the neutral ramp carries every surface, rule and text weight.
- * Only the OUTCOME pair reaches it, --pos/--neg for things that happened; the chain itself is
- * never green or red.
- */
 :root {
   color-scheme: light;
 
@@ -1185,12 +1177,6 @@ sup.ref-mark {
   border-top: 1px solid var(--rule);
 }
 
-.modal__note {
-  color: var(--secondary);
-  font-size: var(--fs-xs);
-  line-height: 1.4;
-}
-
 /* dual-thumb DTE range */
 .range {
   position: relative;
@@ -1255,8 +1241,26 @@ sup.ref-mark {
   cursor: pointer;
 }
 
-.modal__done {
+.modal__reset {
   margin-left: auto;
+  flex-shrink: 0;
+  padding: 7px 14px;
+  background: transparent;
+  color: var(--label);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+
+.modal__reset:hover {
+  color: var(--ink);
+  border-color: var(--rule-strong);
+}
+
+.modal__done {
   flex-shrink: 0;
   padding: 7px 14px;
   background: var(--ink);

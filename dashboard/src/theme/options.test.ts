@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { colors, setChartTheme, THEMES } from './charts';
+import { DEFAULT_THEME, type ThemeMode } from './mode';
 import {
   axisTooltip,
   categoryAxisX,
@@ -11,7 +12,9 @@ import {
   valueAxisY,
 } from './options';
 
-afterEach(() => setChartTheme('light'));
+const OTHER: ThemeMode = DEFAULT_THEME === 'dark' ? 'light' : 'dark';
+
+afterEach(() => setChartTheme(DEFAULT_THEME));
 
 describe('valueAxisY', () => {
   it('uses the shared line and gridline colours', () => {
@@ -103,11 +106,12 @@ describe('grid', () => {
 describe('token freshness', () => {
   // the fragments are built per call, so a theme switch reaches them without a re-import
   it('follows a theme switch', () => {
-    setChartTheme('dark');
-    expect(legendBar([]).textStyle).toMatchObject({ color: THEMES.dark.label });
-    expect(legendBar([]).inactiveColor).toBe(THEMES.dark.zero);
-    expect(axisTooltip().backgroundColor).toBe(THEMES.dark.tooltipBg);
-    expect(valueAxisY()).toMatchObject({ axisLine: { lineStyle: { color: THEMES.dark.axis } } });
+    setChartTheme(OTHER);
+    const t = THEMES[OTHER];
+    expect(legendBar([]).textStyle).toMatchObject({ color: t.label });
+    expect(legendBar([]).inactiveColor).toBe(t.zero);
+    expect(axisTooltip().backgroundColor).toBe(t.tooltipBg);
+    expect(valueAxisY()).toMatchObject({ axisLine: { lineStyle: { color: t.axis } } });
   });
 });
 

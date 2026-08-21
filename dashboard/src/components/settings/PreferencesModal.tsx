@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect } from 'react';
 
-import { CURRENCIES, MIN_REFRESH_SECONDS } from '../../config';
+import { CURRENCIES } from '../../config';
 import { useSettingsControl } from '../../settings/store';
 import type { ThemeMode } from '../../theme/mode';
 import type { FrontExpiry } from '../../utils/expiry';
@@ -53,7 +53,7 @@ function Pick<T extends string | number>({ value, options, onSelect, label }: Pi
 
 const CURRENCY_OPTIONS = CURRENCIES.map((c) => ({ value: c, label: c }));
 
-const REFRESH_OPTIONS = [10, 30, 60, 120, 300].map((s) => ({ value: s, label: `${s}s` }));
+const REFRESH_OPTIONS = [30, 60, 120, 300, 600].map((s) => ({ value: s, label: `${s}s` }));
 
 const TENOR_OPTIONS: { value: FrontExpiry; label: string }[] = [
   { value: 'weekly', label: 'WEEKLY' },
@@ -72,7 +72,7 @@ export default function PreferencesModal({
   open: boolean;
   onClose: () => void;
 }) {
-  const { settings, update } = useSettingsControl();
+  const { settings, update, reset } = useSettingsControl();
 
   useEffect(() => {
     if (!open) return;
@@ -105,7 +105,7 @@ export default function PreferencesModal({
         </div>
 
         <div className="modal__body">
-          <Row label="Currency" hint="Only BTC is quoted on Deribit options today.">
+          <Row label="Currency" hint="Which options market the dashboard shows.">
             <Pick
               label="Currency"
               value={settings.currency}
@@ -114,7 +114,7 @@ export default function PreferencesModal({
             />
           </Row>
 
-          <Row label="Theme" hint="Light for the desk, dark for the screen.">
+          <Row label="Theme" hint="Color scheme for the interface.">
             <Pick
               label="Theme"
               value={settings.theme}
@@ -123,10 +123,7 @@ export default function PreferencesModal({
             />
           </Row>
 
-          <Row
-            label="Refresh interval"
-            hint={`Seconds between polls; ${MIN_REFRESH_SECONDS}s is the service cache floor.`}
-          >
+          <Row label="Refresh interval" hint="How often live data is re-fetched.">
             <Pick
               label="Refresh interval"
               value={settings.refreshSeconds}
@@ -135,7 +132,10 @@ export default function PreferencesModal({
             />
           </Row>
 
-          <Row label="Strip expiry" hint="Tenor the market strip's IV/RV pair and max pain follow.">
+          <Row
+            label="Strip expiry"
+            hint="The expiry the market strip's implied vol, realized vol and max pain refer to."
+          >
             <Pick
               label="Strip expiry"
               value={settings.stripTenor}
@@ -146,10 +146,9 @@ export default function PreferencesModal({
         </div>
 
         <div className="modal__foot">
-          <span className="modal__note">
-            Expiry, DTE and window controls sit in each chart’s header, and each chart keeps its
-            own.
-          </span>
+          <button type="button" className="modal__reset" onClick={reset}>
+            Restore defaults
+          </button>
           <button type="button" className="modal__done" onClick={onClose}>
             Done
           </button>
