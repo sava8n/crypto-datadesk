@@ -46,9 +46,8 @@ function SettledTableRow({ row }: { row: SettledRow }) {
 export default function ExpiryTableSection() {
   const currency = useCurrency();
   const maxPain = useMaxPain(currency);
-  // the quantiles ride the prob-curves query the other probability panels already poll
   const prob = useProbCurves(currency);
-  // settled implied-vs-realized comes from the archive; unreachable = no settled rows
+  // archive-backed; unreachable = no settled rows
   const outcomes = useExpiryOutcomes(currency);
 
   const value: TableData | undefined = useMemo(() => {

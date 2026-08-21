@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { axisLabelStyle, CALL, FLIP, NET_EXPOSURE, PUT } from '../../theme/charts';
+import { axisLabelStyle, colors } from '../../theme/charts';
 import { axisTooltip, categoryAxisX, grid, legendBar, valueAxisY } from '../../theme/options';
 import type { ExposureByStrikeResponse, ExposureGreek } from '../../types';
 import { strikeFmt, usdFull, usdShort } from '../../utils/format';
@@ -37,7 +37,7 @@ export function buildExposureByStrikeOption(data: ExposureByStrikeResponse): ECh
         stack: 'exposure',
         barMaxWidth: 22,
         data: rows.map((p) => p.call_exposure),
-        itemStyle: { color: CALL },
+        itemStyle: { color: colors.call },
         emphasis: { focus: 'series' },
       },
       {
@@ -46,7 +46,7 @@ export function buildExposureByStrikeOption(data: ExposureByStrikeResponse): ECh
         stack: 'exposure',
         barMaxWidth: 22,
         data: rows.map((p) => p.put_exposure),
-        itemStyle: { color: PUT },
+        itemStyle: { color: colors.put },
         emphasis: { focus: 'series' },
       },
       {
@@ -55,8 +55,8 @@ export function buildExposureByStrikeOption(data: ExposureByStrikeResponse): ECh
         data: rows.map((p) => p.net_exposure),
         showSymbol: false,
         smooth: true,
-        itemStyle: { color: NET_EXPOSURE },
-        lineStyle: { color: NET_EXPOSURE, width: 1.5 },
+        itemStyle: { color: colors.text },
+        lineStyle: { color: colors.text, width: 1.5 },
         emphasis: { focus: 'series' },
         markLine: {
           symbol: 'none',
@@ -65,10 +65,10 @@ export function buildExposureByStrikeOption(data: ExposureByStrikeResponse): ECh
             ? [
                 {
                   xAxis: flipIdx,
-                  lineStyle: { color: FLIP, type: 'dashed', width: 1 },
+                  lineStyle: { color: colors.levelKey, type: 'dashed', width: 1 },
                   label: {
-                    ...axisLabelStyle,
-                    color: FLIP,
+                    ...axisLabelStyle(),
+                    color: colors.levelKey,
                     formatter: `Flip ${usdFull(flip)}`,
                   },
                 },

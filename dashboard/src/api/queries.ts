@@ -11,24 +11,19 @@ import type {
 import * as client from './client';
 import type { EndpointName } from './endpoints';
 
-// one fixed window for the percentile band overlays; a per-panel control would couple
-// the bands to a lookback the underlying live charts do not have
+// one fixed window for the band overlays; the live charts beneath have no lookback to follow
 export const BAND_WINDOW: ArchiveWindow = '90d';
 
 /**
- * Poll options shared by every resource.
- *
- * `staleTime` tracks the interval so a tab opened after the last tick refetches on mount
- * rather than showing a snapshot several periods old. `refetchIntervalInBackground` is left
- * at its default, so a backgrounded window stops polling; focus-refetch is what catches it up,
- * and it cannot fire spuriously because it only refetches what is already stale.
+ * `staleTime` tracks the interval so a tab opened after the last tick refetches on mount.
+ * `refetchIntervalInBackground` stays default: a backgrounded window stops polling and the
+ * focus refetch catches it up.
  */
 function polling(interval: number) {
   return { refetchInterval: interval, staleTime: interval, refetchOnWindowFocus: true } as const;
 }
 
-// One hook per single-argument endpoint. The query key starts with the endpoint name,
-// so a route and its cache entry are named by the same string.
+// the query key starts with the endpoint name, so route and cache entry share a name
 function resourceHook<T>(name: EndpointName, fetch: (currency: string) => Promise<T>) {
   return (currency: string) =>
     useQuery({
@@ -56,7 +51,6 @@ export function useOIByStrike(
     queryKey: ['oiByStrike', currency, expiry ?? 'all'],
     queryFn: () => client.fetchOIByStrike(currency, expiry ?? undefined),
     enabled: opts?.enabled ?? true,
-    // keep the dropdown + chart populated while switching expiry
     placeholderData: keepPreviousData,
     ...polling(useRefreshMs()),
   });
@@ -101,7 +95,6 @@ export function useExposureByStrike(
   return useQuery({
     queryKey: ['exposureByStrike', currency, greek, convention],
     queryFn: () => client.fetchExposureByStrike(currency, greek, convention),
-    // keep the chart populated while switching greek or convention
     placeholderData: keepPreviousData,
     ...polling(useRefreshMs()),
   });
@@ -133,7 +126,6 @@ export function useOIChangeByStrike(
   return useQuery({
     queryKey: ['oiChangeByStrike', currency, window, expiry ?? 'all'],
     queryFn: () => client.fetchOIChangeByStrike(currency, window, expiry ?? undefined),
-    // keep the chart populated while switching window or expiry
     placeholderData: keepPreviousData,
     ...polling(useRefreshMs()),
   });

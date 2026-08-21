@@ -1,102 +1,40 @@
 import { useState } from 'react';
-import BasisSection from './basis/BasisSection';
-import ExposureByStrikeSection from './exposure/ExposureByStrikeSection';
-import GEXByStrikeSection from './exposure/GEXByStrikeSection';
-import FlowByExpirySection from './flow/FlowByExpirySection';
-import FlowByStrikeSection from './flow/FlowByStrikeSection';
-import TapeSection from './flow/TapeSection';
-import Header from './Header';
-import GEXLevelsHistorySection from './history/GEXLevelsHistorySection';
-import OIHistorySection from './history/OIHistorySection';
-import SkewHistorySection from './history/SkewHistorySection';
-import VolHistorySection from './history/VolHistorySection';
-import VRPSection from './history/VRPSection';
-import IVCurvesSection from './iv/IVCurvesSection';
-import SkewSection from './iv/SkewSection';
-import SmileCompareSection from './iv/SmileCompareSection';
-import TermStructureSection from './iv/TermStructureSection';
-import OIByExpirySection from './oi/OIByExpirySection';
-import OIByStrikeSection from './oi/OIByStrikeSection';
-import OIChangeByStrikeSection from './oi/OIChangeByStrikeSection';
-import OverviewTab from './overview/OverviewTab';
-import ExpiryTableSection from './prob/ExpiryTableSection';
-import ProbCurvesSection from './prob/ProbCurvesSection';
-import ProbDistributionSection from './prob/ProbDistributionSection';
-import StatusBar from './StatusBar';
-import SettingsDrawer from './settings/SettingsDrawer';
-import SpotHistorySection from './spot/SpotHistorySection';
-import Tabs, { type TabId } from './Tabs';
-import RVConeSection from './vol/RVConeSection';
-import VolumeByStrikeSection from './volume/VolumeByStrikeSection';
+
+import { useTheme } from '../settings/store';
+import MarketStrip from './MarketStrip';
+import SectionView from './nav/SectionView';
+import Sidebar from './nav/Sidebar';
+import { DEFAULT_SECTION, DEFAULT_VIEW, findSection, findView } from './nav/sections';
+import PreferencesModal from './settings/PreferencesModal';
 
 export default function Dashboard() {
-  const [tab, setTab] = useState<TabId>('positioning');
+  const [route, setRoute] = useState({ section: DEFAULT_SECTION, view: DEFAULT_VIEW });
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const theme = useTheme();
+
+  const section = findSection(route.section);
+  const view = findView(section, route.view);
 
   return (
     <div className="dashboard">
-      <Header onOpenSettings={() => setSettingsOpen(true)} />
+      <Sidebar
+        section={section.id}
+        view={view.id}
+        onSelect={(s, v) => setRoute({ section: s, view: v })}
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
 
-      <SpotHistorySection />
-
-      <Tabs active={tab} onSelect={setTab} />
-
-      <main className="tab-body">
-        {tab === 'overview' && <OverviewTab />}
-
-        {tab === 'positioning' && (
-          <div className="panels">
-            <GEXByStrikeSection />
-            <OIByStrikeSection />
-            <OIByExpirySection />
-            <OIChangeByStrikeSection />
-            <ExposureByStrikeSection />
+      {/* options bake colours in as strings, so a theme switch remounts the charts */}
+      <div className="shell" key={theme}>
+        <MarketStrip />
+        <main className="shell__body">
+          <div className="shell__inner">
+            <SectionView view={view} />
           </div>
-        )}
+        </main>
+      </div>
 
-        {tab === 'flow' && (
-          <div className="panels">
-            <FlowByStrikeSection />
-            <FlowByExpirySection />
-            <TapeSection />
-            <VolumeByStrikeSection />
-          </div>
-        )}
-
-        {tab === 'volatility' && (
-          <div className="panels">
-            <TermStructureSection />
-            <SkewSection />
-            <IVCurvesSection />
-            <SmileCompareSection />
-            <RVConeSection />
-            <BasisSection />
-          </div>
-        )}
-
-        {/* ordered to mirror the live tabs: volatility series first, then positioning */}
-        {tab === 'history' && (
-          <div className="panels">
-            <VolHistorySection />
-            <SkewHistorySection />
-            <VRPSection />
-            <OIHistorySection />
-            <GEXLevelsHistorySection />
-          </div>
-        )}
-
-        {tab === 'probabilities' && (
-          <div className="panels">
-            <ProbCurvesSection />
-            <ProbDistributionSection />
-            <ExpiryTableSection />
-          </div>
-        )}
-      </main>
-
-      <StatusBar />
-
-      <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <PreferencesModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }

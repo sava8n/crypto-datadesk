@@ -1,11 +1,14 @@
 import { useMemo } from 'react';
 
-import { useSettings } from '../../settings/store';
+import { useChartScope } from '../../settings/store';
 import { filterByDte } from '../../utils/dte';
 
-// a response with its points windowed by the DTE range from settings
-export function useDteWindowed<R extends { points: { tte_years: number }[] }>(data: R | undefined) {
-  const { minDte, maxDte } = useSettings();
+export function useDteWindowed<R extends { points: { tte_years: number }[] }>(
+  chartId: string,
+  data: R | undefined,
+) {
+  const { scope } = useChartScope(chartId);
+  const { minDte, maxDte } = scope;
 
   const windowed = useMemo(
     // the generic spread widens to Omit<R,'points'> & {points}, which TS can't see is R

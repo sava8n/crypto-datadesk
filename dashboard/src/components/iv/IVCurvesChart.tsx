@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { PALETTE } from '../../theme/charts';
+import { colors } from '../../theme/charts';
 import {
   grid,
   itemTooltip,
@@ -15,7 +15,6 @@ import { dateLabel, pctOne, pctWhole, strikeFmt, strikeFull } from '../../utils/
 import EChart from '../chart/EChart';
 
 export function buildIVCurvesOption(data: IVCurvesResponse): EChartsOption {
-  // near-dated first, so legend and z-order are chronological
   const curves = groupByExpiry(data.points, (p) => p.mark_iv).map((c) => ({
     ...c,
     label: dateLabel(c.expiry),
@@ -23,7 +22,7 @@ export function buildIVCurvesOption(data: IVCurvesResponse): EChartsOption {
 
   return {
     backgroundColor: 'transparent',
-    color: PALETTE,
+    color: colors.palette,
     tooltip: itemTooltip((p) => {
       const [k, iv] = tuple(p.value);
       if (k === undefined) return '';

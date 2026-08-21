@@ -1,11 +1,15 @@
 import { useTape } from '../../api/queries';
-import { useCurrency, useSettings } from '../../settings/store';
+import { useChartScope, useCurrency } from '../../settings/store';
 import type { TapePrint } from '../../types';
 import { countFull, pctOne, timeLabel, usdShort } from '../../utils/format';
+import { Scopes } from '../controls/Scope';
+import { PremiumScope } from '../controls/scopes';
 import { MIN_POINTS } from '../panel/minPoints';
 import Panel from '../panel/Panel';
 import { panelState } from '../panel/panelState';
 import { instrumentLabel, tags } from './tape';
+
+const CHART = 'tape';
 
 function Row({ print }: { print: TapePrint }) {
   return (
@@ -22,12 +26,21 @@ function Row({ print }: { print: TapePrint }) {
 }
 
 export default function TapeSection() {
-  const { tapeMinPremium } = useSettings();
-  const query = useTape(useCurrency(), tapeMinPremium);
+  const { scope } = useChartScope(CHART);
+  const query = useTape(useCurrency(), scope.tapeMinPremium);
   const state = panelState(query, query.data, query.data?.points.length ?? 0, MIN_POINTS.bars);
 
   return (
-    <Panel title="TAPE" subtitle="LATEST PRINTS · NEWEST FIRST" state={state}>
+    <Panel
+      title="TAPE"
+      subtitle="LATEST PRINTS · NEWEST FIRST"
+      state={state}
+      controls={
+        <Scopes>
+          <PremiumScope chartId={CHART} />
+        </Scopes>
+      }
+    >
       {(data) => (
         <div className="exp-table">
           <table>

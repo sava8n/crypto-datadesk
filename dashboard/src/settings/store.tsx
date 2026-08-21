@@ -8,29 +8,53 @@ import {
   useState,
 } from 'react';
 
-import { DEFAULT_SETTINGS, refreshMs, type Settings } from '../config';
+import {
+  type ChartScope,
+  DEFAULT_SCOPE,
+  DEFAULT_SETTINGS,
+  refreshMs,
+  type Settings,
+} from '../config';
+import { setChartTheme } from '../theme/charts';
+import { DEFAULT_THEME, isThemeMode, type ThemeMode } from '../theme/mode';
 
-const KEY = 'datadesk.settings.v2';
+const KEY = 'datadesk.settings.v3';
+const SCOPES_KEY = 'datadesk.scopes.v1';
 
-// stored overrides spread over the defaults, so a field added to config.ts later
-// still shows up for a browser holding an older blob
+type ScopeMap = Record<string, Partial<ChartScope>>;
+
+// the stylesheet keys off <html data-theme>
+// canvas reads its colours as strings, so both move together
+export function applyTheme(mode: ThemeMode): void {
+  setChartTheme(mode);
+  document.documentElement.dataset.theme = mode;
+}
+
+// spread over the defaults, so an older blob still picks up fields added later
 function load(): Settings {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return DEFAULT_SETTINGS;
-    const saved = JSON.parse(raw) as Partial<Settings> & { frontExpiry?: 'weekly' | 'monthly' };
-    // pre-merge blobs: '' (or nothing) meant "follow the front expiry", tenor in a separate field
-    if (!saved.expiry) saved.expiry = saved.frontExpiry ?? DEFAULT_SETTINGS.expiry;
-    delete saved.frontExpiry;
-    return { ...DEFAULT_SETTINGS, ...saved };
+    const stored = { ...DEFAULT_SETTINGS, ...(JSON.parse(raw) as Partial<Settings>) };
+    // an unknown theme would leave <html data-theme> unstyled
+    return isThemeMode(stored.theme) ? stored : { ...stored, theme: DEFAULT_THEME };
   } catch {
-    return DEFAULT_SETTINGS; // unparseable blob or storage blocked
+    return DEFAULT_SETTINGS;
   }
 }
 
-function save(settings: Settings): void {
+function loadScopes(): ScopeMap {
   try {
-    localStorage.setItem(KEY, JSON.stringify(settings));
+    const raw = localStorage.getItem(SCOPES_KEY);
+    return raw ? (JSON.parse(raw) as ScopeMap) : {};
+  } catch {
+    return {};
+  }
+}
+
+function persist(key: string, value: unknown): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
   } catch {
     // private mode or quota: overrides live for this session only
   }
@@ -39,6 +63,8 @@ function save(settings: Settings): void {
 interface SettingsControl {
   settings: Settings;
   update: (patch: Partial<Settings>) => void;
+  scopes: ScopeMap;
+  updateScope: (chartId: string, patch: Partial<ChartScope>) => void;
   reset: () => void;
 }
 
@@ -46,19 +72,38 @@ const SettingsContext = createContext<SettingsControl | null>(null);
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState(load);
+  const [scopes, setScopes] = useState(loadScopes);
+
+  // charts read their colours as plain strings, so they have to be switched before anything
+  // below re-renders - an effect would leave them a frame behind
+  applyTheme(settings.theme);
 
   // persist here rather than in the setState updater, which StrictMode double-invokes
   useEffect(() => {
-    save(settings);
+    persist(KEY, settings);
   }, [settings]);
+
+  useEffect(() => {
+    persist(SCOPES_KEY, scopes);
+  }, [scopes]);
 
   const update = useCallback((patch: Partial<Settings>) => {
     setSettings((prev) => ({ ...prev, ...patch }));
   }, []);
 
-  const reset = useCallback(() => setSettings(DEFAULT_SETTINGS), []);
+  const updateScope = useCallback((chartId: string, patch: Partial<ChartScope>) => {
+    setScopes((prev) => ({ ...prev, [chartId]: { ...prev[chartId], ...patch } }));
+  }, []);
 
-  const value = useMemo(() => ({ settings, update, reset }), [settings, update, reset]);
+  const reset = useCallback(() => {
+    setSettings(DEFAULT_SETTINGS);
+    setScopes({});
+  }, []);
+
+  const value = useMemo(
+    () => ({ settings, update, scopes, updateScope, reset }),
+    [settings, update, scopes, updateScope, reset],
+  );
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }
@@ -73,7 +118,6 @@ export function useSettings(): Settings {
   return useSettingsContext().settings;
 }
 
-// the book every section reads; nothing drills it as a prop
 export function useCurrency(): Settings['currency'] {
   return useSettingsContext().settings.currency;
 }
@@ -82,6 +126,26 @@ export function useRefreshMs(): number {
   return refreshMs(useSettingsContext().settings.refreshSeconds);
 }
 
+export function useTheme(): ThemeMode {
+  return useSettingsContext().settings.theme;
+}
+
 export function useSettingsControl(): SettingsControl {
   return useSettingsContext();
+}
+
+export function useChartScope(chartId: string): {
+  scope: ChartScope;
+  update: (patch: Partial<ChartScope>) => void;
+} {
+  const { scopes, updateScope } = useSettingsContext();
+  const stored = scopes[chartId];
+
+  const scope = useMemo(() => ({ ...DEFAULT_SCOPE, ...stored }), [stored]);
+  const update = useCallback(
+    (patch: Partial<ChartScope>) => updateScope(chartId, patch),
+    [chartId, updateScope],
+  );
+
+  return { scope, update };
 }

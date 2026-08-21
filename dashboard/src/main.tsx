@@ -12,7 +12,6 @@ import '@fontsource/ibm-plex-mono/500.css';
 import '@fontsource/ibm-plex-mono/600.css';
 import './theme/dashboard.css';
 
-// freshness is per query: each one polls on the period from settings, see api/queries.ts
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

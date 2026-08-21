@@ -1,5 +1,4 @@
-// Chain points -> per-expiry curves. Calls and puts quoted at the
-// same strike are averaged, which is what makes a smile single-valued.
+// calls and puts quoted at one strike are averaged, so a smile is single-valued
 
 export interface StrikePoint {
   expiry: string;
@@ -10,11 +9,9 @@ export interface StrikePoint {
 export interface ExpiryCurve {
   expiry: string;
   tte: number;
-  // [strike, value], ascending by strike
   points: [number, number][];
 }
 
-// average duplicate strikes, ascending
 export function averageByStrike<T extends { strike: number }>(
   points: T[],
   pick: (p: T) => number,
@@ -30,7 +27,6 @@ export function averageByStrike<T extends { strike: number }>(
     .map(([strike, values]) => [strike, values.reduce((s, v) => s + v, 0) / values.length]);
 }
 
-// one curve per expiry, near-dated first
 export function groupByExpiry<T extends StrikePoint>(
   points: T[],
   pick: (p: T) => number,

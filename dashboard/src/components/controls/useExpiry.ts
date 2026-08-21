@@ -1,17 +1,17 @@
-import { useSettings } from '../../settings/store';
+import { useChartScope } from '../../settings/store';
 import { EXPIRY_ALL, resolveExpiry } from '../../utils/expiry';
 
 /**
- * Resolves the global expiry setting against a section's quoted chain.
- *
- * 'weekly'/'monthly' follow the front expiry of that tenor as the chain rolls.
- * EXPIRY_ALL maps to the empty string ("every expiry") where the section supports
- * it and falls back to the front expiry where it does not. A concrete pick holds
- * only while it is still quoted; off the chain, the front expiry takes over.
+ * EXPIRY_ALL resolves to '' (every expiry) where the section supports it, else to the front
+ * expiry. A concrete pick holds while quoted; off the chain, the front expiry of its tenor.
  */
-export function useExpiry(expiries: string[], { allowAll = false } = {}): string | null {
-  const { expiry } = useSettings();
+export function useExpiry(
+  chartId: string,
+  expiries: string[],
+  { allowAll = false } = {},
+): string | null {
+  const { scope } = useChartScope(chartId);
 
-  if (expiry === EXPIRY_ALL && allowAll) return '';
-  return resolveExpiry(expiry, expiries) ?? (allowAll ? '' : null);
+  if (scope.expiry === EXPIRY_ALL && allowAll) return '';
+  return resolveExpiry(scope.expiry, expiries) ?? (allowAll ? '' : null);
 }

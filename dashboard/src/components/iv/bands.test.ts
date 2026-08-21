@@ -1,6 +1,7 @@
+import type { CustomSeriesOption } from 'echarts';
 import { describe, expect, it } from 'vitest';
 import type { CMBandPoint } from '../../types';
-import { bandRows, bandSeries } from './bands';
+import { type BandSeries, bandRows, bandSeries } from './bands';
 
 const band = (tenor: number, mid: number | null): CMBandPoint => ({
   tenor_days: tenor,
@@ -36,16 +37,36 @@ describe('bandRows', () => {
   });
 });
 
+// identity coords, so a rendered quad comes back in data space rather than pixels
+const fakeApi = { coord: (p: number[]) => p };
+type Quad = { type: string; shape: { points: number[][] } } | undefined | null;
+const renderQuad = (ribbon: BandSeries, dataIndex: number): Quad =>
+  (ribbon as CustomSeriesOption).renderItem?.(
+    { dataIndex } as never,
+    fakeApi as never,
+  ) as unknown as Quad;
+
 describe('bandSeries', () => {
-  it('stacks the filler on the base so the area shades p25 to p75', () => {
+  it('draws the ribbon as quads spanning p25 to p75', () => {
     const series = bandSeries(bandRows([band(7, 0.3), band(30, 0.32)], 'atm_iv', 30), '#fff');
-    expect(series).toHaveLength(3);
-    const [base, fill, median] = series;
-    expect(base.stack).toBe('cm-band');
-    expect(fill.stack).toBe('cm-band');
-    expect((base.data as number[][])[0][1]).toBeCloseTo(0.28);
-    expect((fill.data as number[][])[0][1]).toBeCloseTo(0.04); // hi - lo
+    expect(series).toHaveLength(2);
+    const [ribbon, median] = series;
+    expect(ribbon.type).toBe('custom');
+
+    const quad = renderQuad(ribbon, 1);
+    expect(quad?.type).toBe('polygon');
+    const points = quad?.shape.points ?? [];
+    expect(points.map((p) => p[0])).toEqual([7, 30, 30, 7]);
+    // hi at both tenors, then back along lo - never a baseline off the chart
+    for (const [i, want] of [0.32, 0.34, 0.3, 0.28].entries()) {
+      expect(points[i][1]).toBeCloseTo(want);
+    }
     expect((median.data as number[][])[1][1]).toBeCloseTo(0.32);
+  });
+
+  it('opens the ribbon at the second tenor, since a quad needs a pair', () => {
+    const [ribbon] = bandSeries(bandRows([band(7, 0.3), band(30, 0.32)], 'atm_iv', 30), '#fff');
+    expect(renderQuad(ribbon, 0)).toBeUndefined();
   });
 
   it('draws nothing from a single tenor', () => {

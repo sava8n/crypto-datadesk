@@ -1,9 +1,7 @@
 /**
- * Deep equality for chart options.
- *
- * Two functions compare equal: every function an option carries is a formatter rebuilt on
- * each build, and the values they render sit in the option beside them. NaN equals NaN -
- * the surface mesh uses it for empty cells, so without it a surface never compares equal.
+ * Deep equality for chart options. Functions compare equal (formatters are rebuilt on every
+ * build, the values they render sit beside them); NaN equals NaN (the surface mesh uses it for
+ * empty cells).
  */
 export function sameOption(a: unknown, b: unknown): boolean {
   if (a === b) return true;

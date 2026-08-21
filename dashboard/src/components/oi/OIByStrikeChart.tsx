@@ -5,7 +5,7 @@ import type {
   YAXisComponentOption,
 } from 'echarts';
 import { useMemo } from 'react';
-import { axisLabelStyle, INTRINSIC } from '../../theme/charts';
+import { axisLabelStyle, colors } from '../../theme/charts';
 import {
   axisTooltip,
   categoryAxisX,
@@ -17,12 +17,11 @@ import {
 import type { OIByStrikeResponse } from '../../types';
 import { countShort, strikeFmt, usdFull, usdShort } from '../../utils/format';
 import EChart from '../chart/EChart';
-import { OI_SERIES, OI_SERIES_NAMES } from './series';
+import { OI_SERIES_NAMES, oiSeries } from './series';
 
 const INTRINSIC_NAME = 'Total Intrinsic Value';
 
 export function buildOIByStrikeOption(data: OIByStrikeResponse): EChartsOption {
-  // one grouped calls/puts bar per strike, low strikes first
   const rows = [...data.points].sort((a, b) => a.strike - b.strike);
 
   // intrinsic value and max pain are only defined for a single expiry
@@ -30,7 +29,7 @@ export function buildOIByStrikeOption(data: OIByStrikeResponse): EChartsOption {
   const maxPainIdx = maxPain != null ? rows.findIndex((p) => p.strike === maxPain) : -1;
 
   const yAxis: YAXisComponentOption[] = [valueAxisY({ name: 'OI', format: countShort })];
-  const series: (BarSeriesOption | ScatterSeriesOption)[] = OI_SERIES.map((s) => ({
+  const series: (BarSeriesOption | ScatterSeriesOption)[] = oiSeries().map((s) => ({
     type: 'bar',
     name: s.name,
     stack: s.stack,
@@ -45,7 +44,7 @@ export function buildOIByStrikeOption(data: OIByStrikeResponse): EChartsOption {
       valueAxisY({
         name: 'INTRINSIC',
         format: usdShort,
-        accent: INTRINSIC,
+        accent: colors.levelKey,
         position: 'right',
         splitLine: false,
       }),
@@ -57,15 +56,17 @@ export function buildOIByStrikeOption(data: OIByStrikeResponse): EChartsOption {
       symbolSize: 6,
       // flat scalar array: index -> strike category, value -> intrinsic (USD)
       data: rows.map((p) => p.intrinsic_value ?? 0),
-      itemStyle: { color: INTRINSIC },
+      itemStyle: { color: colors.levelKey },
+      // same focus as the bars, or this is the one legend entry that does nothing on hover
+      emphasis: { focus: 'series' },
       tooltip: { valueFormatter: values(usdShort) },
       markLine: {
         symbol: 'none',
         silent: true,
-        lineStyle: { color: INTRINSIC, type: 'dashed', width: 1 },
+        lineStyle: { color: colors.levelKey, type: 'dashed', width: 1 },
         label: {
-          ...axisLabelStyle,
-          color: INTRINSIC,
+          ...axisLabelStyle(),
+          color: colors.levelKey,
           formatter: `Max Pain ${usdFull(maxPain)}`,
         },
         data: [{ xAxis: maxPainIdx }],
@@ -79,7 +80,6 @@ export function buildOIByStrikeOption(data: OIByStrikeResponse): EChartsOption {
       maxPain != null ? [...OI_SERIES_NAMES, INTRINSIC_NAME] : [...OI_SERIES_NAMES],
     ),
     tooltip: axisTooltip({ shadow: true, value: countShort }),
-    // the right-hand intrinsic axis needs a gutter of its own
     grid: grid('bars', maxPain != null ? { right: 64 } : {}),
     xAxis: categoryAxisX(rows.map((p) => strikeFmt(p.strike))),
     yAxis,

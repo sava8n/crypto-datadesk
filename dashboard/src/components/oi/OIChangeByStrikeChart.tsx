@@ -1,7 +1,14 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { CALL, MUTED, PUT } from '../../theme/charts';
-import { axisTooltip, categoryAxisX, grid, legendBar, valueAxisY } from '../../theme/options';
+import { colors } from '../../theme/charts';
+import {
+  axisTooltip,
+  categoryAxisX,
+  grid,
+  legendBar,
+  valueAxisY,
+  zeroLine,
+} from '../../theme/options';
 import type { OIChangeByStrikeResponse } from '../../types';
 import { countShort, strikeFmt } from '../../utils/format';
 import EChart from '../chart/EChart';
@@ -9,7 +16,6 @@ import EChart from '../chart/EChart';
 const SERIES_NAMES = ['Call ΔOI', 'Put ΔOI'];
 
 export function buildOIChangeByStrikeOption(data: OIChangeByStrikeResponse): EChartsOption {
-  // one call/put delta pair per strike, low strikes first; deltas are signed
   const rows = [...data.points].sort((a, b) => a.strike - b.strike);
 
   return {
@@ -25,22 +31,16 @@ export function buildOIChangeByStrikeOption(data: OIChangeByStrikeResponse): ECh
         name: 'Call ΔOI',
         barMaxWidth: 22,
         data: rows.map((p) => p.call_oi_change),
-        itemStyle: { color: CALL },
+        itemStyle: { color: colors.call },
         emphasis: { focus: 'series' },
-        markLine: {
-          symbol: 'none',
-          silent: true,
-          lineStyle: { color: MUTED, type: 'dashed', width: 1.5 },
-          label: { show: false },
-          data: [{ yAxis: 0 }],
-        },
+        markLine: zeroLine(),
       },
       {
         type: 'bar',
         name: 'Put ΔOI',
         barMaxWidth: 22,
         data: rows.map((p) => p.put_oi_change),
-        itemStyle: { color: PUT },
+        itemStyle: { color: colors.put },
         emphasis: { focus: 'series' },
       },
     ],

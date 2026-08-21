@@ -21,5 +21,7 @@ export default defineConfig({
     // jsdom gives store/hook tests a DOM + localStorage
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
+    // vitest stubs .css modules to '' otherwise, ?raw included; charts.test.ts reads the stylesheet
+    css: { include: /dashboard\.css/ },
   },
 });

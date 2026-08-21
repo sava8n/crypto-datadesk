@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isoWeek, timelineLabel } from './timeline';
+import { editionLabel, isoWeek } from './timeline';
 
 describe('isoWeek', () => {
   it('numbers a mid-year week', () => {
@@ -18,8 +18,8 @@ describe('isoWeek', () => {
   });
 });
 
-describe('timelineLabel', () => {
-  it('names the ISO week', () => {
-    expect(timelineLabel('2026-08-09T08:00:00Z')).toBe('WEEKLY · W32 REPORT');
+describe('editionLabel', () => {
+  it('pairs the ISO week with the generation date', () => {
+    expect(editionLabel('2026-08-09T08:00:00Z')).toBe('W32 · 09AUG26');
   });
 });

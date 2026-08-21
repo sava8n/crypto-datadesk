@@ -1,15 +1,29 @@
-import { describe, expect, it } from 'vitest';
-import { AXIS_LINE, GRID, MUTED } from './charts';
-import { categoryAxisX, GRID_INSETS, grid, tuple, valueAxisX, valueAxisY } from './options';
+import { afterEach, describe, expect, it } from 'vitest';
+import { colors, setChartTheme, THEMES } from './charts';
+import { DEFAULT_THEME, type ThemeMode } from './mode';
+import {
+  axisTooltip,
+  categoryAxisX,
+  GRID_INSETS,
+  grid,
+  legendBar,
+  tuple,
+  valueAxisX,
+  valueAxisY,
+} from './options';
+
+const OTHER: ThemeMode = DEFAULT_THEME === 'dark' ? 'light' : 'dark';
+
+afterEach(() => setChartTheme(DEFAULT_THEME));
 
 describe('valueAxisY', () => {
   it('uses the shared line and gridline colours', () => {
     const axis = valueAxisY() as Record<string, never>;
     expect(axis).toMatchObject({
       type: 'value',
-      axisLine: { lineStyle: { color: AXIS_LINE } },
-      axisTick: { lineStyle: { color: AXIS_LINE } },
-      splitLine: { lineStyle: { color: GRID } },
+      axisLine: { lineStyle: { color: colors.axis } },
+      axisTick: { lineStyle: { color: colors.axis } },
+      splitLine: { lineStyle: { color: colors.grid } },
     });
   });
 
@@ -42,15 +56,6 @@ describe('valueAxisY', () => {
     });
   });
 
-  it('drops a point in compact panels', () => {
-    const normal = valueAxisY({ name: 'IV' }) as Record<string, never>;
-    const compact = valueAxisY({ name: 'IV', compact: true }) as Record<string, never>;
-    expect((normal.axisLabel as { fontSize: number }).fontSize).toBe(13);
-    expect((compact.axisLabel as { fontSize: number }).fontSize).toBe(12);
-    expect((normal.nameTextStyle as { fontSize: number }).fontSize).toBe(15);
-    expect((compact.nameTextStyle as { fontSize: number }).fontSize).toBe(14);
-  });
-
   it('passes scale and explicit bounds through', () => {
     expect(valueAxisY({ scale: true, min: 0, max: 1 })).toMatchObject({
       scale: true,
@@ -74,7 +79,7 @@ describe('categoryAxisX', () => {
   it('carries the labels and rotates them by default', () => {
     const axis = categoryAxisX(['a', 'b']) as Record<string, never>;
     expect(axis).toMatchObject({ type: 'category', data: ['a', 'b'] });
-    expect(axis.axisLabel).toMatchObject({ rotate: 45, interval: 'auto', color: MUTED });
+    expect(axis.axisLabel).toMatchObject({ rotate: 45, interval: 'auto', color: colors.label });
   });
 
   it('can force a label on every category', () => {
@@ -95,6 +100,18 @@ describe('grid', () => {
 
   it('gives currency-labelled axes a deeper left gutter', () => {
     expect(GRID_INSETS.barsWide.left).toBeGreaterThan(GRID_INSETS.bars.left);
+  });
+});
+
+describe('token freshness', () => {
+  // the fragments are built per call, so a theme switch reaches them without a re-import
+  it('follows a theme switch', () => {
+    setChartTheme(OTHER);
+    const t = THEMES[OTHER];
+    expect(legendBar([]).textStyle).toMatchObject({ color: t.label });
+    expect(legendBar([]).inactiveColor).toBe(t.zero);
+    expect(axisTooltip().backgroundColor).toBe(t.tooltipBg);
+    expect(valueAxisY()).toMatchObject({ axisLine: { lineStyle: { color: t.axis } } });
   });
 });
 

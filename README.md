@@ -52,4 +52,4 @@ npm run lint:fix # dashboard lint and format
 
 ## API
 
-API docs are available at http://localhost:8000/docs.
+API docs are available at http://localhost:8080/docs.

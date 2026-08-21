@@ -7,7 +7,6 @@ export interface ConventionCoverage {
   oi_explained_fraction: number | null;
 }
 
-// panel subtitle for the sign convention actually served
 export function conventionSubtitle(units: string, data?: ConventionCoverage): string {
   if (!data || data.convention === 'assumption') {
     return `${units} · CALLS + / PUTS - × STRIKE`;

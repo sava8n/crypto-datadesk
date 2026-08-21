@@ -27,7 +27,7 @@ function renderString(text: string, known: ReadonlySet<number>): ReactNode {
   const parts = groupMarkers(dropUnknownMarkers(splitMarkers(text), known));
   return parts.map((part, i) =>
     Array.isArray(part) ? (
-      // biome-ignore lint/suspicious/noArrayIndexKey: fragments of one immutable string, never reordered
+      // biome-ignore lint/suspicious/noArrayIndexKey: fragments of one immutable string
       <sup key={i} className="ref-mark">
         {part.join(',')}
       </sup>
@@ -37,13 +37,12 @@ function renderString(text: string, known: ReadonlySet<number>): ReactNode {
   );
 }
 
-// swap [n] markers for superscripts in the text children of a rendered element
 function withMarkers(children: ReactNode, known: ReadonlySet<number>): ReactNode {
   if (typeof children === 'string') return renderString(children, known);
   if (Array.isArray(children)) {
     return children.map((child, i) =>
       typeof child === 'string' ? (
-        // biome-ignore lint/suspicious/noArrayIndexKey: positional children of one rendered markdown node
+        // biome-ignore lint/suspicious/noArrayIndexKey: positional children of one node
         <span key={i}>{renderString(child, known)}</span>
       ) : (
         child

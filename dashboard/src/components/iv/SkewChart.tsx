@@ -1,7 +1,14 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { ACCENT, CYAN, MUTED } from '../../theme/charts';
-import { axisTooltip, grid, legendBar, valueAxisX, valueAxisY } from '../../theme/options';
+import { colors } from '../../theme/charts';
+import {
+  axisTooltip,
+  grid,
+  legendBar,
+  valueAxisX,
+  valueAxisY,
+  zeroLine,
+} from '../../theme/options';
 import type { CMBandPoint, SkewResponse } from '../../types';
 import { dteOf } from '../../utils/dte';
 import { dateLabel, dteLabel, volPct } from '../../utils/format';
@@ -10,14 +17,18 @@ import { bandRows, bandSeries } from './bands';
 
 const SERIES_NAMES = ['RR 25Δ', 'BF 25Δ'];
 
-// RR/BF live in single vol points, so one decimal: 0.042 -> "4.2%"
-
 export function buildSkewOption(data: SkewResponse, bands: CMBandPoint[] = []): EChartsOption {
-  // one RR/BF pair per expiry, plotted time-proportionally by days-to-expiry
   const rows = data.points
     .map((p) => ({ dte: dteOf(p), rr: p.rr, bf: p.bf, expiry: p.expiry }))
     .sort((a, b) => a.dte - b.dte);
   const maxDte = rows[rows.length - 1]?.dte ?? 0;
+
+  // archived CM risk-reversal band, neutral, under the live curves; empty without an archive,
+  // which is why the RR series index is counted
+  const band = bandSeries(bandRows(bands, 'rr25', maxDte), colors.label);
+
+  // widest |RR| on the chart, so the two visualMap pieces between them cover every point
+  const rrSpan = Math.max(1e-6, ...rows.map((r) => Math.abs(r.rr)));
 
   return {
     backgroundColor: 'transparent',
@@ -30,28 +41,34 @@ export function buildSkewOption(data: SkewResponse, bands: CMBandPoint[] = []): 
       },
     }),
     grid: grid('series'),
+    // RR is call vol minus put vol: call side above zero, put side below. Both pieces must be
+    // bounded - an open-ended piece leaves no colour stop inside the axis range and echarts
+    // throws mid-render, taking every later series with it.
+    visualMap: {
+      show: false,
+      seriesIndex: band.length,
+      dimension: 1,
+      pieces: [
+        { gte: -rrSpan, lt: 0, color: colors.put },
+        { gte: 0, lte: rrSpan, color: colors.call },
+      ],
+    },
     xAxis: valueAxisX({ name: 'DTE', scale: true, min: 0, format: dteLabel }),
     yAxis: valueAxisY({ name: 'ΔIV', scale: true, format: volPct }),
     series: [
-      // shaded p25-p75 of the archived CM risk reversal, under the live curves
-      ...bandSeries(bandRows(bands, 'rr25', maxDte), ACCENT),
+      ...band,
       {
         type: 'line',
         name: 'RR 25Δ',
         data: rows.map((r) => [r.dte, r.rr]),
         showSymbol: true,
         symbolSize: 6,
-        itemStyle: { color: ACCENT },
-        lineStyle: { width: 1.5, color: ACCENT },
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
-        // zero line: RR above = calls richer, below = puts richer
-        markLine: {
-          symbol: 'none',
-          silent: true,
-          lineStyle: { color: MUTED, type: 'dashed', width: 1.5 },
-          label: { show: false },
-          data: [{ yAxis: 0 }],
-        },
+        // the legend swatch reads the series colour, not the visualMap; without one echarts picks
+        // from its default palette
+        itemStyle: { color: colors.call },
+        lineStyle: { width: 1.5 },
+        markLine: zeroLine(),
       },
       {
         type: 'line',
@@ -59,8 +76,8 @@ export function buildSkewOption(data: SkewResponse, bands: CMBandPoint[] = []): 
         data: rows.map((r) => [r.dte, r.bf]),
         showSymbol: true,
         symbolSize: 6,
-        itemStyle: { color: CYAN },
-        lineStyle: { width: 1.5, color: CYAN },
+        itemStyle: { color: colors.ref },
+        lineStyle: { width: 1.5, color: colors.ref },
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
       },
     ],

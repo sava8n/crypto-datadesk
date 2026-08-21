@@ -9,15 +9,13 @@ export type PanelState<T> =
 export interface QueryStatus {
   isLoading: boolean;
   isError: boolean;
-  error: Error | null;
 }
 
+const FAILED = 'SOMETHING WENT WRONG';
+
 /**
- * Which of the four things a panel body shows.
- *
- * `value` is what the panel renders, which for most sections is a derived shape
- * (DTE-windowed, expiry-filtered) rather than the raw response. `count` is the
- * point count `min` applies to; thresholds differ per chart kind, see minPoints.ts.
+ * `value` is the derived shape the panel renders; `count` is what `min` applies to, see
+ * minPoints.ts.
  */
 export function panelState<T>(
   query: QueryStatus,
@@ -27,7 +25,7 @@ export function panelState<T>(
 ): PanelState<T> {
   if (query.isLoading) return { kind: 'loading' };
   if (value === undefined) {
-    if (query.isError) return { kind: 'error', message: query.error?.message ?? 'REQUEST FAILED' };
+    if (query.isError) return { kind: 'error', message: FAILED };
     return { kind: 'loading' };
   }
   if (count < min) return { kind: 'sparse', count };

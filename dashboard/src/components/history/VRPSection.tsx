@@ -2,20 +2,18 @@ import { useMemo } from 'react';
 
 import { useVolHistory } from '../../api/queries';
 import { useCurrency } from '../../settings/store';
-import { useLookback } from '../controls/useLookback';
+import { resolutionFor } from '../controls/useLookback';
 import { MIN_POINTS } from '../panel/minPoints';
 import Panel from '../panel/Panel';
 import { panelState } from '../panel/panelState';
 import VRPChart from './VRPChart';
 import { pairForwardRealized } from './vrp';
 
+// pinned: a pair needs rv30 archived 30d after its iv30, so shorter windows show almost nothing
+const WINDOW = '1y';
+
 export default function VRPSection() {
-  // pinned past the shared setting: a pair needs rv30 archived 30d after its iv30,
-  // so anything shorter than a year shows almost nothing
-  const { window, resolution } = useLookback('1y');
-  const query = useVolHistory(useCurrency(), window, resolution);
-  // every pair needs iv30(t) and rv30(t+30d) both archived, so the series starts
-  // one horizon after the archive does
+  const query = useVolHistory(useCurrency(), WINDOW, resolutionFor(WINDOW));
   const rows = useMemo(
     () => (query.data ? pairForwardRealized(query.data.points) : undefined),
     [query.data],

@@ -1,6 +1,6 @@
 import type { EChartsOption, LineSeriesOption, ScatterSeriesOption } from 'echarts';
 import { useMemo } from 'react';
-import { ACCENT, AXIS_LINE, CYAN, MUTED, TEXT } from '../../theme/charts';
+import { colors } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, valueAxisX, valueAxisY } from '../../theme/options';
 import type { RVConePoint, RVConeResponse, TermStructurePoint } from '../../types';
 import { dteOf } from '../../utils/dte';
@@ -9,16 +9,18 @@ import EChart from '../chart/EChart';
 
 export interface RVConeChartData {
   cone: RVConeResponse;
-  // current ATM IV term structure, overlaid at its own DTE - implied vs the RV cone
   implied: TermStructurePoint[];
 }
 
-const PERCENTILE_SERIES: { key: keyof RVConePoint; name: string; color: string }[] = [
-  { key: 'p90', name: 'P90', color: AXIS_LINE },
-  { key: 'p75', name: 'P75', color: MUTED },
-  { key: 'p50', name: 'P50', color: TEXT },
-  { key: 'p25', name: 'P25', color: MUTED },
-  { key: 'p10', name: 'P10', color: AXIS_LINE },
+const PERCENTILE_NAMES = ['P90', 'P75', 'P50', 'P25', 'P10'];
+
+// sequential ramp, one hue stepping toward the median; a factory so the colours follow the theme
+const percentileSeries = (): { key: keyof RVConePoint; name: string; color: string }[] => [
+  { key: 'p90', name: 'P90', color: colors.sequential[2] },
+  { key: 'p75', name: 'P75', color: colors.sequential[3] },
+  { key: 'p50', name: 'P50', color: colors.sequential[5] },
+  { key: 'p25', name: 'P25', color: colors.sequential[3] },
+  { key: 'p10', name: 'P10', color: colors.sequential[2] },
 ];
 
 export function buildRVConeOption({ cone, implied }: RVConeChartData): EChartsOption {
@@ -30,7 +32,7 @@ export function buildRVConeOption({ cone, implied }: RVConeChartData): EChartsOp
     .filter((p) => p.dte <= maxDays * 1.1)
     .sort((a, b) => a.dte - b.dte);
 
-  const percentiles: LineSeriesOption[] = PERCENTILE_SERIES.map((s) => ({
+  const percentiles: LineSeriesOption[] = percentileSeries().map((s) => ({
     type: 'line',
     name: s.name,
     data: rows.map((r) => [r.days, r[s.key] as number]),
@@ -46,7 +48,7 @@ export function buildRVConeOption({ cone, implied }: RVConeChartData): EChartsOp
     name: 'CURRENT RV',
     data: rows.filter((r) => r.current != null).map((r) => [r.days, r.current as number]),
     symbolSize: 9,
-    itemStyle: { color: ACCENT },
+    itemStyle: { color: colors.warn },
   };
 
   const series: (LineSeriesOption | ScatterSeriesOption)[] = [...percentiles, current];
@@ -57,15 +59,15 @@ export function buildRVConeOption({ cone, implied }: RVConeChartData): EChartsOp
       data: impliedRows.map((p) => [p.dte, p.iv]),
       showSymbol: true,
       symbolSize: 4,
-      itemStyle: { color: CYAN },
-      lineStyle: { width: 1.5, color: CYAN },
+      itemStyle: { color: colors.ref },
+      lineStyle: { width: 1.5, color: colors.ref },
       emphasis: { focus: 'series', lineStyle: { width: 3 } },
     });
   }
 
   return {
     backgroundColor: 'transparent',
-    legend: legendBar([...PERCENTILE_SERIES.map((s) => s.name), 'CURRENT RV', 'IMPLIED']),
+    legend: legendBar([...PERCENTILE_NAMES, 'CURRENT RV', 'IMPLIED']),
     tooltip: axisTooltip({ value: volPct }),
     grid: grid('series'),
     xAxis: valueAxisX({ name: 'WINDOW', scale: true, min: 0, format: dteLabel }),

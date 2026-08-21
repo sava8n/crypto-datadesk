@@ -13,9 +13,8 @@ export interface BucketResult {
   spotBucket: number; // category holding spot; -1 when spot is off the quoted range
 }
 
-// Survival curve -> bar masses. Interior bucket: P(K1 < S <= K2) = P(S>K1) - P(S>K2).
-// Open-ended tail buckets close the distribution to ~100%. A call and a put quoted at
-// the same strike are averaged. Masses clamp at 0 (guard against a non-monotone curve).
+// P(K1 < S <= K2) = P(S>K1) - P(S>K2); open tails close the distribution; a call and a put at
+// one strike are averaged; masses clamp at 0 against a non-monotone curve
 export function buildBuckets(points: ProbCurvePoint[], spot: number): BucketResult {
   const curve = averageByStrike(points, (p) => p.prob_above);
 

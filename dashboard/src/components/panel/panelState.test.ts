@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { panelState } from './panelState';
 
-const idle = { isLoading: false, isError: false, error: null };
-const loading = { isLoading: true, isError: false, error: null };
-const failed = { isLoading: false, isError: true, error: new Error('upstream down') };
+const idle = { isLoading: false, isError: false };
+const loading = { isLoading: true, isError: false };
+const failed = { isLoading: false, isError: true };
 
 describe('panelState', () => {
   it('reports loading while the query is in flight', () => {
@@ -11,22 +11,15 @@ describe('panelState', () => {
   });
 
   it('prefers loading over error', () => {
-    expect(
-      panelState({ ...loading, isError: true, error: new Error('x') }, undefined, 0, 1),
-    ).toEqual({ kind: 'loading' });
-  });
-
-  it('surfaces the error message', () => {
-    expect(panelState(failed, undefined, 0, 1)).toEqual({
-      kind: 'error',
-      message: 'upstream down',
+    expect(panelState({ ...loading, isError: true }, undefined, 0, 1)).toEqual({
+      kind: 'loading',
     });
   });
 
-  it('falls back to a generic message when the error carries none', () => {
-    expect(panelState({ ...failed, error: null }, undefined, 0, 1)).toEqual({
+  it('reports a failure with a fixed message', () => {
+    expect(panelState(failed, undefined, 0, 1)).toEqual({
       kind: 'error',
-      message: 'REQUEST FAILED',
+      message: 'SOMETHING WENT WRONG',
     });
   });
 

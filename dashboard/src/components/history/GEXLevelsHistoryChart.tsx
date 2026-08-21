@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { ACCENT, FLIP, MAX_PAIN, MUTED } from '../../theme/charts';
+import { colors } from '../../theme/charts';
 import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY, values } from '../../theme/options';
 import type { PositioningHistoryResponse } from '../../types';
 import { priceWhole, usdShort } from '../../utils/format';
@@ -33,24 +33,26 @@ export function buildGEXLevelsHistoryOption(data: PositioningHistoryResponse): E
       valueAxisY({ name: 'PRICE', scale: true, format: priceWhole }),
       valueAxisY({
         name: 'NET GEX',
-        accent: MUTED,
+        accent: colors.label,
         position: 'right',
         splitLine: false,
         format: usdShort,
       }),
     ],
     series: [
-      level('spot', 'Spot', ACCENT, false),
-      level('gex_flip', 'GEX Flip', FLIP, true),
-      level('max_pain_front', 'Max Pain', MAX_PAIN, true),
+      level('spot', 'Spot', colors.text, false),
+      level('gex_flip', 'GEX Flip', colors.levelKey, true),
+      level('max_pain_front', 'Max Pain', colors.ref, true),
       {
         type: 'bar',
         name: 'Net GEX',
         yAxisIndex: 1,
         barMaxWidth: 6,
-        data: data.points.map((p) => [p.as_of, p.gex_net_total]),
-        // context bars behind the level lines; gray so Max Pain keeps violet to itself
-        itemStyle: { color: MUTED, opacity: 0.5 },
+        data: data.points.map((p) => ({
+          value: [p.as_of, p.gex_net_total],
+          itemStyle: { color: (p.gex_net_total ?? 0) >= 0 ? colors.call : colors.put },
+        })),
+        itemStyle: { opacity: 0.55 },
         emphasis: { focus: 'series' },
         tooltip: { valueFormatter: values(usdShort) },
       },

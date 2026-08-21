@@ -1,8 +1,5 @@
-// Citation markers: the report body carries bare "[n]" after the claims they back.
-
-// Split text around [n] markers; numbers in the result are marker ids. Ids without a
-// matching reference still split - the model sometimes emits more markers than
-// references.
+// split text around [n]; ids without a reference still split, the model emits more markers
+// than references
 export function splitMarkers(text: string): (string | number)[] {
   const parts: (string | number)[] = [];
   let last = 0;
@@ -15,8 +12,7 @@ export function splitMarkers(text: string): (string | number)[] {
   return parts;
 }
 
-// Drop marker ids with no matching reference, also eating the whitespace that led into
-// them so "claim [20]." collapses to "claim." rather than "claim .".
+// drop ids with no reference, eating the leading whitespace so "claim [20]." -> "claim."
 export function dropUnknownMarkers(
   parts: (string | number)[],
   known: ReadonlySet<number>,
@@ -37,8 +33,7 @@ export function dropUnknownMarkers(
   return kept;
 }
 
-// Collapse runs of adjacent ids into one group so "[1][3][5]" renders as a single
-// "1,3,5" superscript instead of a run that reads like "135".
+// collapse adjacent ids so "[1][3][5]" renders as "1,3,5", not "135"
 export function groupMarkers(parts: (string | number)[]): (string | number[])[] {
   const grouped: (string | number[])[] = [];
   for (const part of parts) {

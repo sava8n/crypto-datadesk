@@ -1,6 +1,19 @@
 # Changelog
 
 
+## [0.5.0] - 2026-08-21
+
+### Added
+
+- **Dark and light theme** - selectable in preferences
+- **Sidebar navigation** - sections and views replace the tab bar; each view closes with a description of what it shows, how to read it and what its controls do
+
+### Removed
+
+- **Spot history chart** - the candlestick panel is gone; spot survives as the strip sparkline
+- **Report timeline panel** - editions are picked from a dropdown in the report header
+
+
 ## [0.4.2] - 2026-08-12
 
 ### Added

@@ -1,13 +1,19 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { CALL, MUTED, PUT } from '../../theme/charts';
-import { axisTooltip, categoryAxisX, grid, legendBar, valueAxisY } from '../../theme/options';
+import { colors } from '../../theme/charts';
+import {
+  axisTooltip,
+  categoryAxisX,
+  grid,
+  legendBar,
+  valueAxisY,
+  zeroLine,
+} from '../../theme/options';
 import type { FlowByExpiryResponse } from '../../types';
 import { countShort, dateLabel, usdShort } from '../../utils/format';
 import EChart from '../chart/EChart';
 
 export function buildFlowByExpiryOption(data: FlowByExpiryResponse): EChartsOption {
-  // signed net taker flow per expiry, near-dated first; premium shown on hover
   const rows = [...data.points].sort(
     (a, b) => new Date(a.expiry).getTime() - new Date(b.expiry).getTime(),
   );
@@ -36,22 +42,16 @@ export function buildFlowByExpiryOption(data: FlowByExpiryResponse): EChartsOpti
         name: 'Call Flow',
         barMaxWidth: 22,
         data: rows.map((p) => p.call_contracts),
-        itemStyle: { color: CALL },
+        itemStyle: { color: colors.call },
         emphasis: { focus: 'series' },
-        markLine: {
-          symbol: 'none',
-          silent: true,
-          lineStyle: { color: MUTED, type: 'dashed', width: 1.5 },
-          label: { show: false },
-          data: [{ yAxis: 0 }],
-        },
+        markLine: zeroLine(),
       },
       {
         type: 'bar',
         name: 'Put Flow',
         barMaxWidth: 22,
         data: rows.map((p) => p.put_contracts),
-        itemStyle: { color: PUT },
+        itemStyle: { color: colors.put },
         emphasis: { focus: 'series' },
       },
     ],

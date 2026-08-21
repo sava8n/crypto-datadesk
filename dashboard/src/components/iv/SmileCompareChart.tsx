@@ -1,6 +1,6 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
-import { ACCENT, MUTED } from '../../theme/charts';
+import { colors } from '../../theme/charts';
 import { grid, itemTooltip, legendBar, tuple, valueAxisX, valueAxisY } from '../../theme/options';
 import type { IVCurvePoint } from '../../types';
 import { averageByStrike } from '../../utils/curves';
@@ -9,7 +9,6 @@ import EChart from '../chart/EChart';
 
 export interface SmileCompareData {
   current: IVCurvePoint[];
-  // the same expiry's smile from the archived baseline; empty until one exists
   previous: IVCurvePoint[];
   previousLabel: string;
 }
@@ -37,8 +36,8 @@ export function buildSmileCompareOption(data: SmileCompareData): EChartsOption {
         data: current,
         showSymbol: false,
         smooth: true,
-        itemStyle: { color: ACCENT },
-        lineStyle: { width: 1.5, color: ACCENT },
+        itemStyle: { color: colors.ref },
+        lineStyle: { width: 1.5, color: colors.ref },
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
       },
       ...(previous.length >= 2
@@ -49,8 +48,8 @@ export function buildSmileCompareOption(data: SmileCompareData): EChartsOption {
               data: previous,
               showSymbol: false,
               smooth: true,
-              itemStyle: { color: MUTED },
-              lineStyle: { width: 1.5, color: MUTED, type: 'dashed' as const },
+              itemStyle: { color: colors.s2 },
+              lineStyle: { width: 1.5, color: colors.s2, type: 'dashed' as const },
               emphasis: { focus: 'series' as const, lineStyle: { width: 3 } },
             },
           ]

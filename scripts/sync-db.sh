@@ -3,8 +3,8 @@
 # Copy a recent slice of the remote archive into the local database.
 # Runs on a dev machine and reaches the ec2 over ssh:
 #
-#     ./scripts/sync-db.sh --host 1.2.3.4 --user ubuntu --key ~/.ssh/datadesk.pem
-#     ./scripts/sync-db.sh --host datadesk --days 30 --yes
+#     ./scripts/sync-db.sh --host 1.1.1.1 --user ubuntu --key ~/.ssh/key.pem
+#     ./scripts/sync-db.sh --host host --days 30 --yes
 #
 # The local archive is wiped first - this is a copy of production, not a merge.
 set -euo pipefail
