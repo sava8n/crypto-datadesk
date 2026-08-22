@@ -53,4 +53,19 @@ describe('buildFlowByStrikeOption', () => {
     const first = (option.series as { markLine?: { data: { yAxis: number }[] } }[])[0];
     expect(first.markLine?.data[0].yAxis).toBe(0);
   });
+
+  it('keeps the zero line beside the spot mark', () => {
+    const row = (strike: number) => ({
+      strike,
+      call_contracts: 1,
+      put_contracts: 0,
+      call_premium: 100,
+      put_premium: 0,
+    });
+    const option = buildFlowByStrikeOption(resp([row(90_000), row(100_000)]), 99_000);
+    const first = (
+      option.series as { markLine?: { data: { yAxis?: number; xAxis?: number }[] } }[]
+    )[0];
+    expect(first.markLine?.data).toMatchObject([{ yAxis: 0 }, { xAxis: 1 }]);
+  });
 });

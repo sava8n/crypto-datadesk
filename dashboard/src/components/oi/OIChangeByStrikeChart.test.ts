@@ -37,4 +37,18 @@ describe('buildOIChangeByStrikeOption', () => {
     const first = (option.series as { markLine?: { data: { yAxis: number }[] } }[])[0];
     expect(first.markLine?.data[0].yAxis).toBe(0);
   });
+
+  it('keeps the zero line beside the spot mark', () => {
+    const option = buildOIChangeByStrikeOption(
+      resp([
+        { strike: 90_000, call_oi_change: 1, put_oi_change: 0 },
+        { strike: 100_000, call_oi_change: 1, put_oi_change: 0 },
+      ]),
+      92_000,
+    );
+    const first = (
+      option.series as { markLine?: { data: { yAxis?: number; xAxis?: number }[] } }[]
+    )[0];
+    expect(first.markLine?.data).toMatchObject([{ yAxis: 0 }, { xAxis: 0 }]);
+  });
 });

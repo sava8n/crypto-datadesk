@@ -1,19 +1,16 @@
 import { useMemo } from 'react';
 
 import { useVolHistory } from '../../api/queries';
+import { HISTORY_RESOLUTION, HISTORY_WINDOW } from '../../config';
 import { useCurrency } from '../../settings/store';
-import { resolutionFor } from '../controls/useLookback';
 import { MIN_POINTS } from '../panel/minPoints';
 import Panel from '../panel/Panel';
 import { panelState } from '../panel/panelState';
 import VRPChart from './VRPChart';
 import { pairForwardRealized } from './vrp';
 
-// pinned: a pair needs rv30 archived 30d after its iv30, so shorter windows show almost nothing
-const WINDOW = '1y';
-
 export default function VRPSection() {
-  const query = useVolHistory(useCurrency(), WINDOW, resolutionFor(WINDOW));
+  const query = useVolHistory(useCurrency(), HISTORY_WINDOW, HISTORY_RESOLUTION);
   const rows = useMemo(
     () => (query.data ? pairForwardRealized(query.data.points) : undefined),
     [query.data],

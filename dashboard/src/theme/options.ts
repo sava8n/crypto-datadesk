@@ -1,6 +1,7 @@
 // Typed ECharts fragments, so an option can be annotated EChartsOption with no cast.
 
 import type {
+  DataZoomComponentOption,
   GridComponentOption,
   DefaultLabelFormatterCallbackParams as ItemParams,
   LegendComponentOption,
@@ -93,12 +94,12 @@ export const categoryAxisX = (
   },
 });
 
-// grid insets; currency axes need a deeper left gutter, a scrolling legend two rows of headroom
 export const GRID_INSETS = {
   bars: { left: 56, right: 18, top: 40, bottom: 60 },
   barsWide: { left: 68, right: 18, top: 40, bottom: 60 },
   curves: { left: 56, right: 18, top: 66, bottom: 44 },
   series: { left: 56, right: 18, top: 40, bottom: 44 },
+  history: { left: 56, right: 64, top: 40, bottom: 88 },
 } as const;
 
 export const grid = (
@@ -132,13 +133,58 @@ export const legendScroll = (data: string[]): LegendComponentOption => ({
   pageIconInactiveColor: colors.axis,
 });
 
-export const zeroLine = (): MarkLineComponentOption => ({
+type MarkLineDatum = NonNullable<MarkLineComponentOption['data']>[number];
+
+export const markLine = (data: MarkLineDatum[]): MarkLineComponentOption => ({
   symbol: 'none',
   silent: true,
+  data,
+});
+
+export const zeroMark = (): MarkLineDatum => ({
+  yAxis: 0,
   lineStyle: { color: colors.zero, type: 'dashed', width: 1.5 },
   label: { show: false },
-  data: [{ yAxis: 0 }],
 });
+
+export const zeroLine = (): MarkLineComponentOption => markLine([zeroMark()]);
+
+export const spotMark = (idx: number): MarkLineDatum => ({
+  xAxis: idx,
+  lineStyle: { color: colors.label, type: 'dashed', width: 1 },
+  label: { color: colors.label, fontFamily: MONO, fontSize: 10, formatter: 'SPOT' },
+});
+
+/**
+ * Inside zoom plus a slider under the time axis. No start/end: the component keeps the range
+ * the user set across the merged option updates. Wheel zoom needs ctrl, so the page still
+ * scrolls over a column of panels. `inset` follows a grid override so the slider stays flush.
+ */
+export const timeZoom = (
+  inset: { left?: number; right?: number } = {},
+): DataZoomComponentOption[] => [
+  { type: 'inside', zoomOnMouseWheel: 'ctrl', moveOnMouseMove: true },
+  {
+    type: 'slider',
+    height: 32,
+    bottom: 8,
+    left: inset.left ?? GRID_INSETS.history.left,
+    right: inset.right ?? GRID_INSETS.history.right,
+    showDetail: false,
+    brushSelect: false,
+    borderColor: colors.axis,
+    backgroundColor: 'transparent',
+    fillerColor: colors.sparkFill,
+    dataBackground: { lineStyle: { color: colors.axis }, areaStyle: { color: colors.grid } },
+    selectedDataBackground: {
+      lineStyle: { color: colors.label },
+      areaStyle: { color: colors.sparkFill },
+    },
+    handleStyle: { color: colors.tooltipBg, borderColor: colors.text },
+    moveHandleStyle: { color: colors.axis },
+    textStyle: axisLabelStyle(),
+  },
+];
 
 // echarts types formatter params as an item/axis union and values as unknown; narrow once here
 

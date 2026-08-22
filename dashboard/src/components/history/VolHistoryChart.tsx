@@ -1,10 +1,11 @@
 import type { EChartsOption, LineSeriesOption } from 'echarts';
 import { useMemo } from 'react';
 import { colors } from '../../theme/charts';
-import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY } from '../../theme/options';
+import { axisTooltip, grid, legendBar, timeAxisX, timeZoom, valueAxisY } from '../../theme/options';
 import type { VolHistoryPoint, VolHistoryResponse } from '../../types';
 import { pctWhole, volPct } from '../../utils/format';
 import EChart from '../chart/EChart';
+import { SPOT_NAME, spotAxis, spotLine } from './spotOverlay';
 
 interface Series {
   key: keyof VolHistoryPoint;
@@ -37,12 +38,13 @@ export function buildVolHistoryOption(data: VolHistoryResponse): EChartsOption {
 
   return {
     backgroundColor: 'transparent',
-    legend: legendBar(SERIES_NAMES),
+    legend: legendBar([...SERIES_NAMES, SPOT_NAME]),
     tooltip: axisTooltip({ value: volPct }),
-    grid: grid('series'),
+    grid: grid('history'),
     xAxis: timeAxisX(),
-    yAxis: valueAxisY({ name: 'VOL', scale: true, format: pctWhole }),
-    series: series().map(line),
+    yAxis: [valueAxisY({ name: 'VOL', scale: true, format: pctWhole }), spotAxis()],
+    dataZoom: timeZoom(),
+    series: [...series().map(line), spotLine(data.points, 1)],
   };
 }
 

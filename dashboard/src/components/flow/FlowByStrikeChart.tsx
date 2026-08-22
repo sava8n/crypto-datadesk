@@ -6,15 +6,25 @@ import {
   categoryAxisX,
   grid,
   legendBar,
+  markLine,
+  spotMark,
   valueAxisY,
-  zeroLine,
+  zeroMark,
 } from '../../theme/options';
 import type { FlowByStrikeResponse } from '../../types';
 import { countShort, strikeFmt, strikeFull, usdShort } from '../../utils/format';
+import { levelIdx } from '../../utils/strikes';
 import EChart from '../chart/EChart';
 
-export function buildFlowByStrikeOption(data: FlowByStrikeResponse): EChartsOption {
+export function buildFlowByStrikeOption(
+  data: FlowByStrikeResponse,
+  spot: number | null = null,
+): EChartsOption {
   const rows = [...data.points].sort((a, b) => a.strike - b.strike);
+  const spotAt = levelIdx(
+    rows.map((p) => p.strike),
+    spot,
+  );
 
   return {
     backgroundColor: 'transparent',
@@ -42,7 +52,7 @@ export function buildFlowByStrikeOption(data: FlowByStrikeResponse): EChartsOpti
         data: rows.map((p) => p.call_contracts),
         itemStyle: { color: colors.call },
         emphasis: { focus: 'series' },
-        markLine: zeroLine(),
+        markLine: markLine([zeroMark(), ...(spotAt >= 0 ? [spotMark(spotAt)] : [])]),
       },
       {
         type: 'bar',
@@ -56,6 +66,12 @@ export function buildFlowByStrikeOption(data: FlowByStrikeResponse): EChartsOpti
   };
 }
 
-export default function FlowByStrikeChart({ data }: { data: FlowByStrikeResponse }) {
-  return <EChart option={useMemo(() => buildFlowByStrikeOption(data), [data])} />;
+export default function FlowByStrikeChart({
+  data,
+  spot,
+}: {
+  data: FlowByStrikeResponse;
+  spot: number | null;
+}) {
+  return <EChart option={useMemo(() => buildFlowByStrikeOption(data, spot), [data, spot])} />;
 }

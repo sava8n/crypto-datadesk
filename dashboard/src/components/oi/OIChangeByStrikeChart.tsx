@@ -6,17 +6,27 @@ import {
   categoryAxisX,
   grid,
   legendBar,
+  markLine,
+  spotMark,
   valueAxisY,
-  zeroLine,
+  zeroMark,
 } from '../../theme/options';
 import type { OIChangeByStrikeResponse } from '../../types';
 import { countShort, strikeFmt } from '../../utils/format';
+import { levelIdx } from '../../utils/strikes';
 import EChart from '../chart/EChart';
 
 const SERIES_NAMES = ['Call ΔOI', 'Put ΔOI'];
 
-export function buildOIChangeByStrikeOption(data: OIChangeByStrikeResponse): EChartsOption {
+export function buildOIChangeByStrikeOption(
+  data: OIChangeByStrikeResponse,
+  spot: number | null = null,
+): EChartsOption {
   const rows = [...data.points].sort((a, b) => a.strike - b.strike);
+  const spotAt = levelIdx(
+    rows.map((p) => p.strike),
+    spot,
+  );
 
   return {
     backgroundColor: 'transparent',
@@ -33,7 +43,7 @@ export function buildOIChangeByStrikeOption(data: OIChangeByStrikeResponse): ECh
         data: rows.map((p) => p.call_oi_change),
         itemStyle: { color: colors.call },
         emphasis: { focus: 'series' },
-        markLine: zeroLine(),
+        markLine: markLine([zeroMark(), ...(spotAt >= 0 ? [spotMark(spotAt)] : [])]),
       },
       {
         type: 'bar',
@@ -47,6 +57,12 @@ export function buildOIChangeByStrikeOption(data: OIChangeByStrikeResponse): ECh
   };
 }
 
-export default function OIChangeByStrikeChart({ data }: { data: OIChangeByStrikeResponse }) {
-  return <EChart option={useMemo(() => buildOIChangeByStrikeOption(data), [data])} />;
+export default function OIChangeByStrikeChart({
+  data,
+  spot,
+}: {
+  data: OIChangeByStrikeResponse;
+  spot: number | null;
+}) {
+  return <EChart option={useMemo(() => buildOIChangeByStrikeOption(data, spot), [data, spot])} />;
 }

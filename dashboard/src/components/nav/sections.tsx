@@ -80,7 +80,9 @@ export const SECTIONS: Section[] = [
           'GEX SIGN sets how dealer inventory is signed. ASSUMED takes the classic view that ' +
             'dealers are long the calls and short the puts; FLOW signs each contract from the ' +
             'cumulative taker flow on the tape and falls back to the assumption where the tape ' +
-            'does not cover the open interest. LOOKBACK sets the span of the history.',
+            'does not cover the open interest. STRIKES keeps only the strikes within a band ' +
+            'around spot, which the dashed line marks. The history holds the whole archive, ' +
+            'hourly; the slider beneath it sets the span in view.',
         ],
         render: () => (
           <>
@@ -107,9 +109,11 @@ export const SECTIONS: Section[] = [
             'means more puts are outstanding than calls.',
           'EXPIRY narrows the strike charts to one date; ALL EXPIRIES stacks the whole book, ' +
             'but max pain and the intrinsic-value overlay exist only for a single expiry and ' +
-            'appear once one is picked. WINDOW on the change chart is the baseline the current ' +
-            'book is compared against, 24 hours or 7 days back. LOOKBACK sets the span of the ' +
-            'history.',
+            'appear once one is picked. STRIKES keeps only the strikes within a band around ' +
+            'spot, which the dashed line marks; the stat tiles always sum the whole slice. ' +
+            'WINDOW on the change chart is the baseline the current book is compared against, ' +
+            '24 hours or 7 days back. The history holds the whole archive, hourly, and ' +
+            'carries spot; the slider beneath it sets the span in view.',
         ],
         render: () => (
           <>
@@ -135,7 +139,8 @@ export const SECTIONS: Section[] = [
             'near the money and into the front expiry. Read the peak strikes as the levels where ' +
             'flow appears on its own, and treat them as most dangerous where they line up with ' +
             'the gamma peaks.',
-          'GEX SIGN works as on the gamma chart, and each of the two charts keeps its own.',
+          'GEX SIGN and STRIKES work as on the gamma chart, and each of the two charts keeps ' +
+            'its own.',
         ],
         render: () => (
           <>
@@ -167,7 +172,8 @@ export const SECTIONS: Section[] = [
             'out-of-the-money calls at a single strike is where the next gamma concentration is ' +
             'being built.',
           'WINDOW is the span the taker flow is summed over, 24 hours or 7 days; volume is ' +
-            'always the last 24 hours.',
+            'always the last 24 hours. STRIKES keeps only the strikes within a band around ' +
+            'spot, which the dashed line marks.',
         ],
         render: () => (
           <>
@@ -239,8 +245,9 @@ export const SECTIONS: Section[] = [
             'fat tails priced on both sides - a market bracing for a move without committing to a ' +
             'direction. Judge today against the history rather than against zero: a persistently ' +
             'negative risk reversal is normal here, and only the extremes carry information.',
-          'DTE sets the range of expiries on the live chart, 0 to 30 days by default. LOOKBACK ' +
-            'sets the span of the history.',
+          'DTE sets the range of expiries on the live chart, 0 to 30 days by default. The ' +
+            'history holds the whole archive, hourly, with spot on its own axis; the slider ' +
+            'beneath it sets the span in view.',
         ],
         render: () => (
           <>
@@ -289,8 +296,9 @@ export const SECTIONS: Section[] = [
             'lives. In the risk premium, positive means implied was priced above what got ' +
             'delivered, so sellers were paid. Persistently positive is the normal state; the sign ' +
             'flipping is the regime changing, and that is when owning vol pays.',
-          'LOOKBACK sets the span of the vol history. The risk premium has no control: a pair ' +
-            'needs realized vol archived 30 days after its implied, so it always reads a year.',
+          'Both histories hold the whole archive, hourly, with spot on its own axis, and the ' +
+            'slider beneath each sets the span in view. The risk premium starts a month short ' +
+            'of today: a pair needs realized vol archived 30 days after its implied.',
         ],
         render: () => (
           <>

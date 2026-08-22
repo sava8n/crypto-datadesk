@@ -5,6 +5,7 @@ import { MS_PER_DAY } from '../../utils/constants';
 
 export interface VRPRow {
   asOf: string;
+  spot: number;
   iv30: number;
   // rv30 observed one horizon after asOf
   rv30Fwd: number;
@@ -31,7 +32,13 @@ export function pairForwardRealized(
     if (Math.abs(times[best] - target) > toleranceDays * MS_PER_DAY) continue;
     const rv = points[best].rv30;
     if (rv == null) continue;
-    rows.push({ asOf: point.as_of, iv30: point.iv30, rv30Fwd: rv, vrp: point.iv30 - rv });
+    rows.push({
+      asOf: point.as_of,
+      spot: point.spot,
+      iv30: point.iv30,
+      rv30Fwd: rv,
+      vrp: point.iv30 - rv,
+    });
   }
   return rows;
 }

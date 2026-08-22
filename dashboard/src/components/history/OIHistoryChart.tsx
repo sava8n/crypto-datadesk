@@ -1,10 +1,19 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
 import { colors } from '../../theme/charts';
-import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY, values } from '../../theme/options';
+import {
+  axisTooltip,
+  grid,
+  legendBar,
+  timeAxisX,
+  timeZoom,
+  valueAxisY,
+  values,
+} from '../../theme/options';
 import type { PositioningHistoryPoint, PositioningHistoryResponse } from '../../types';
 import { countShort } from '../../utils/format';
 import EChart from '../chart/EChart';
+import { SPOT_NAME, spotAxis, spotLine } from './spotOverlay';
 
 export function pcRatio(p: PositioningHistoryPoint): number | null {
   if (p.oi_total_calls == null || p.oi_total_puts == null || p.oi_total_calls <= 0) return null;
@@ -14,9 +23,9 @@ export function pcRatio(p: PositioningHistoryPoint): number | null {
 export function buildOIHistoryOption(data: PositioningHistoryResponse): EChartsOption {
   return {
     backgroundColor: 'transparent',
-    legend: legendBar(['Call OI', 'Put OI', 'P/C Ratio']),
+    legend: legendBar(['Call OI', 'Put OI', 'P/C Ratio', SPOT_NAME]),
     tooltip: axisTooltip({ value: countShort }),
-    grid: grid('bars', { right: 64 }),
+    grid: grid('history'),
     xAxis: timeAxisX(),
     yAxis: [
       valueAxisY({ name: 'OI', format: countShort }),
@@ -27,7 +36,10 @@ export function buildOIHistoryOption(data: PositioningHistoryResponse): EChartsO
         splitLine: false,
         format: (v: number) => v.toFixed(2),
       }),
+      // the right gutter is the ratio's; spot keeps its shape on a hidden scale
+      spotAxis({ show: false }),
     ],
+    dataZoom: timeZoom(),
     series: [
       {
         type: 'line',
@@ -60,6 +72,7 @@ export function buildOIHistoryOption(data: PositioningHistoryResponse): EChartsO
         emphasis: { focus: 'series', lineStyle: { width: 3 } },
         tooltip: { valueFormatter: values((v) => v.toFixed(2)) },
       },
+      spotLine(data.points, 2),
     ],
   };
 }

@@ -1,12 +1,14 @@
 import { DEFAULT_THEME, type ThemeMode } from './theme/mode';
-import type { ArchiveWindow, ExposureConvention, RecentWindow } from './types';
+import type { ArchiveWindow, ExposureConvention, RecentWindow, Resolution } from './types';
 import { EXPIRY_ALL, type FrontExpiry } from './utils/expiry';
 
 export const CURRENCIES = ['BTC'] as const;
 
 export type Currency = (typeof CURRENCIES)[number];
 
-export const ARCHIVE_WINDOWS: readonly ArchiveWindow[] = ['7d', '30d', '90d', '1y'];
+// the history charts load the whole archive at capture resolution; the slider picks the span
+export const HISTORY_WINDOW: ArchiveWindow = '1y';
+export const HISTORY_RESOLUTION: Resolution = '1h';
 
 export const RECENT_WINDOWS: readonly { value: RecentWindow; label: string }[] = [
   { value: '24h', label: '24H' },
@@ -16,6 +18,16 @@ export const RECENT_WINDOWS: readonly { value: RecentWindow; label: string }[] =
 export const CONVENTIONS: readonly { value: ExposureConvention; label: string }[] = [
   { value: 'assumption', label: 'ASSUMED' },
   { value: 'flow', label: 'FLOW' },
+];
+
+// percent band around spot kept on the strike charts
+export type StrikeRange = '10' | '25' | '50' | 'all';
+
+export const STRIKE_RANGES: readonly { value: StrikeRange; label: string }[] = [
+  { value: '10', label: '±10%' },
+  { value: '25', label: '±25%' },
+  { value: '50', label: '±50%' },
+  { value: 'all', label: 'ALL' },
 ];
 
 // longest quoted chain
@@ -51,22 +63,22 @@ export interface ChartScope {
   minDte: number;
   maxDte: number;
 
-  historyWindow: ArchiveWindow;
-
   exposureConvention: ExposureConvention;
 
   flowWindow: RecentWindow;
 
   // USD premium; 0 shows every print
   tapeMinPremium: number;
+
+  strikeRange: StrikeRange;
 }
 
 export const DEFAULT_SCOPE: ChartScope = {
   expiry: EXPIRY_ALL,
   minDte: 0,
   maxDte: 30,
-  historyWindow: '30d',
   exposureConvention: 'assumption',
   flowWindow: '7d',
   tapeMinPremium: 0,
+  strikeRange: 'all',
 };
