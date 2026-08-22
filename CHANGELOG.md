@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [0.5.2] - 2026-08-22
+
+### Fixed
+
+- **Snapshot timing** - captures land on round UTC hours (multiples of the configured interval) instead of drifting from service start by the fetch time each cycle; a restart captures at once only if the current slot is still empty
+
+
 ## [0.5.1] - 2026-08-22
 
 ### Added

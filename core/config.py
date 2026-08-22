@@ -6,7 +6,7 @@ from datetime import time
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-VERSION = "0.5.1"
+VERSION = "0.5.2"
 
 
 class Settings(BaseSettings):
