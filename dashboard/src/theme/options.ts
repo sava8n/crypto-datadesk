@@ -110,6 +110,7 @@ export const grid = (
 export const legendBar = (data: string[]): LegendComponentOption => ({
   data,
   top: 4,
+  icon: 'roundRect',
   itemWidth: 10,
   itemHeight: 10,
   inactiveColor: colors.zero,

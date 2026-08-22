@@ -62,7 +62,7 @@ export function buildGEXLevelsHistoryOption(data: PositioningHistoryResponse): E
           value: [p.as_of, p.gex_net_total],
           itemStyle: { color: (p.gex_net_total ?? 0) >= 0 ? colors.call : colors.put },
         })),
-        itemStyle: { opacity: 0.55 },
+        itemStyle: { color: colors.label, opacity: 0.55 },
         emphasis: { focus: 'series' },
         tooltip: { valueFormatter: values(usdShort) },
       },
