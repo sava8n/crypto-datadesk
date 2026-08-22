@@ -1,11 +1,19 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
 import { axisLabelStyle, colors } from '../../theme/charts';
-import { axisTooltip, categoryAxisX, grid, legendBar, valueAxisY } from '../../theme/options';
+import {
+  axisTooltip,
+  categoryAxisX,
+  grid,
+  legendBar,
+  markLine,
+  spotMark,
+  valueAxisY,
+} from '../../theme/options';
 import type { ExposureByStrikeResponse, ExposureGreek } from '../../types';
 import { strikeFmt, usdFull, usdShort } from '../../utils/format';
+import { levelIdx } from '../../utils/strikes';
 import EChart from '../chart/EChart';
-import { nearestIdx } from './nearest';
 
 // dollars per 1% move in the forward (gamma), per vol point (vanna), per day (charm)
 const AXIS_NAMES: Record<ExposureGreek, string> = {
@@ -14,14 +22,17 @@ const AXIS_NAMES: Record<ExposureGreek, string> = {
   charm: 'CEX / DAY',
 };
 
-export function buildExposureByStrikeOption(data: ExposureByStrikeResponse): EChartsOption {
+export function buildExposureByStrikeOption(
+  data: ExposureByStrikeResponse,
+  spot: number | null = null,
+): EChartsOption {
   const rows = [...data.points].sort((a, b) => a.strike - b.strike);
   const strikes = rows.map((p) => p.strike);
 
   // gamma only; the other greeks report no zero-crossing
   const flip = data.gex_flip;
-  const flipIdx = flip != null ? nearestIdx(strikes, flip) : -1;
-  const hasFlip = flip != null && flipIdx >= 0;
+  const flipIdx = levelIdx(strikes, flip);
+  const spotAt = levelIdx(strikes, spot);
 
   return {
     backgroundColor: 'transparent',
@@ -58,14 +69,12 @@ export function buildExposureByStrikeOption(data: ExposureByStrikeResponse): ECh
         itemStyle: { color: colors.text },
         lineStyle: { color: colors.text, width: 1.5 },
         emphasis: { focus: 'series' },
-        markLine: {
-          symbol: 'none',
-          silent: true,
-          data: hasFlip
+        markLine: markLine([
+          ...(flip != null && flipIdx >= 0
             ? [
                 {
                   xAxis: flipIdx,
-                  lineStyle: { color: colors.levelKey, type: 'dashed', width: 1 },
+                  lineStyle: { color: colors.levelKey, type: 'dashed' as const, width: 1 },
                   label: {
                     ...axisLabelStyle(),
                     color: colors.levelKey,
@@ -73,13 +82,20 @@ export function buildExposureByStrikeOption(data: ExposureByStrikeResponse): ECh
                   },
                 },
               ]
-            : [],
-        },
+            : []),
+          ...(spotAt >= 0 ? [spotMark(spotAt)] : []),
+        ]),
       },
     ],
   };
 }
 
-export default function ExposureByStrikeChart({ data }: { data: ExposureByStrikeResponse }) {
-  return <EChart option={useMemo(() => buildExposureByStrikeOption(data), [data])} />;
+export default function ExposureByStrikeChart({
+  data,
+  spot,
+}: {
+  data: ExposureByStrikeResponse;
+  spot: number | null;
+}) {
+  return <EChart option={useMemo(() => buildExposureByStrikeOption(data, spot), [data, spot])} />;
 }

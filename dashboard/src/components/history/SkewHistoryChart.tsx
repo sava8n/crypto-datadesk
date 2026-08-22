@@ -1,10 +1,19 @@
 import type { EChartsOption, LineSeriesOption } from 'echarts';
 import { useMemo } from 'react';
 import { colors } from '../../theme/charts';
-import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY, zeroLine } from '../../theme/options';
+import {
+  axisTooltip,
+  grid,
+  legendBar,
+  timeAxisX,
+  timeZoom,
+  valueAxisY,
+  zeroLine,
+} from '../../theme/options';
 import type { VolHistoryPoint, VolHistoryResponse } from '../../types';
 import { volPct } from '../../utils/format';
 import EChart from '../chart/EChart';
+import { SPOT_NAME, spotAxis, spotLine } from './spotOverlay';
 
 interface Series {
   key: keyof VolHistoryPoint;
@@ -36,12 +45,13 @@ export function buildSkewHistoryOption(data: VolHistoryResponse): EChartsOption 
 
   return {
     backgroundColor: 'transparent',
-    legend: legendBar(SERIES_NAMES),
+    legend: legendBar([...SERIES_NAMES, SPOT_NAME]),
     tooltip: axisTooltip({ value: volPct }),
-    grid: grid('series'),
+    grid: grid('history'),
     xAxis: timeAxisX(),
-    yAxis: valueAxisY({ name: 'ΔIV', scale: true, format: volPct }),
-    series: series().map((s, i) => line(s, i === 0)),
+    yAxis: [valueAxisY({ name: 'ΔIV', scale: true, format: volPct }), spotAxis()],
+    dataZoom: timeZoom(),
+    series: [...series().map((s, i) => line(s, i === 0)), spotLine(data.points, 1)],
   };
 }
 

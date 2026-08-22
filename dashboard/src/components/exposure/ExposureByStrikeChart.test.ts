@@ -66,8 +66,23 @@ describe('buildExposureByStrikeOption', () => {
   });
 
   it('labels the flip with the level, not the index', () => {
-    const data = markLineOf(buildExposureByStrikeOption(resp(101, [100])));
+    const data = markLineOf(buildExposureByStrikeOption(resp(101, [100, 110])));
     const label = (data[0] as { label: { formatter: string } }).label;
     expect(label.formatter).toBe('Flip $101.00');
+  });
+
+  it('drops a flip the strike window has pushed out of view', () => {
+    expect(markLineOf(buildExposureByStrikeOption(resp(130, [90, 100, 120])))).toEqual([]);
+  });
+
+  it('marks spot at the nearest quoted strike beside the flip', () => {
+    const data = markLineOf(buildExposureByStrikeOption(resp(95, [90, 100, 120]), 118));
+    expect(data.map((d) => (d as { xAxis: number }).xAxis)).toEqual([0, 2]);
+    expect((data[1] as { label: { formatter: string } }).label.formatter).toBe('SPOT');
+  });
+
+  it('marks no spot outside the shown strikes or without one', () => {
+    expect(markLineOf(buildExposureByStrikeOption(resp(null, [90, 100]), 150))).toEqual([]);
+    expect(markLineOf(buildExposureByStrikeOption(resp(null, [90, 100]), null))).toEqual([]);
   });
 });

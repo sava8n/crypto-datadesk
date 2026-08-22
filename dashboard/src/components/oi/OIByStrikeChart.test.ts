@@ -57,6 +57,25 @@ describe('buildOIByStrikeOption', () => {
     expect(scatter.markLine?.label.formatter).toBe('Max Pain $110.00');
   });
 
+  it('draws no max-pain line when the strike window excludes it', () => {
+    const option = buildOIByStrikeOption(resp(130, [90, 100, 110]));
+    const scatter = (option.series as { markLine?: unknown }[])[4];
+    expect(option.series).toHaveLength(5);
+    expect(scatter.markLine).toBeUndefined();
+  });
+
+  it('marks spot on the first bar series at the nearest strike', () => {
+    const option = buildOIByStrikeOption(resp(null, [90, 100, 110]), 104);
+    const series = option.series as { markLine?: { data: { xAxis: number }[] } }[];
+    expect(series[0].markLine?.data[0].xAxis).toBe(1);
+    expect(series[1].markLine).toBeUndefined();
+  });
+
+  it('marks no spot outside the shown strikes', () => {
+    const option = buildOIByStrikeOption(resp(null, [90, 100, 110]), 150);
+    expect((option.series as { markLine?: unknown }[])[0].markLine).toBeUndefined();
+  });
+
   it('substitutes zero for a missing intrinsic value rather than dropping the bar', () => {
     const data = resp(100, [90, 100]);
     data.points[0].intrinsic_value = null;

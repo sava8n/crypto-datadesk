@@ -1,6 +1,15 @@
 # Changelog
 
 
+## [0.5.1] - 2026-08-22
+
+### Added
+
+- **Spot overlay** - the spot index drawn on its own axis across the vol, skew, open-interest and risk-premium histories
+- **Strike window** - a STRIKES control on every strike chart keeps a ±10/25/50% band around spot, which a dashed line now marks
+- **Time brush** - a slider under each history chart sets the span in view; ctrl+wheel zooms, drag pans
+
+
 ## [0.5.0] - 2026-08-21
 
 ### Added

@@ -1,12 +1,10 @@
-import { ARCHIVE_WINDOWS, CONVENTIONS, RECENT_WINDOWS } from '../../config';
+import { CONVENTIONS, RECENT_WINDOWS, STRIKE_RANGES } from '../../config';
 import { useChartScope } from '../../settings/store';
 import { EXPIRY_ALL, resolveExpiry } from '../../utils/expiry';
 import { dateLabel, usdShort } from '../../utils/format';
 import { MIN_PREMIUMS } from '../flow/tape';
 import DteSlider from './DteSlider';
 import { ScopePopover, ScopeRow, ScopeSegmented } from './Scope';
-
-const LOOKBACKS = ARCHIVE_WINDOWS.map((w) => ({ value: w, label: w.toUpperCase() }));
 
 interface ScopeProps {
   chartId: string;
@@ -38,15 +36,15 @@ export function FlowWindowScope({ chartId }: ScopeProps) {
   );
 }
 
-export function LookbackScope({ chartId }: ScopeProps) {
+export function StrikeRangeScope({ chartId }: ScopeProps) {
   const { scope, update } = useChartScope(chartId);
 
   return (
     <ScopeSegmented
-      label="LOOKBACK"
-      value={scope.historyWindow}
-      options={LOOKBACKS}
-      onSelect={(v) => update({ historyWindow: v })}
+      label="STRIKES"
+      value={scope.strikeRange}
+      options={STRIKE_RANGES}
+      onSelect={(v) => update({ strikeRange: v })}
     />
   );
 }

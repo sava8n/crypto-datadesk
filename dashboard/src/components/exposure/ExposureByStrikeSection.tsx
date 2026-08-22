@@ -2,7 +2,8 @@ import { useExposureByStrike } from '../../api/queries';
 import { useChartScope, useCurrency } from '../../settings/store';
 import type { ExposureGreek } from '../../types';
 import { Scopes } from '../controls/Scope';
-import { ConventionScope } from '../controls/scopes';
+import { ConventionScope, StrikeRangeScope } from '../controls/scopes';
+import { useStrikeWindowed } from '../controls/useStrikeWindow';
 import { MIN_POINTS } from '../panel/minPoints';
 import Panel from '../panel/Panel';
 import { panelState } from '../panel/panelState';
@@ -19,7 +20,9 @@ export default function ExposureByStrikeSection({ greek }: { greek: ExposureGree
   const chartId = `${greek}Exposure`;
   const { scope } = useChartScope(chartId);
   const query = useExposureByStrike(useCurrency(), greek, scope.exposureConvention);
-  const state = panelState(query, query.data, query.data?.points.length ?? 0, MIN_POINTS.bars);
+  const spot = query.data?.spot ?? null;
+  const { windowed, count } = useStrikeWindowed(chartId, query.data, spot);
+  const state = panelState(query, windowed, count, MIN_POINTS.bars);
 
   return (
     <Panel
@@ -29,10 +32,11 @@ export default function ExposureByStrikeSection({ greek }: { greek: ExposureGree
       controls={
         <Scopes>
           <ConventionScope chartId={chartId} />
+          <StrikeRangeScope chartId={chartId} />
         </Scopes>
       }
     >
-      {(data) => <ExposureByStrikeChart data={data} />}
+      {(data) => <ExposureByStrikeChart data={data} spot={spot} />}
     </Panel>
   );
 }

@@ -1,7 +1,15 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
 import { colors } from '../../theme/charts';
-import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY, values } from '../../theme/options';
+import {
+  axisTooltip,
+  grid,
+  legendBar,
+  timeAxisX,
+  timeZoom,
+  valueAxisY,
+  values,
+} from '../../theme/options';
 import type { PositioningHistoryResponse } from '../../types';
 import { priceWhole, usdShort } from '../../utils/format';
 import EChart from '../chart/EChart';
@@ -27,8 +35,10 @@ export function buildGEXLevelsHistoryOption(data: PositioningHistoryResponse): E
     backgroundColor: 'transparent',
     legend: legendBar(['Spot', 'GEX Flip', 'Max Pain', 'Net GEX']),
     tooltip: axisTooltip({}),
-    grid: grid('barsWide', { right: 64 }),
+    // currency labels on the left axis need the deeper gutter
+    grid: grid('history', { left: 68 }),
     xAxis: timeAxisX(),
+    dataZoom: timeZoom({ left: 68 }),
     yAxis: [
       valueAxisY({ name: 'PRICE', scale: true, format: priceWhole }),
       valueAxisY({

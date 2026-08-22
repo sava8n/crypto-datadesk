@@ -1,9 +1,18 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
 import { colors } from '../../theme/charts';
-import { axisTooltip, grid, legendBar, timeAxisX, valueAxisY, zeroLine } from '../../theme/options';
+import {
+  axisTooltip,
+  grid,
+  legendBar,
+  timeAxisX,
+  timeZoom,
+  valueAxisY,
+  zeroLine,
+} from '../../theme/options';
 import { volPct } from '../../utils/format';
 import EChart from '../chart/EChart';
+import { SPOT_NAME, spotAxis, spotLine } from './spotOverlay';
 import type { VRPRow } from './vrp';
 
 export function buildVRPOption(rows: VRPRow[]): EChartsOption {
@@ -19,11 +28,12 @@ export function buildVRPOption(rows: VRPRow[]): EChartsOption {
 
   return {
     backgroundColor: 'transparent',
-    legend: legendBar(['IV30', 'RV30 +30D', 'VRP']),
+    legend: legendBar(['IV30', 'RV30 +30D', 'VRP', SPOT_NAME]),
     tooltip: axisTooltip({ value: volPct }),
-    grid: grid('series'),
+    grid: grid('history'),
     xAxis: timeAxisX(),
-    yAxis: valueAxisY({ name: 'VOL', scale: true, format: volPct }),
+    yAxis: [valueAxisY({ name: 'VOL', scale: true, format: volPct }), spotAxis()],
+    dataZoom: timeZoom(),
     series: [
       line('IV30', (r) => r.iv30, colors.ref),
       line('RV30 +30D', (r) => r.rv30Fwd, colors.s2, true),
@@ -32,6 +42,10 @@ export function buildVRPOption(rows: VRPRow[]): EChartsOption {
         // above = implied paid more than was realized
         markLine: zeroLine(),
       },
+      spotLine(
+        rows.map((r) => ({ as_of: r.asOf, spot: r.spot })),
+        1,
+      ),
     ],
   };
 }

@@ -1,8 +1,9 @@
 import { useOIByStrike } from '../../api/queries';
 import { useCurrency } from '../../settings/store';
 import { Scopes } from '../controls/Scope';
-import { ExpiryScope } from '../controls/scopes';
+import { ExpiryScope, StrikeRangeScope } from '../controls/scopes';
 import { useExpiry } from '../controls/useExpiry';
+import { useStrikeWindowed } from '../controls/useStrikeWindow';
 import { MIN_POINTS } from '../panel/minPoints';
 import Panel from '../panel/Panel';
 import { panelState } from '../panel/panelState';
@@ -20,7 +21,9 @@ export default function OIByStrikeSection() {
   const selected = useExpiry(CHART, chain.data?.expiries ?? [], { allowAll: true });
 
   const query = useOIByStrike(currency, selected || null);
-  const state = panelState(query, query.data, query.data?.points.length ?? 0, MIN_POINTS.bars);
+  const spot = query.data?.spot ?? null;
+  const { windowed, count } = useStrikeWindowed(CHART, query.data, spot);
+  const state = panelState(query, windowed, count, MIN_POINTS.bars);
 
   return (
     <Panel
@@ -30,11 +33,13 @@ export default function OIByStrikeSection() {
       controls={
         <Scopes>
           <ExpiryScope chartId={CHART} expiries={chain.data?.expiries ?? []} allowAll />
+          <StrikeRangeScope chartId={CHART} />
         </Scopes>
       }
-      footer={(data) => <OIStatTiles data={data} />}
+      // the tiles sum the whole slice, not the strike window
+      footer={() => query.data && <OIStatTiles data={query.data} />}
     >
-      {(data) => <OIByStrikeChart data={data} />}
+      {(data) => <OIByStrikeChart data={data} spot={spot} />}
     </Panel>
   );
 }

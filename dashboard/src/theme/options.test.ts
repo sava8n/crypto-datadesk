@@ -7,9 +7,14 @@ import {
   GRID_INSETS,
   grid,
   legendBar,
+  markLine,
+  spotMark,
+  timeZoom,
   tuple,
   valueAxisX,
   valueAxisY,
+  zeroLine,
+  zeroMark,
 } from './options';
 
 const OTHER: ThemeMode = DEFAULT_THEME === 'dark' ? 'light' : 'dark';
@@ -100,6 +105,47 @@ describe('grid', () => {
 
   it('gives currency-labelled axes a deeper left gutter', () => {
     expect(GRID_INSETS.barsWide.left).toBeGreaterThan(GRID_INSETS.bars.left);
+  });
+
+  it('leaves a history chart room for a right axis and the zoom slider', () => {
+    expect(GRID_INSETS.history.right).toBeGreaterThan(GRID_INSETS.series.right);
+    expect(GRID_INSETS.history.bottom).toBeGreaterThan(GRID_INSETS.series.bottom);
+  });
+});
+
+describe('markLine', () => {
+  it('wraps level entries in one silent line', () => {
+    expect(markLine([zeroMark(), spotMark(3)])).toMatchObject({
+      silent: true,
+      data: [{ yAxis: 0 }, { xAxis: 3, label: { formatter: 'SPOT' } }],
+    });
+  });
+
+  it('builds the zero line from its entry', () => {
+    expect(zeroLine().data).toEqual([zeroMark()]);
+  });
+});
+
+describe('timeZoom', () => {
+  it('pairs an inside zoom with a slider and sets no range', () => {
+    const zoom = timeZoom() as { type: string; start?: number; end?: number }[];
+    expect(zoom.map((z) => z.type)).toEqual(['inside', 'slider']);
+    for (const z of zoom) {
+      expect(z).not.toHaveProperty('start');
+      expect(z).not.toHaveProperty('end');
+    }
+  });
+
+  it('keeps the slider flush with the history grid, overrides included', () => {
+    expect(timeZoom()[1]).toMatchObject({
+      left: GRID_INSETS.history.left,
+      right: GRID_INSETS.history.right,
+    });
+    expect(timeZoom({ left: 68 })[1]).toMatchObject({ left: 68, right: GRID_INSETS.history.right });
+  });
+
+  it('leaves the wheel to the page unless ctrl is held', () => {
+    expect(timeZoom()[0]).toMatchObject({ type: 'inside', zoomOnMouseWheel: 'ctrl' });
   });
 });
 

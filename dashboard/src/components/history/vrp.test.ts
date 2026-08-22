@@ -31,6 +31,11 @@ describe('pairForwardRealized', () => {
     expect(rows[0].vrp).toBeCloseTo(rows[0].iv30 - rows[0].rv30Fwd);
   });
 
+  it('carries the spot observed with the implied leg', () => {
+    const points = [point(0, 0.3, 0.2), point(30, 0.3, 0.25)];
+    expect(pairForwardRealized(points)[0].spot).toBe(63_000);
+  });
+
   it('skips pairs whose partner is outside the tolerance', () => {
     // nothing lands within 2 days of anyone's +30d mark
     const points = [point(0, 0.3, 0.2), point(24, 0.3, 0.2), point(40, 0.3, 0.2)];

@@ -1,15 +1,31 @@
 import type { EChartsOption } from 'echarts';
 import { useMemo } from 'react';
 import { colors } from '../../theme/charts';
-import { axisTooltip, categoryAxisX, grid, legendBar, valueAxisY } from '../../theme/options';
+import {
+  axisTooltip,
+  categoryAxisX,
+  grid,
+  legendBar,
+  markLine,
+  spotMark,
+  valueAxisY,
+} from '../../theme/options';
 import type { VolumeByStrikeResponse } from '../../types';
 import { countShort, strikeFmt } from '../../utils/format';
+import { levelIdx } from '../../utils/strikes';
 import EChart from '../chart/EChart';
 
 const SERIES_NAMES = ['Call Volume', 'Put Volume'];
 
-export function buildVolumeByStrikeOption(data: VolumeByStrikeResponse): EChartsOption {
+export function buildVolumeByStrikeOption(
+  data: VolumeByStrikeResponse,
+  spot: number | null = null,
+): EChartsOption {
   const rows = [...data.points].sort((a, b) => a.strike - b.strike);
+  const spotAt = levelIdx(
+    rows.map((p) => p.strike),
+    spot,
+  );
 
   return {
     backgroundColor: 'transparent',
@@ -26,6 +42,7 @@ export function buildVolumeByStrikeOption(data: VolumeByStrikeResponse): ECharts
         data: rows.map((p) => p.call_volume),
         itemStyle: { color: colors.call },
         emphasis: { focus: 'series' },
+        ...(spotAt >= 0 && { markLine: markLine([spotMark(spotAt)]) }),
       },
       {
         type: 'bar',
@@ -39,6 +56,12 @@ export function buildVolumeByStrikeOption(data: VolumeByStrikeResponse): ECharts
   };
 }
 
-export default function VolumeByStrikeChart({ data }: { data: VolumeByStrikeResponse }) {
-  return <EChart option={useMemo(() => buildVolumeByStrikeOption(data), [data])} />;
+export default function VolumeByStrikeChart({
+  data,
+  spot,
+}: {
+  data: VolumeByStrikeResponse;
+  spot: number | null;
+}) {
+  return <EChart option={useMemo(() => buildVolumeByStrikeOption(data, spot), [data, spot])} />;
 }
