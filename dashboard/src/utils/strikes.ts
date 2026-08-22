@@ -8,8 +8,8 @@ export function filterByMoneyness<T extends { strike: number }>(
   range: StrikeRange,
 ): T[] {
   if (range === 'all' || spot == null || spot <= 0) return points;
-  const pct = Number(range) / 100;
-  return points.filter((p) => Math.abs(p.strike / spot - 1) <= pct);
+  const pct = Number(range);
+  return points.filter((p) => Math.abs(p.strike - spot) * 100 <= pct * spot);
 }
 
 // nearest quoted strike to a level, or -1 when the level falls outside the ascending list,
