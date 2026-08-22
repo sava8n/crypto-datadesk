@@ -70,7 +70,7 @@ async def _record_all() -> None:
 
 
 async def run() -> None:
-    """Catch up at boot, then record at every slot boundary - round hours by default."""
+    """Catch up at boot, then record at every slot boundary."""
     while True:
         await _record_all()
         delay = seconds_until_slot(datetime.now(UTC), settings.snapshot_interval_seconds)
