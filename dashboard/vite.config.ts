@@ -14,8 +14,8 @@ export default defineConfig({
     },
   },
   build: {
-    // echarts and lightweight-charts are too large for the default warning threshold
-    chunkSizeWarningLimit: 2500,
+    // echarts alone puts the bundle near 1.6 MB; some headroom over that
+    chunkSizeWarningLimit: 2000,
   },
   test: {
     // jsdom gives store/hook tests a DOM + localStorage

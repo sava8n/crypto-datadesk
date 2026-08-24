@@ -1,4 +1,4 @@
 # dev-only dependencies: tests and lint
-pytest>=8
-httpx2>=2.7
+pytest==9.1.1
+httpx2==2.7.0
 ruff==0.16.0
