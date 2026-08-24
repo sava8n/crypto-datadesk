@@ -114,10 +114,7 @@ export interface OIByExpiryResponse extends MarketEnvelope {
   points: OIByExpiryPoint[];
 }
 
-export type ExposureConvention = 'assumption' | 'flow';
-
 export interface ExposureEnvelope extends MarketEnvelope {
-  convention: ExposureConvention;
   tape_start: string | null;
   oi_explained_fraction: number | null;
 }
@@ -303,6 +300,7 @@ export interface PositioningHistoryPoint {
   gex_net_total: number | null;
   gex_flip: number | null;
   max_pain_front: number | null;
+  oi_explained_fraction: number | null;
 }
 
 export interface PositioningHistoryResponse extends HistoryEnvelope {

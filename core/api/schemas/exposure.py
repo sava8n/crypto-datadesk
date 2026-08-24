@@ -8,18 +8,15 @@ from pydantic import BaseModel
 
 from api.schemas.base import MarketEnvelope, TapeStart
 
-ExposureConvention = Literal["assumption", "flow"]
-
 ExposureGreek = Literal["gamma", "vanna", "charm"]
 
 
 class ExposureEnvelope(MarketEnvelope):
-    """Sign-convention fields shared by the dealer-exposure responses."""
+    """Tape-coverage fields shared by the dealer-exposure responses."""
 
-    convention: ExposureConvention = "assumption"
-    # backs the flow signing; None under assumption or an empty tape
+    # backs the tape signing; None on an empty tape
     tape_start: TapeStart
-    # share of open interest whose sign the tape explains; None under assumption
+    # share of open interest whose sign the tape explains; None on an empty chain
     oi_explained_fraction: float | None = None
 
 

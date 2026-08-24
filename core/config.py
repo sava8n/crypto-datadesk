@@ -6,7 +6,7 @@ from datetime import time
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-VERSION = "0.5.2"
+VERSION = "0.6.0"
 
 
 class Settings(BaseSettings):
@@ -19,6 +19,8 @@ class Settings(BaseSettings):
 
     # --- market data (Deribit) ---
     deribit_api_url: str = "https://www.deribit.com/api/v2"
+    # serves full trade history
+    deribit_history_api_url: str = "https://history.deribit.com/api/v2"
     http_connect_timeout: int = 3
     # must cover the multi-MB option book
     http_read_timeout: int = 20
@@ -32,8 +34,9 @@ class Settings(BaseSettings):
     # --- archive: snapshots, tape, retention ---
     snapshot_interval_minutes: int = 60
     tape_poll_seconds: int = 60
-    # how far back the first tape poll reaches when the archive is empty
-    tape_bootstrap_days: int = 7
+    # how far back the first tape poll reaches when the archive is empty;
+    # deribit only serves ~24h of trades
+    tape_bootstrap_hours: int = 24
     retention_days: int = 365
     retention_sweep_at_utc: time = time(0, 0)
 

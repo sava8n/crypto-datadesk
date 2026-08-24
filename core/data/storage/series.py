@@ -65,6 +65,7 @@ def positioning_series(currency: str, start: datetime, resolution: Resolution) -
         c.gex_net_total,
         c.gex_flip,
         c.max_pain_front,
+        c.oi_explained_fraction,
     ]
     return db.rows(_series_stmt(columns, currency, start, resolution), "archive")
 

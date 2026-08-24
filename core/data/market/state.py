@@ -17,7 +17,7 @@ from analytics import greeks
 from analytics.frames import finite
 from analytics.iv import term
 from analytics.iv.skew import build as build_skew
-from analytics.positioning import exposure, open_interest, traded_volume
+from analytics.positioning import open_interest, traded_volume
 from analytics.prob import distribution, quantiles
 from analytics.stats import atm_iv_at, cm_grid, dvol_stats, realized_vol, skew_at
 from analytics.vol import cone
@@ -39,7 +39,6 @@ class MarketState:
         self.contracts = contracts  # the book as sent; shared across requests, read-only
         self.spot_candles = spot_candles
         self.dvol_candles = dvol_candles
-        self._exposure: dict[str, pd.DataFrame] = {}
 
     @cached_property
     def otm_quotes(self) -> pd.DataFrame:
@@ -68,16 +67,6 @@ class MarketState:
     @cached_property
     def prob_quantiles(self) -> pd.DataFrame:
         return quantiles.build(self.prob_curves)
-
-    def exposure(self, greek: str) -> pd.DataFrame:
-        """Per-strike dollar exposure to ``greek``; memoized per greek, like the properties."""
-        if greek not in self._exposure:
-            self._exposure[greek] = exposure.build(self.greeks_chain, self.oi_chain, greek)
-        return self._exposure[greek]
-
-    @cached_property
-    def gex_flip(self) -> float | None:
-        return finite(exposure.flip_level(self.exposure("gamma"), self.spot))
 
     @cached_property
     def oi_by_expiry(self) -> pd.DataFrame:
@@ -173,13 +162,6 @@ class MarketState:
         if not expiries:
             return None
         return finite(self.oi_by_strike(expiries[0])[1])
-
-    @cached_property
-    def gex_net_total(self) -> float | None:
-        gex = self.exposure("gamma")
-        if gex.empty:
-            return None
-        return finite(gex["net_exposure"].sum())
 
     @cached_property
     def cm_grid(self) -> pd.DataFrame:

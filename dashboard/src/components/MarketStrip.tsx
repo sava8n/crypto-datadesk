@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 
 import { useExposureByStrike, useOIByStrike, useSpotHistory, useStats } from '../api/queries';
-import { DEFAULT_SCOPE } from '../config';
 import { useCurrency, useSettings } from '../settings/store';
 import { resolveFrontExpiry } from '../utils/expiry';
 import { dateLabel, dvolFmt, pctOne, pctWhole, priceWhole, usdShort } from '../utils/format';
@@ -49,8 +48,8 @@ export default function MarketStrip() {
   const slice = useOIByStrike(currency, oiExpiry, { enabled: oiExpiry != null });
   const oi = slice.data ? oiStats(slice.data) : null;
 
-  // book-wide (every expiry), signed by the default convention since the sign toggle is per chart
-  const gex = useExposureByStrike(currency, 'gamma', DEFAULT_SCOPE.exposureConvention).data;
+  // book-wide (every expiry), tape-signed like the charts
+  const gex = useExposureByStrike(currency, 'gamma').data;
   const netGex = gex ? gex.points.reduce((sum, p) => sum + p.net_exposure, 0) : null;
   const flip = gex?.gex_flip ?? null;
   const flipVsSpot = flip != null && data?.spot ? flip / data.spot - 1 : null;

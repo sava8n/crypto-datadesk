@@ -13,7 +13,6 @@ const resp = (
   as_of: '2026-07-26T00:00:00Z',
   greek,
   gex_flip,
-  convention: 'assumption',
   tape_start: null,
   oi_explained_fraction: null,
   points: strikes.map((strike) => ({

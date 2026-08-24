@@ -22,13 +22,17 @@ class _State:
         self.__dict__.update(values)
 
 
+_TAPE = {"gex_flip": 101_000.0, "gex_net_total": -2.5e6, "oi_explained_fraction": 0.6}
+
+
 def test_snapshot_row_carries_identity_and_scalars(market_state):
-    row = rows.snapshot_row(market_state, "BTC")
+    row = rows.snapshot_row(market_state, "BTC", _TAPE)
     assert row["currency"] == "BTC"
     assert row["as_of"] == market_state.as_of
     assert row["spot"] == market_state.spot
     assert row["iv30"] == market_state.iv30
-    assert row["gex_flip"] == market_state.gex_flip
+    assert row["gex_flip"] == _TAPE["gex_flip"]
+    assert row["oi_explained_fraction"] == _TAPE["oi_explained_fraction"]
 
 
 def test_snapshot_row_nulls_non_finite_scalars():
@@ -40,21 +44,21 @@ def test_snapshot_row_nulls_non_finite_scalars():
             rv30=None,
             dvol=0.55,
             dvol_rank=math.inf,
-            **{
-                **derived,
-                "iv30": math.nan,
-                "gex_flip": np.float64(1.5),
-                "oi_total_calls": math.nan,
-                "gex_net_total": np.float64(2.5),
-            },
+            **{**derived, "iv30": math.nan, "oi_total_calls": math.nan},
         ),
         "BTC",
+        {
+            "gex_flip": np.float64(1.5),
+            "gex_net_total": np.float64(2.5),
+            "oi_explained_fraction": math.nan,
+        },
     )
     assert row["iv30"] is None
     assert row["rv30"] is None
     assert row["dvol_rank"] is None
     assert row["dvol"] == 0.55
     assert row["oi_total_calls"] is None
+    assert row["oi_explained_fraction"] is None
     # numpy scalars become plain floats so the driver does not have to adapt them
     assert type(row["gex_flip"]) is float
     assert type(row["gex_net_total"]) is float
@@ -65,13 +69,13 @@ def test_snapshot_row_rejects_unusable_spot():
     scalars = dict(
         rv7=None, rv30=None, dvol=None, dvol_rank=None, **dict.fromkeys(rows.DERIVED_SCALARS)
     )
-    assert rows.snapshot_row(_State(spot=math.nan, **scalars), "BTC") is None
-    assert rows.snapshot_row(_State(spot=0.0, **scalars), "BTC") is None
-    assert rows.snapshot_row(_State(spot=-1.0, **scalars), "BTC") is None
+    assert rows.snapshot_row(_State(spot=math.nan, **scalars), "BTC", _TAPE) is None
+    assert rows.snapshot_row(_State(spot=0.0, **scalars), "BTC", _TAPE) is None
+    assert rows.snapshot_row(_State(spot=-1.0, **scalars), "BTC", _TAPE) is None
 
 
 def test_snapshot_row_carries_derived_scalars(market_state):
-    row = rows.snapshot_row(market_state, "BTC")
+    row = rows.snapshot_row(market_state, "BTC", _TAPE)
     for name in rows.DERIVED_SCALARS:
         assert row[name] == getattr(market_state, name)
 

@@ -5,9 +5,8 @@
 ``scale`` is ``F² · SPOT_MOVE`` for gamma, quoting it per 1% move in the forward, and
 ``F`` for vanna and charm, quoting them per vol point and per calendar day. Under zero
 rates all three greeks are identical for the call and the put at a strike, so the one OTM
-quote that survived the quality filters prices both legs' open interest. A chain without
-a ``signed_oi`` column is signed by the classic dealer assumption: long call greeks
-(+OI), short put greeks (-OI).
+quote that survived the quality filters prices both legs' open interest. The OI chain
+must carry ``signed_oi`` - the tape-signed dealer inventory.
 """
 
 from __future__ import annotations
@@ -53,8 +52,6 @@ def build(greeks_chain: pd.DataFrame, oi_chain: pd.DataFrame, greek: str) -> pd.
         return empty_frame(EXPOSURE_COLUMNS)
 
     is_call = merged["option_type"] == "C"
-    if "signed_oi" not in merged.columns:
-        merged["signed_oi"] = np.where(is_call, merged["open_interest"], -merged["open_interest"])
     dollar = merged["signed_oi"] * merged[greek] * _dollar_scale(greek, merged["forward"])
     merged["call_exposure"] = np.where(is_call, dollar, 0.0)
     merged["put_exposure"] = np.where(is_call, 0.0, dollar)

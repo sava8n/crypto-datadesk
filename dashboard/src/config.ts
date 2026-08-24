@@ -1,5 +1,5 @@
 import { DEFAULT_THEME, type ThemeMode } from './theme/mode';
-import type { ArchiveWindow, ExposureConvention, RecentWindow, Resolution } from './types';
+import type { ArchiveWindow, RecentWindow, Resolution } from './types';
 import { EXPIRY_ALL, type FrontExpiry } from './utils/expiry';
 
 export const CURRENCIES = ['BTC'] as const;
@@ -13,11 +13,6 @@ export const HISTORY_RESOLUTION: Resolution = '1h';
 export const RECENT_WINDOWS: readonly { value: RecentWindow; label: string }[] = [
   { value: '24h', label: '24H' },
   { value: '7d', label: '7D' },
-];
-
-export const CONVENTIONS: readonly { value: ExposureConvention; label: string }[] = [
-  { value: 'assumption', label: 'ASSUMED' },
-  { value: 'flow', label: 'FLOW' },
 ];
 
 // percent band around spot kept on the strike charts
@@ -63,8 +58,6 @@ export interface ChartScope {
   minDte: number;
   maxDte: number;
 
-  exposureConvention: ExposureConvention;
-
   flowWindow: RecentWindow;
 
   // USD premium; 0 shows every print
@@ -77,7 +70,6 @@ export const DEFAULT_SCOPE: ChartScope = {
   expiry: EXPIRY_ALL,
   minDte: 0,
   maxDte: 30,
-  exposureConvention: 'assumption',
   flowWindow: '7d',
   tapeMinPremium: 0,
   strikeRange: 'all',

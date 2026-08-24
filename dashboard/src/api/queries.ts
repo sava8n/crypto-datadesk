@@ -1,13 +1,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import { useRefreshMs } from '../settings/store';
-import type {
-  ArchiveWindow,
-  ExposureConvention,
-  ExposureGreek,
-  RecentWindow,
-  Resolution,
-} from '../types';
+import type { ArchiveWindow, ExposureGreek, RecentWindow, Resolution } from '../types';
 import * as client from './client';
 import type { EndpointName } from './endpoints';
 
@@ -87,14 +81,10 @@ export function useTape(currency: string, minPremium: number) {
 }
 export const useMaxPain = resourceHook('maxPain', client.fetchMaxPain);
 
-export function useExposureByStrike(
-  currency: string,
-  greek: ExposureGreek,
-  convention: ExposureConvention = 'assumption',
-) {
+export function useExposureByStrike(currency: string, greek: ExposureGreek) {
   return useQuery({
-    queryKey: ['exposureByStrike', currency, greek, convention],
-    queryFn: () => client.fetchExposureByStrike(currency, greek, convention),
+    queryKey: ['exposureByStrike', currency, greek],
+    queryFn: () => client.fetchExposureByStrike(currency, greek),
     placeholderData: keepPreviousData,
     ...polling(useRefreshMs()),
   });

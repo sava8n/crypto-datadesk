@@ -1,6 +1,23 @@
 # Changelog
 
 
+## [0.6.0] - 2026-08-24
+
+### Changed
+
+- **Tape-signed dealer exposure** - GEX, vanna and charm are signed from cumulative taker flow only; open interest the tape cannot sign carries no exposure instead of the classic calls+/puts- assumption, and every exposure response reports the share of OI the tape explains
+- **Coverage in the archive** - snapshots store `oi_explained_fraction` next to the gex scalars, and the positioning history serves it per point
+
+### Added
+
+- **Tape backfill** - `data.storage.backfill.tape` pages historical prints from Deribit's history host (~365 days) so the tape covers every live contract from day one
+- **GEX recompute** - `data.storage.backfill.gex` re-signs the archived gex scalars by replaying taker flow up to each capture
+
+### Removed
+
+- **GEX SIGN toggle** - the assumption/flow convention choice is gone from the API and the dashboard; there is one signing, with its coverage shown
+
+
 ## [0.5.2] - 2026-08-22
 
 ### Fixed
