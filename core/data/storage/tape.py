@@ -108,7 +108,7 @@ def record_trades(currency: str) -> int:
     """Fetch and archive everything printed since the cursor; returns rows written."""
     cursor = latest_ts(currency)
     if cursor is None:
-        cursor = datetime.now(UTC) - timedelta(days=settings.tape_bootstrap_days)
+        cursor = datetime.now(UTC) - timedelta(hours=settings.tape_bootstrap_hours)
         logger.info("empty tape for %s, bootstrapping from %s", currency, cursor.isoformat())
 
     start_ms = int(cursor.timestamp() * 1000)

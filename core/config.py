@@ -34,8 +34,9 @@ class Settings(BaseSettings):
     # --- archive: snapshots, tape, retention ---
     snapshot_interval_minutes: int = 60
     tape_poll_seconds: int = 60
-    # how far back the first tape poll reaches when the archive is empty
-    tape_bootstrap_days: int = 7
+    # how far back the first tape poll reaches when the archive is empty;
+    # deribit only serves ~24h of trades
+    tape_bootstrap_hours: int = 24
     retention_days: int = 365
     retention_sweep_at_utc: time = time(0, 0)
 
