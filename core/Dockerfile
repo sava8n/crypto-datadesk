@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN useradd --system --uid 1001 app
+RUN useradd --system --uid 999 app
 USER app
 
 EXPOSE 8000
