@@ -171,16 +171,20 @@ def market_state():
 
 
 @pytest.fixture
-def client(market_state):
+def client(market_state, monkeypatch):
     """A TestClient serving ``market_state`` instead of reaching upstream.
 
     One override on the dependency, so adding a router cannot silently escape the stub.
+    Exposure signs OI off the tape, so the default is an empty one rather than a
+    database; tests wanting flow re-patch ``dealer_flow`` themselves.
     """
     from fastapi.testclient import TestClient
 
     import main
     from api import deps
+    from data.storage import flow
 
+    monkeypatch.setattr(flow, "dealer_flow", lambda ccy: {"rows": [], "tape_start": None})
     main.server.dependency_overrides[deps.market_state] = lambda: market_state
     main.server.dependency_overrides[deps.database_status] = lambda: "ok"
     yield TestClient(main.server)

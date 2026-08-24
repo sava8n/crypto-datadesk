@@ -8,6 +8,7 @@ from datetime import datetime
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
+from data.market import dealer
 from data.storage import db, rows, schema
 
 logger = logging.getLogger(__name__)
@@ -22,9 +23,12 @@ def record(state: rows.Archivable, currency: str) -> int | None:
     through an upstream outage. The recorder's own interval check is what stops ordinary
     duplicates.
     """
-    snapshot = rows.snapshot_row(state, currency)
-    if snapshot is None:
+    # gate on the spot before the tape read, so an unstorable state costs no connection
+    if rows.usable_spot(state) is None:
         logger.warning("skipping snapshot for currency=%s: unusable spot %r", currency, state.spot)
+        return None
+    snapshot = rows.snapshot_row(state, currency, dealer.tape_scalars(currency, state))
+    if snapshot is None:
         return None
 
     with db.connection() as conn:

@@ -3,7 +3,6 @@ import type {
   CMBandsResponse,
   ExpiryOutcomesResponse,
   ExposureByStrikeResponse,
-  ExposureConvention,
   ExposureGreek,
   FlowByExpiryResponse,
   FlowByStrikeResponse,
@@ -103,9 +102,7 @@ export const fetchExpiryOutcomes = (currency: string): Promise<ExpiryOutcomesRes
 export const fetchExposureByStrike = (
   currency: string,
   greek: ExposureGreek,
-  convention: ExposureConvention = 'assumption',
-): Promise<ExposureByStrikeResponse> =>
-  fetchJson(url('exposureByStrike', { currency, greek, convention }));
+): Promise<ExposureByStrikeResponse> => fetchJson(url('exposureByStrike', { currency, greek }));
 
 export const fetchSmileHistory = (
   currency: string,

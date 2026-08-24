@@ -31,7 +31,8 @@ def test_snapshot_holds_the_cached_scalars_inline():
 
 def test_snapshot_row_keys_match_the_table(market_state):
     """Only the generated columns may be absent - anything else is a column nobody writes."""
-    written = set(rows.snapshot_row(market_state, "BTC"))
+    tape = dict.fromkeys(("gex_flip", "gex_net_total", "oi_explained_fraction"))
+    written = set(rows.snapshot_row(market_state, "BTC", tape))
     assert written <= set(schema.snapshot.c.keys())
     assert set(schema.snapshot.c.keys()) - written == {"id", "recorded_at"}
 

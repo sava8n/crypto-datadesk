@@ -1,7 +1,7 @@
 """One-shot backfill of derived scalars and the CM grid over archived snapshots.
 
-Run from ``core/``: ``python -m data.storage.backfill``. Idempotent - only snapshots
-still missing derived data are touched, so it is safe to re-run after outages.
+Run from ``core/``: ``python -m data.storage.backfill.derived``. Idempotent - only
+snapshots still missing derived data are touched, so it is safe to re-run after outages.
 """
 
 from __future__ import annotations

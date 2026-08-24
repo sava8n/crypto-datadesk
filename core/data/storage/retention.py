@@ -73,7 +73,13 @@ def _delete_chunk(snapshot_ids: list[int]) -> tuple[int, int]:
 
 
 def _delete_aged_trades(horizon: datetime) -> int:
-    """Delete prints older than ``horizon`` in bounded chunks; returns rows removed."""
+    """Delete prints older than ``horizon`` in bounded chunks; returns rows removed.
+
+    Dealer inventory is signed by cumulative flow over the whole tape, so
+    ``retention_days`` must stay >= Deribit's longest listing tenor (~12 months):
+    then every print on a still-live contract is younger than the horizon and the
+    sweep never erodes live inventory.
+    """
     total = 0
     while True:
         aged = (

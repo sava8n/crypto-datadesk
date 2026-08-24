@@ -39,7 +39,7 @@ def _build_session() -> requests.Session:
 _SESSION = _build_session()
 
 
-def _get(path: str, params: dict, *, key: str | None = None) -> Any:
+def _get(path: str, params: dict, *, key: str | None = None, api_url: str | None = None) -> Any:
     """GET ``path``, unwrap ``result``, then ``result[key]`` when given.
 
     Transport failure, bad status, malformed body and a missing key all raise
@@ -48,7 +48,7 @@ def _get(path: str, params: dict, *, key: str | None = None) -> Any:
     start = time.perf_counter()
     try:
         resp = _SESSION.get(
-            f"{settings.deribit_api_url}{path}",
+            f"{api_url or settings.deribit_api_url}{path}",
             params=params,
             timeout=(settings.http_connect_timeout, settings.http_read_timeout),
         )
@@ -93,7 +93,9 @@ def fetch_option_summaries(currency: str = "BTC") -> list[dict]:
 TRADES_PAGE_SIZE = 500
 
 
-def fetch_option_trades(currency: str, start_ms: int, end_ms: int) -> dict:
+def fetch_option_trades(
+    currency: str, start_ms: int, end_ms: int, api_url: str | None = None
+) -> dict:
     """One ascending page of option trades in ``[start_ms, end_ms]``.
 
     ``{"trades": [...], "has_more": bool}`` - callers page by advancing
@@ -109,6 +111,7 @@ def fetch_option_trades(currency: str, start_ms: int, end_ms: int) -> dict:
             "count": TRADES_PAGE_SIZE,
             "sorting": "asc",
         },
+        api_url=api_url,
     )
 
 

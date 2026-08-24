@@ -30,7 +30,8 @@ snapshot = Table(
     Column("as_of", DateTime(timezone=True), nullable=False),
     Column("spot", Float, nullable=False),
     Column("recorded_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
-    # scalars cached alongside the capture; all recomputable from `contract`
+    # scalars cached alongside the capture, recomputable from `contract`
+    # gex scalars also need the trade tape
     Column("iv30", Float),
     Column("rv30", Float),
     Column("dvol", Float),
@@ -46,6 +47,8 @@ snapshot = Table(
     Column("oi_total_puts", Float),
     Column("max_pain_front", Float),
     Column("gex_net_total", Float),
+    # share of open interest the tape signed when the gex scalars were computed
+    Column("oi_explained_fraction", Float),
     # doubles as the index the currency+range read path uses, ascending on both columns
     UniqueConstraint("currency", "as_of", name="uq_snapshot_currency_as_of"),
     CheckConstraint("spot > 0", name="ck_snapshot_spot_positive"),

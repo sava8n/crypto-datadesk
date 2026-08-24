@@ -7,6 +7,7 @@ from datetime import UTC, datetime, timedelta
 import pandas as pd
 import pytest
 
+from analytics.positioning import exposure, inventory
 from data.clients.deribit import DeribitError
 from data.storage import flow, outcomes, read, series
 from data.storage.errors import StorageUnavailable
@@ -61,11 +62,13 @@ def test_iv_curves_points_match_the_chain(client, market_state):
     assert min(p["mark_iv"] for p in points) > 0
 
 
-def test_gex_reports_the_flip_under_its_domain_name(client, market_state):
+def test_gex_reports_the_flip_under_its_domain_name(client, market_state, monkeypatch):
+    _serve_tape(monkeypatch, _dealers_short_low_long_high(market_state), market_state.as_of)
+
     body = client.get("/api/exposure/strike").json()
 
     assert "flip" not in body  # renamed to match the domain and the archive column
-    assert body["gex_flip"] == pytest.approx(market_state.gex_flip)
+    assert body["gex_flip"] is not None
     strikes = [p["strike"] for p in body["points"]]
     assert strikes == sorted(strikes)
 
@@ -169,45 +172,12 @@ def test_oi_strike_change_without_a_baseline_is_empty(client, monkeypatch):
     assert body["points"] == []
 
 
-@pytest.mark.parametrize("greek", ["gamma", "vanna", "charm"])
-def test_exposure_serves_every_greek(client, market_state, greek):
-    frame = market_state.exposure(greek)
-
-    body = client.get("/api/exposure/strike", params={"greek": greek}).json()
-
-    assert body["greek"] == greek
-    assert len(body["points"]) == len(frame)
-    assert body["points"][0]["net_exposure"] == pytest.approx(frame["net_exposure"].iloc[0])
-
-
-def test_only_gamma_carries_the_flip(client, market_state):
-    """``gex_flip`` is a gamma property; the other greeks have no zero-crossing to report."""
-    # the fixture chain is net short gamma at every strike, so it has no flip of its own
-    market_state.gex_flip = 101_000.0
-
-    body = client.get("/api/exposure/strike").json()
-    assert body["gex_flip"] == pytest.approx(101_000.0)
-
-    for greek in ("vanna", "charm"):
-        body = client.get("/api/exposure/strike", params={"greek": greek}).json()
-        assert body["gex_flip"] is None
-
-
-def test_gex_default_convention_never_touches_the_archive(client, monkeypatch):
-    def boom(ccy):
-        raise AssertionError("assumption mode must not read the archive")
-
-    monkeypatch.setattr(flow, "dealer_flow", boom)
-
-    body = client.get("/api/exposure/strike").json()
-
-    assert body["convention"] == "assumption"
-    assert body["tape_start"] is None
-    assert body["oi_explained_fraction"] is None
+def _serve_tape(monkeypatch, rows, tape_start):
+    monkeypatch.setattr(flow, "dealer_flow", lambda ccy: {"rows": rows, "tape_start": tape_start})
 
 
 def _dealers_long_everything(market_state):
-    """Net taker selling of twice the OI on every contract: flow flips all signs long."""
+    """Net taker selling of twice the OI on every contract: the tape signs it all long."""
     chain = market_state.oi_chain
     return [
         {"expiry": e, "strike": s, "option_type": t, "net_taker": -2.0 * oi}
@@ -221,59 +191,83 @@ def _dealers_long_everything(market_state):
     ]
 
 
-def test_gex_flow_convention_signs_oi_by_the_tape(client, market_state, monkeypatch):
-    tape_start = market_state.as_of - timedelta(days=7)
+def _dealers_short_low_long_high(market_state):
+    """Dealers short below spot, long at and above: the cumulative profile crosses once."""
+    chain = market_state.oi_chain
+    return [
+        {
+            "expiry": e,
+            "strike": s,
+            "option_type": t,
+            "net_taker": oi if s < market_state.spot else -oi,
+        }
+        for e, s, t, oi in zip(
+            chain["expiry"],
+            chain["strike"],
+            chain["option_type"],
+            chain["open_interest"],
+            strict=True,
+        )
+    ]
+
+
+@pytest.mark.parametrize("greek", ["gamma", "vanna", "charm"])
+def test_exposure_serves_every_greek(client, market_state, greek, monkeypatch):
     rows = _dealers_long_everything(market_state)
-    monkeypatch.setattr(flow, "dealer_flow", lambda ccy: {"rows": rows, "tape_start": tape_start})
+    _serve_tape(monkeypatch, rows, market_state.as_of)
+    chain, _ = inventory.flow_signed_chain(market_state.oi_chain, inventory.net_flow_frame(rows))
+    frame = exposure.build(market_state.greeks_chain, chain, greek)
 
-    body = client.get("/api/exposure/strike", params={"convention": "flow"}).json()
-    assumed = client.get("/api/exposure/strike").json()
+    body = client.get("/api/exposure/strike", params={"greek": greek}).json()
 
-    assert body["convention"] == "flow"
+    assert body["greek"] == greek
+    assert len(body["points"]) == len(frame)
+    assert body["points"][0]["net_exposure"] == pytest.approx(frame["net_exposure"].iloc[0])
+
+
+def test_only_gamma_carries_the_flip(client, market_state, monkeypatch):
+    """``gex_flip`` is a gamma property; the other greeks have no zero-crossing to report."""
+    _serve_tape(monkeypatch, _dealers_short_low_long_high(market_state), market_state.as_of)
+
+    body = client.get("/api/exposure/strike").json()
+    assert body["gex_flip"] is not None
+
+    for greek in ("vanna", "charm"):
+        body = client.get("/api/exposure/strike", params={"greek": greek}).json()
+        assert body["gex_flip"] is None
+
+
+def test_exposure_signs_oi_by_the_tape(client, market_state, monkeypatch):
+    tape_start = market_state.as_of - timedelta(days=7)
+    _serve_tape(monkeypatch, _dealers_long_everything(market_state), tape_start)
+
+    body = client.get("/api/exposure/strike").json()
+
     assert body["tape_start"].startswith(tape_start.strftime("%Y-%m-%dT%H:%M:%S"))
     assert body["oi_explained_fraction"] == pytest.approx(1.0)
-    # dealers long the puts too, so put GEX flips positive relative to the assumption
-    for flowed, classic in zip(body["points"], assumed["points"], strict=True):
-        assert flowed["put_exposure"] == pytest.approx(-classic["put_exposure"])
-        assert flowed["call_exposure"] == pytest.approx(classic["call_exposure"])
+    # dealers long the puts too, so every put leg prices positive
+    put_exposures = [p["put_exposure"] for p in body["points"]]
+    assert all(v >= 0 for v in put_exposures)
+    assert any(v > 0 for v in put_exposures)
 
 
-def test_gex_flow_convention_with_an_empty_tape_matches_assumption(client, monkeypatch):
-    monkeypatch.setattr(flow, "dealer_flow", lambda ccy: {"rows": [], "tape_start": None})
-
-    body = client.get("/api/exposure/strike", params={"convention": "flow"}).json()
-    assumed = client.get("/api/exposure/strike").json()
+def test_exposure_with_an_empty_tape_carries_no_exposure(client):
+    """OI the tape cannot sign is unknown inventory, not the classic assumption."""
+    body = client.get("/api/exposure/strike").json()
 
     assert body["tape_start"] is None
     assert body["oi_explained_fraction"] == 0.0
-    nets = [p["net_exposure"] for p in body["points"]]
-    assert nets == pytest.approx([p["net_exposure"] for p in assumed["points"]])
-    assert body["gex_flip"] == pytest.approx(assumed["gex_flip"])
+    assert all(p["net_exposure"] == 0.0 for p in body["points"])
+    assert body["gex_flip"] is None
 
 
-def test_gex_flow_convention_with_archive_down_is_503(client, monkeypatch):
+def test_exposure_with_archive_down_is_503(client, monkeypatch):
     def unavailable(ccy):
         raise StorageUnavailable("archive unavailable")
 
     monkeypatch.setattr(flow, "dealer_flow", unavailable)
 
-    assert client.get("/api/exposure/strike", params={"convention": "flow"}).status_code == 503
-
-
-def test_exposure_flow_convention_flips_with_the_tape(client, market_state, monkeypatch):
-    rows = _dealers_long_everything(market_state)
-    monkeypatch.setattr(
-        flow, "dealer_flow", lambda ccy: {"rows": rows, "tape_start": market_state.as_of}
-    )
-
-    body = client.get(
-        "/api/exposure/strike", params={"greek": "vanna", "convention": "flow"}
-    ).json()
-    assumed = client.get("/api/exposure/strike", params={"greek": "vanna"}).json()
-
-    assert body["convention"] == "flow"
-    for flowed, classic in zip(body["points"], assumed["points"], strict=True):
-        assert flowed["put_exposure"] == pytest.approx(-classic["put_exposure"])
+    assert client.get("/api/exposure/strike").status_code == 503
 
 
 def test_max_pain_by_expiry_leads_with_the_front(client, market_state):
@@ -447,6 +441,7 @@ def test_history_positioning_serves_archived_rows(client, monkeypatch):
         "gex_net_total": 1.2e7,
         "gex_flip": 99_000.0,
         "max_pain_front": 64_000.0,
+        "oi_explained_fraction": 0.7,
     }
     monkeypatch.setattr(series, "positioning_series", lambda ccy, start, resolution: [row])
 
@@ -454,6 +449,7 @@ def test_history_positioning_serves_archived_rows(client, monkeypatch):
 
     assert body["resolution"] == "1d"  # the default
     assert body["points"][0]["max_pain_front"] == 64_000.0
+    assert body["points"][0]["oi_explained_fraction"] == 0.7
 
 
 def test_history_unreachable_archive_is_503(client, monkeypatch):

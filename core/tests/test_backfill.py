@@ -22,6 +22,4 @@ def test_cm_rows_from_restored_book_match_live_state(market_state):
 def test_derived_row_covers_every_column(market_state):
     row = derived_row(market_state)
     assert set(row) == set(DERIVED_SCALARS)
-    # gex_flip alone is nullable by contract: a chain whose cumulative net gamma never
-    # crosses zero has no flip level, which is this fixture's case
-    assert {name for name, value in row.items() if value is None} <= {"gex_flip"}
+    assert all(value is not None for value in row.values())

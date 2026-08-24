@@ -1,15 +1,13 @@
-"""Flow-signed dealer inventory per contract.
+"""Tape-signed dealer inventory per contract.
 
-    signed_oi = clip(-net_taker, -OI, +OI) + classic_sign * residual
+    signed_oi = clip(-net_taker, -OI, +OI)
 
-The tape-explained share of open interest is signed by cumulative taker flow
-(taker buy -> dealer short); the residual keeps the classic dealer assumption
-(calls +, puts -), so an empty tape reproduces the assumption convention exactly.
+Cumulative taker flow signs the open interest it explains (taker buy -> dealer short);
+OI the tape cannot explain carries no exposure.
 """
 
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
 
 from analytics.frames import as_declared_dtypes
@@ -34,8 +32,6 @@ def flow_signed_chain(
     merged = oi_chain.merge(net_flow, on=["expiry", "strike", "option_type"], how="left")
     net_taker = merged["net_taker"].fillna(0.0)
     oi = merged["open_interest"]
-    explained = (-net_taker).clip(lower=-oi, upper=oi)
-    classic = np.where(merged["option_type"] == "C", 1.0, -1.0)
-    merged["signed_oi"] = explained + classic * (oi - explained.abs())
-    fraction = float(explained.abs().sum() / oi.sum())
+    merged["signed_oi"] = (-net_taker).clip(lower=-oi, upper=oi)
+    fraction = float(merged["signed_oi"].abs().sum() / oi.sum())
     return merged.drop(columns=["net_taker"]), fraction

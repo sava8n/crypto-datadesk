@@ -43,6 +43,7 @@ class PositioningHistoryPoint(BaseModel):
     gex_net_total: float | None = None
     gex_flip: float | None = None
     max_pain_front: float | None = None
+    oi_explained_fraction: float | None = None
 
 
 class PositioningHistoryResponse(HistoryEnvelope):

@@ -6,7 +6,7 @@ from datetime import time
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-VERSION = "0.5.2"
+VERSION = "0.6.0"
 
 
 class Settings(BaseSettings):
@@ -19,6 +19,8 @@ class Settings(BaseSettings):
 
     # --- market data (Deribit) ---
     deribit_api_url: str = "https://www.deribit.com/api/v2"
+    # serves full trade history
+    deribit_history_api_url: str = "https://history.deribit.com/api/v2"
     http_connect_timeout: int = 3
     # must cover the multi-MB option book
     http_read_timeout: int = 20

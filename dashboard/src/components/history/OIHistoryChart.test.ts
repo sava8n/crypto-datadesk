@@ -14,6 +14,7 @@ const point = (
   gex_net_total: null,
   gex_flip: null,
   max_pain_front: null,
+  oi_explained_fraction: null,
 });
 
 const resp = (points: PositioningHistoryPoint[]): PositioningHistoryResponse => ({

@@ -1,4 +1,4 @@
-import { CONVENTIONS, RECENT_WINDOWS, STRIKE_RANGES } from '../../config';
+import { RECENT_WINDOWS, STRIKE_RANGES } from '../../config';
 import { useChartScope } from '../../settings/store';
 import { EXPIRY_ALL, resolveExpiry } from '../../utils/expiry';
 import { dateLabel, usdShort } from '../../utils/format';
@@ -8,19 +8,6 @@ import { ScopePopover, ScopeRow, ScopeSegmented } from './Scope';
 
 interface ScopeProps {
   chartId: string;
-}
-
-export function ConventionScope({ chartId }: ScopeProps) {
-  const { scope, update } = useChartScope(chartId);
-
-  return (
-    <ScopeSegmented
-      label="GEX SIGN"
-      value={scope.exposureConvention}
-      options={CONVENTIONS}
-      onSelect={(v) => update({ exposureConvention: v })}
-    />
-  );
 }
 
 export function FlowWindowScope({ chartId }: ScopeProps) {

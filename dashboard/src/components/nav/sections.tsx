@@ -77,12 +77,12 @@ export const SECTIONS: Section[] = [
             'it. Bar height is how much hedging flow sits at that strike, and the tallest ones ' +
             'tend to act as magnets into expiry. In the history, watch how far spot is trading ' +
             'from the flip - sustained time below it is the regime where gaps happen.',
-          'GEX SIGN sets how dealer inventory is signed. ASSUMED takes the classic view that ' +
-            'dealers are long the calls and short the puts; FLOW signs each contract from the ' +
-            'cumulative taker flow on the tape and falls back to the assumption where the tape ' +
-            'does not cover the open interest. STRIKES keeps only the strikes within a band ' +
-            'around spot, which the dashed line marks. The history holds the whole archive, ' +
-            'hourly; the slider beneath it sets the span in view.',
+          'Dealer inventory is signed from the tape: each contract by the cumulative taker ' +
+            'flow printed on it, taker buying leaving dealers short. Open interest the tape ' +
+            'cannot sign carries no exposure rather than an assumed one, and the subtitle ' +
+            'reports how much of the book the tape explains. STRIKES keeps only the strikes ' +
+            'within a band around spot, which the dashed line marks. The history holds the ' +
+            'whole archive, hourly; the slider beneath it sets the span in view.',
         ],
         render: () => (
           <>
@@ -139,8 +139,8 @@ export const SECTIONS: Section[] = [
             'near the money and into the front expiry. Read the peak strikes as the levels where ' +
             'flow appears on its own, and treat them as most dangerous where they line up with ' +
             'the gamma peaks.',
-          'GEX SIGN and STRIKES work as on the gamma chart, and each of the two charts keeps ' +
-            'its own.',
+          'Inventory is tape-signed as on the gamma chart; STRIKES works the same way, and ' +
+            'each of the two charts keeps its own.',
         ],
         render: () => (
           <>

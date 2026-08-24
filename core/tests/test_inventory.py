@@ -1,4 +1,4 @@
-"""Flow-signed dealer inventory blending."""
+"""Tape-signed dealer inventory."""
 
 from __future__ import annotations
 
@@ -34,12 +34,12 @@ def _flow(strikes, option_types, net_takers):
     )
 
 
-def test_empty_flow_reproduces_the_classic_signs():
+def test_empty_flow_carries_no_exposure():
     chain = _chain([110.0, 90.0], ["C", "P"], [100.0, 50.0])
 
     out, fraction = flow_signed_chain(chain, net_flow_frame([]))
 
-    assert list(out["signed_oi"]) == [100.0, -50.0]
+    assert list(out["signed_oi"]) == [0.0, 0.0]
     assert fraction == 0.0
 
 
@@ -53,24 +53,24 @@ def test_taker_buying_beyond_oi_clips_to_fully_short():
     assert fraction == pytest.approx(1.0)
 
 
-def test_partial_flow_blends_with_the_classic_residual():
-    """Takers sold 40 of 100 puts: +40 explained long, 60 residual at the classic -1."""
+def test_partial_flow_signs_only_the_explained_share():
+    """Takers sold 40 of 100 puts: +40 explained long, the other 60 carry nothing."""
     chain = _chain([90.0], ["P"], [100.0])
     flow = _flow([90.0], ["P"], [-40.0])
 
     out, fraction = flow_signed_chain(chain, flow)
 
-    assert out["signed_oi"].iloc[0] == pytest.approx(-20.0)
+    assert out["signed_oi"].iloc[0] == pytest.approx(40.0)
     assert fraction == pytest.approx(0.4)
 
 
-def test_dominant_taker_selling_flips_a_put_positive():
+def test_taker_selling_signs_a_put_positive():
     chain = _chain([90.0], ["P"], [100.0])
     flow = _flow([90.0], ["P"], [-80.0])
 
     out, _ = flow_signed_chain(chain, flow)
 
-    assert out["signed_oi"].iloc[0] == pytest.approx(60.0)
+    assert out["signed_oi"].iloc[0] == pytest.approx(80.0)
 
 
 def test_fraction_is_explained_oi_over_total_oi():
@@ -89,7 +89,7 @@ def test_flow_for_contracts_outside_the_chain_is_ignored():
     out, fraction = flow_signed_chain(chain, flow)
 
     assert len(out) == 1
-    assert out["signed_oi"].iloc[0] == pytest.approx(-10.0 + 90.0)
+    assert out["signed_oi"].iloc[0] == pytest.approx(-10.0)
     assert fraction == pytest.approx(0.1)
 
 

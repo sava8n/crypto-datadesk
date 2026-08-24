@@ -67,16 +67,12 @@ describe('URL building', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/iv/curves?currency=ET+H');
   });
 
-  it('carries the greek and sign convention on the exposure route', async () => {
+  it('carries the greek on the exposure route', async () => {
     await client.fetchExposureByStrike('BTC', 'gamma');
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/api/exposure/strike?currency=BTC&greek=gamma&convention=assumption',
-    );
+    expect(fetchMock).toHaveBeenCalledWith('/api/exposure/strike?currency=BTC&greek=gamma');
 
-    await client.fetchExposureByStrike('BTC', 'vanna', 'flow');
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/api/exposure/strike?currency=BTC&greek=vanna&convention=flow',
-    );
+    await client.fetchExposureByStrike('BTC', 'vanna');
+    expect(fetchMock).toHaveBeenCalledWith('/api/exposure/strike?currency=BTC&greek=vanna');
   });
 
   it('sends the archive window as a duration token, not a day count', async () => {

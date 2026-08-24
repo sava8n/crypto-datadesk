@@ -36,8 +36,6 @@ class Archivable(Protocol):
     @property
     def dvol_rank(self) -> float | None: ...
     @property
-    def gex_flip(self) -> float | None: ...
-    @property
     def iv7(self) -> float | None: ...
     @property
     def rr25_7(self) -> float | None: ...
@@ -54,17 +52,13 @@ class Archivable(Protocol):
     @property
     def max_pain_front(self) -> float | None: ...
     @property
-    def gex_net_total(self) -> float | None: ...
-    @property
     def cm_grid(self) -> pd.DataFrame: ...
 
 
 # scalars derived from (contracts, spot) alone - no candle history involved, so the
-# backfill can restore them for any archived book.
-#
-# gex_flip and gex_net_total are recorded under the assumption convention so the archived
-# series keeps one meaning as the tape deepens; flow-signed figures are served live only.
-# That is a convention choice, not a candle dependency - both still backfill.
+# backfill can restore them for any archived book. The gex scalars are not here: they
+# are tape-signed, so they need the trade archive and belong to the caller's `tape` dict
+# (recorder) or the backfill.gex script.
 DERIVED_SCALARS = (
     "iv7",
     "iv30",
@@ -75,8 +69,6 @@ DERIVED_SCALARS = (
     "oi_total_calls",
     "oi_total_puts",
     "max_pain_front",
-    "gex_flip",
-    "gex_net_total",
 )
 
 
@@ -85,8 +77,8 @@ def derived_row(state: Archivable) -> dict:
     return {name: finite(getattr(state, name)) for name in DERIVED_SCALARS}
 
 
-def snapshot_row(state: Archivable, currency: str) -> dict | None:
-    """The snapshot row - identity, spot and the cached scalars - or ``None`` if unusable.
+def usable_spot(state: Archivable) -> float | None:
+    """``state.spot`` as a positive finite float, else ``None`` - the capture gate.
 
     ``snapshot.spot`` is NOT NULL and every stored product is priced off it, so a
     non-finite or non-positive spot makes the whole capture worthless; better to record
@@ -94,6 +86,18 @@ def snapshot_row(state: Archivable, currency: str) -> dict | None:
     """
     spot = finite(state.spot)
     if spot is None or spot <= 0:
+        return None
+    return spot
+
+
+def snapshot_row(state: Archivable, currency: str, tape: dict) -> dict | None:
+    """The snapshot row - identity, spot and the cached scalars, or ``None`` if unusable.
+
+    ``tape`` carries the tape-signed scalars (``gex_flip``, ``gex_net_total``,
+    ``oi_explained_fraction``), composed by the caller from the trade archive.
+    """
+    spot = usable_spot(state)
+    if spot is None:
         return None
     return {
         "currency": currency,
@@ -106,6 +110,7 @@ def snapshot_row(state: Archivable, currency: str) -> dict | None:
         "rv30": finite(state.rv30),
         "dvol": finite(state.dvol),
         "dvol_rank": finite(state.dvol_rank),
+        **{name: finite(value) for name, value in tape.items()},
         **derived_row(state),
     }
 
